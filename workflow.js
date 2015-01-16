@@ -1,480 +1,492 @@
+"use strict";
 var console = console || {};
 var jQuery = jQuery || {};
-function init() {
-	"use strict";
-	var exports = {};
-	exports.baseUnit = 80;
-	exports.gridCol = 80;
-  //exports.gridCol = 20;
-	exports.rowHeight = 20;
-	exports.leftMargin = 140;
-	return exports;
+
+function scrollTo(id) {
+	jQuery('#' + id).scrollintoview();
 }
+var Flow = (function(conf) {
 
-var config = init();
-var shapeStack = {}; // keep track of instances
-var marginTop = 20;
-var totalHeight = 110; // distance from top
-var endHeight = 300; //just a fudge to fit in extra bits
-var SVG = SVG || {};
-var draw = SVG('drawing').size(960, 1600);
-//var arrowHead = draw.defs().polygon('0,0 10,0 5,10').fill({ color: 'rgb(51, 51, 51)', opacity: 1.0 });
-var arrowHead;
-var lastNode;
-var stackIndex = 0;
-var shapeSet = draw.set();
-var actionSet = []; // track visible actions
-var decisionSet = [];
-var lastDecision = null;
+	var draw = conf.root;
 
-function unhide() {
-	"use strict";
-	draw.each(function () {
-	    if (this.opacity(0)) {
-	        this.opacity(1);
-	    }
-	});
-}
+	function init() {
+		return {
+			baseUnit: 80,
+			gridCol: 80,
+			rowHeight: 20,
+			leftMargin: 140,
+			connectorLength: 60,
+			arrowHeadHeight: 20,
+			decisionWidth: 240,
+			decisionHeight: 120,
+			finishWidth: 240,
+			finishHeight:100,
+			processWidth: 240,
+			processHeight: 100
+		};
+	}
 
-function flowStart() {
-	"use strict";
-	var exports = {};
-	exports.lowerGroup = draw.group().attr({
-		"cursor" : "pointer",
-		"class"  : "fc-start"
-	});
-	exports.lowerResponse = draw.rect(240, config.rowHeight * 2)
-		.fill('blue').opacity(0.3).radius(20)
-		.move(config.leftMargin - 100, 0);
+	var config = init();
+	
+	var flowStart = function () {
+		var group = draw.group().attr({
+			"cursor": "pointer",
+			"class": "fc-start"
+		});
+		var rect = draw.rect(config.decisionWidth, config.rowHeight * 2)
+			.fill('blue').opacity(0.3).radius(20);
 
-	exports.lowerConnector = draw
-		.line(160, 40, 160, 80)
+		var lowerConnector = arrowLine();
+		var text = draw.text("Start").move(100, 12);
+		
+		group.add(rect);
+		group.add(text);
+		var shapeBox = rect.bbox();
+		lowerConnector.move(shapeBox.cx, shapeBox.height);
+		group.add(lowerConnector);
+		group.move(config.leftMargin, 0);
+		
+		return group;
+	};
+
+	var startEl = flowStart();
+
+	var elementRefs = [];
+
+	for (var i = 0; i < conf.shapes.length; i++) {
+		
+		var shape;
+		if (conf.shapes[i].type === 'decision') {
+			shape = decision(conf.shapes[i]);
+		}
+		if (conf.shapes[i].type === 'finish') {
+			shape = finish(conf.shapes[i]);
+		}
+		if (conf.shapes[i].type === 'process') {
+			shape = process(conf.shapes[i]);
+		}
+
+		// move the first shape into position
+		if (i == 0) {
+			shape.move(config.leftMargin, startEl.bbox().height);
+		}
+		
+		conf.shapes[i].id = shape.attr('id');
+
+		elementRefs.push(conf.shapes[i]);
+
+	}
+
+	function getSvgId(elementRefs, el) {
+		var filteredEls = elementRefs.filter(function(d) {
+			if (d.label === el) {
+				return d;
+			}
+		});
+		return filteredEls;
+	}
+	//console.log(getSvgId(elementRefs, 'decTwo'));
+	// This is where things get moved into position
+	for (i = 0; i < conf.shapes.length; i++) {
+		var el = conf.shapes[i];
+		
+		var element = SVG.get(getSvgId(elementRefs, el.label)[0].id);
+		var elBox = element.bbox();
+		
+		if (el.yes) {
+			var yesElement = SVG.get(getSvgId(elementRefs, el.yes)[0].id);
+
+			if (el.orient.yes === 'b') {
+				yesElement.move(element.x(), element.y() + elBox.height);
+			}
+
+			if (el.orient.yes === 'r') {
+				yesElement.x(element.x() + elBox.width);
+				yesElement.cy((element.first().bbox().height / 2) + element.y());
+			}
+
+			if (el.orient.yes === 'l') {
+				// not implemented
+			}
+		}
+
+		if (el.no) {
+			var noElement = SVG.get(getSvgId(elementRefs, el.no)[0].id);
+
+			if (el.orient.no === 'b') {
+				noElement.move(element.x(), elBox.height + element.y());
+			}
+
+			if (el.orient.no === 'r') {
+				noElement.x(element.x() + elBox.width);
+				noElement.cy((element.first().bbox().height / 2) + element.y());
+			}
+
+			if (el.orient.no === 'l') {
+				// not implemented
+			}
+
+		}
+	}
+
+	function unhide(draw) {
+		"use strict";
+		draw.each(function() {
+			if (this.opacity(0)) {
+				this.opacity(1);
+			}
+		});
+	}
+
+	
+
+	var showHide = function showHide(element, next) {
+		"use strict";
+		var i, id;
+		if (element.visible === false) {
+			if (element.stepType === "decision") {
+				element.visible = true;
+			}
+			element.group.animate().opacity(1).after(function() {});
+
+			if ((element.stepType !== undefined) && (element.stepType === "finish")) {
+				for (i = 0; i < finishSet.length; i += 1) {
+					if (finishSet[i].visible === true) {
+						//finishSet[i].group.animate().opacity(0); //off for dev
+						finishSet[i].visible = false;
+					}
+				}
+				element.visible = true;
+				finishSet.push(element);
+			}
+			if ((element.last !== undefined) && (element.last.finish !== undefined) && (element.last.finish.visible === true)) {
+				element.last.finish.group.animate().opacity(0);
+				element.last.finish.visible = false;
+			}
+
+			if ((element.inline !== undefined) && (element.inline === true)) {
+				element.group.animate().opacity(1);
+			}
+
+			if ((next !== undefined) && (next.visible === true)) {
+				showHide(next);
+			}
+
+			id = element.group.attr('id');
+			scrollTo(id);
+			return;
+		}
+
+		if (element.visible === true) {
+			element.group.animate().opacity(0);
+			if ((element.finish !== undefined) && (element.finish.visible === true)) {
+				element.finish.group.animate().opacity(0);
+			}
+			if ((element.next !== undefined) && (element.next.visible === true)) {
+				showHide(element.next);
+			}
+			if ((element.otherAction !== undefined) && (element.otherAction.visible === true)) {
+				element.otherAction.group.animate().opacity(0);
+				element.otherAction.visible = false;
+			}
+			element.visible = false;
+			if ((element.last !== undefined) && (element.last.last !== undefined)) {
+				if (element.last.last.group !== undefined) {
+					id = element.last.last.group.attr('id');
+					scrollTo(id);
+				} else {
+					id = element.last.group.attr('id');
+					scrollTo(id);
+				}
+			}
+		} // end true
+	};
+
+	function decision(obj) {
+		var group = draw.group();
+		var coords = "0," + config.decisionHeight / 2 
+		+" " + config.decisionWidth / 2 + ",0 " 
+		+ config.decisionWidth +"," + config.decisionHeight / 2 
+		+ " " + config.decisionWidth / 2 +"," + config.decisionHeight;
+		//console.log(coords);
+		var shape = draw.polygon(coords)
+			.attr({
+				fill: 'red',
+				opacity: 0.3,
+				"class": 'rhombus'
+			});
+		group.add(shape);
+
+		var text = draw.text(obj.text !== '' ? obj.text : 'Add the decision here');
+		text.cx(config.decisionWidth / 2);
+		text.cy(config.decisionHeight / 2);
+		group.add(text);
+		
+		var shapeBbox = shape.bbox();
+		//console.log(shapeBbox);
+
+		if (obj.yes) {
+			var arrowYes = arrowConnector(obj, 'Yes');
+			group.add(arrowYes);
+			if(obj.orient.yes === 'r') {
+				arrowYes.cy(config.decisionHeight / 2);
+				arrowYes.x(shapeBbox.width + (config.connectorLength / 2));
+			}
+			if(obj.orient.yes === 'b') {
+				arrowYes.x(shapeBbox.width / 2);
+				arrowYes.y(shapeBbox.height);
+			}
+		}
+
+		if (obj.no) {
+			var arrowNo = arrowConnector(obj, 'No');
+			group.add(arrowNo);
+			
+			if(obj.orient.no === 'r') {
+				arrowNo.cy(config.decisionHeight / 2);
+				arrowNo.x(shapeBbox.width + (config.connectorLength / 2));
+			}
+			if(obj.orient.no === 'b') {
+				arrowNo.x(shapeBbox.width / 2);
+				arrowNo.y(shapeBbox.height);
+			}
+		}
+
+		return group;
+	}
+	
+	function arrowLine() {
+	var group = draw.group();
+	var line = draw
+		.line(0, 0, 0, config.connectorLength - config.arrowHeadHeight)
 		.stroke({
 			width: 1
 		});
-	arrowHead = draw.polygon('0,0 10,0 5,10').fill({ color: 'rgb(51, 51, 51)', opacity: 1.0 });
-	exports.text = draw.text("Start").move(145, 12);
-	exports.lowerGroup.add(exports.lowerResponse);
-	exports.lowerGroup.add(exports.text);
-	exports.lowerGroup.add(exports.lowerConnector);
-	exports.lowerGroup.add(arrowHead.move(155, 70));
-	shapeSet.add(exports.lowerGroup);
-	return exports;
+	group.add(line);
+
+	var coords = "0,0 " + config.arrowHeadHeight + ",0 " + config.arrowHeadHeight / 2 + "," + config.arrowHeadHeight;
+
+	var arrowHead = draw.polygon(coords).fill({
+		color: 'rgb(51, 51, 51)',
+		opacity: 1.0
+	});
+
+	group.add(arrowHead);
+	arrowHead.move(- (config.arrowHeadHeight / 2), config.connectorLength - config.arrowHeadHeight);
+
+	return group;
 }
 
-var requiredHeight = function requiredHeight(element, callback) {
-	"use strict";
-    if (element.visible === false) {
-        draw.height(draw.height() + element.group.bbox().height);
-        callback(element);
-    }
-    if (element.visible === true) {
-        draw.height(Math.max((draw.height() - element.group.bbox().height), 80));
-        callback(element);
-    }
-};
+	function arrowConnector(obj, txt) {
+		var arrowGroup = arrowLine();
 
-function scrollTo(id) {
-	"use strict";
-    jQuery('#' + id).scrollintoview();
-}
-var showHide = function showHide(element, next) {
-	"use strict";
-    var i, id;
-    if (element.visible === false) {
-        if (element.stepType === "flowDecision") {
-            element.visible = true;
-        }
-        element.group.animate().opacity(1).after(function () { });
+		// Group the label and text so that they're easier to move about
+		var labelGroup = draw.group();
+		var label = draw
+			.rect(30, 20).radius(5)
+			.stroke({
+				width: 0.1
+			})
+			.attr({
+				opacity: 1,
+				fill: 'yellow'
+			});
 
-        if ((element.stepType !== undefined) && (element.stepType === "flowAction")) {
-            for (i = 0; i < actionSet.length; i += 1) {
-                if (actionSet[i].visible === true) {
-                    actionSet[i].group.animate().opacity(0);
-                    actionSet[i].visible = false;
-                }
-            }
-            element.visible = true;
-            actionSet.push(element);
-        }
-        if ((element.last !== undefined) && (element.last.action !== undefined) && (element.last.action.visible === true)) {
-            element.last.action.group.animate().opacity(0);
-            element.last.action.visible = false;
-        }
+		labelGroup.add(label);
+		label.move(-15, 10);
 
-        if ((element.inline !== undefined) && (element.inline === true)) {
-            element.group.animate().opacity(1);
-        }
+		var text = draw.text(txt);
+		labelGroup.add(text);
+		text.move(-10, 15);
+		// Add the label and text to the arrow
+		arrowGroup.add(labelGroup);
 
-        if ((next !== undefined) && (next.visible === true)) {
-            showHide(next);
-        }
-
-        id = element.group.attr('id');
-        scrollTo(id);
-        return;
-    }
-
-    if (element.visible === true) {
-        element.group.animate().opacity(0);
-        if ((element.action !== undefined) && (element.action.visible === true)) {
-            element.action.group.animate().opacity(0);
-        }
-        if ((element.next !== undefined) && (element.next.visible === true)) {
-            showHide(element.next);
-        }
-        if ((element.otherAction !== undefined) && (element.otherAction.visible === true)) {
-            element.otherAction.group.animate().opacity(0);
-            element.otherAction.visible = false;
-        }
-        element.visible = false;
-        if ((element.last !== undefined) && (element.last.last !== undefined)) {
-            if (element.last.last.group !== undefined) {
-				id = element.last.last.group.attr('id');
-				scrollTo(id);
-            } else {
-				id = element.last.group.attr('id');
-				scrollTo(id);
+		if (txt === 'Yes') {
+			if (obj.orient.yes === 'r') {
+				arrowGroup.rotate(270);
+				labelGroup.rotate(90);
+				//arrowGroup.move(260, 35);
 			}
-        }
-    } // end true
-};
-function flowDecision(last, action, otherAction) {
-	"use strict";
-	var exports = {},
-		heightNow,
-		bu  = new SVG.Number(config.baseUnit);
 
-	exports.last = last;
-	exports.action = action;
-	exports.otherAction = otherAction;
-	exports.stepType = "flowDecision";
-	exports.dmd = draw
-		.polygon('0,60 120,0 240,60 120,120')
-		.attr({
-			fill : 'red',
-            opacity : 0.3,
-            "class" : 'rhombus'
-		})
-		.move(-100,  -bu.minus(50));
+			if (obj.orient.yes === 'l') {
+				arrowGroup.rotate(90);
+				labelGroup.rotate(-90);
+				//arrowGroup.move(-24, 35);
+			}
 
-	exports.rightConnector = draw
-		.line(100,  config.rowHeight * 1.5, 170, config.rowHeight * 1.5)
-		.stroke({
-			width : 1
+			if (obj.orient.yes === 'b') {
+				//arrowGroup.move(120, 120);
+			}
+		}
+
+		if (txt === 'No') {
+			if (obj.orient.no === 'r') {
+				arrowGroup.rotate(270);
+				labelGroup.rotate(90);
+				//arrowGroup.move(264, 35);
+			}
+
+			if (obj.orient.no === 'l') {
+				arrowGroup.rotate(90);
+				labelGroup.rotate(-90);
+				//arrowGroup.move(-24, 35);
+			}
+
+			if (obj.orient.no === 'b') {
+				//arrowGroup.move(120, 120);
+			}
+		}
+
+
+		return arrowGroup;
+
+	}
+
+	function finish(conf) {
+		var group = draw.group();
+		group.attr({
+			"class": "finish-group"
 		});
+		
+		var rect = draw
+			.rect(config.finishWidth, config.finishHeight)
+			.attr({
+				fill: 'green',
+				"class": "fc-finish",
+				'opacity': 0.3
+			}).radius(20);
 
-	exports.lowerConnector = draw
-		.line(0, 90, 0, 140)
-		.stroke({
-			width : 1
+		var text = draw
+			.text(conf.text !== '' ? conf.text : 'Add the finish here');
+
+		text.move(20, 20);
+
+		group
+			.add(rect)
+			.add(text);
+		return group;
+	}
+	
+	// Find the element pointing to this one
+	function referringElement(elementRefs, el) {
+		console.log(elementRefs);
+		var filteredEls = elementRefs.filter(function(d) {
+			if ((d.yes === el) || (d.no === el)) {
+				return d;
+			}
 		});
-
-	exports.rightResponse = draw
-		.rect(config.baseUnit / 2, config.rowHeight).radius(5)
-		.stroke({
-			width : 0.1
-		})
-		.attr({
-			opacity : 1,
-            fill : 'yellow'
-		})
-		.move(120,  config.rowHeight);
-
-	exports.lowerResponse = draw
-		.rect(config.baseUnit / 2, config.rowHeight).radius(5)
-		.stroke({
-			width : 0.1
-		})
-		.attr({
-			opacity : 1,
-            fill : 'yellow'
-		})
-		.move(-(config.baseUnit / 4), 110);
-
-	exports.lowerText = draw
-		.text('Yes')
-		.move(-11, 113);
-
-	exports.rightText = draw
-		.text('No')
-		.move(132,  23);
-
-	exports.dmdText = draw
-		.text('Add the question here')
-		.move(-30, -4);
-
-	exports.text = function (text) {
-		exports.dmdText.text(text);
-	};
-	arrowHead = draw.polygon('0,0 10,0 5,10').fill({ color: 'rgb(51, 51, 51)', opacity: 1.0 });
-	exports.lowerGroup = draw.group()
-	    .attr({
-			"cursor" : "pointer",
-			"class"  : "fc-response"
-		})
-		.add(exports.lowerConnector)
-		.add(exports.lowerResponse)
-		.add(exports.lowerText)
-		.add(arrowHead.move(-5, 140));
-
-	arrowHead = draw.polygon('0,0 10,0 5,10').fill({ color: 'rgb(51, 51, 51)', opacity: 1.0 });
-    exports.rightGroup = draw.group()
-		.attr({
-			"cursor" : "pointer",
-			"class"  : "fc-response"
-		})
-		.add(exports.rightConnector)
-		.add(exports.rightResponse)
-		.add(exports.rightText)
-		.add(arrowHead.rotate(270).move(-25, 170));
-
-    exports.lowerGroup.move(20, 0);
-    exports.rightGroup.move(40, 0);
-	exports.group = draw.group()
-		.add(exports.dmd)
-		.add(exports.dmdText)
-		.add(exports.lowerGroup)
-		.add(exports.rightGroup);
-
-	exports.group.attr({
-		"class" : "fc-decision"
-	});
-	shapeSet.add(exports.group);
-
-	if (shapeStack[stackIndex] !== undefined) {
-		heightNow = shapeStack[stackIndex].height;
-		totalHeight += heightNow;
+		return filteredEls;
 	}
-	exports.group.move(config.leftMargin, totalHeight);
-	stackIndex += 1;
-	shapeStack[stackIndex] = exports.group.bbox();
-
-	if (exports.last !== undefined) {
-        exports.last.next = exports;
-	    exports.last.lowerGroup.click(function () {
-	        showHide(exports);
-	    });
-	}
-
-	if (exports.action !== undefined) {
-		exports.action.group.move(config.leftMargin + 185, totalHeight - 10);
-		exports.rightGroup.click(function () {
-			showHide(exports.action, exports.next);
+	
+	function process(conf) {
+		//console.log(conf);
+		var group = draw.group();
+		group.attr({
+			"class": "process-group"
 		});
+		
+		var rect = draw
+			.rect(config.processWidth, config.processHeight)
+			.attr({
+				fill: 'white',
+				stroke:'grey',
+				"class": "fc-process",
+				'opacity': 1.0
+			});
+			group.add(rect);
+
+			var text = draw.text(conf.text !== '' ? conf.text : 'Add the process here');
+			
+			group.add(text);
+			
+			
+
+		text.move(20, 20);
+		
+		// processes have a return line
+		var arrow = arrowLine();
+		group.add(arrow);
+		
+		var referrer = referringElement(elementRefs, conf.label)[0];
+		console.log(referrer.id);
+		var target;
+		var thisPosition;
+		if (referrer.no === conf.label) {
+			target = referrer.orient.yes;
+			thisPosition = referrer.orient.no;
+			
+		}
+		if (referrer.yes === conf.label) {
+			target = referrer.orient.no;
+			thisPosition = referrer.orient.yes;
+		}
+		console.log(target);
+		
+		// If target is b assume that we are aiming for a point below the referring element
+		// where are we?
+		console.log(thisPosition);
+		
+		var referredFrom = SVG.get(referrer.id);
+		
+		// This is going to be the most common case
+		if (target === 'b' && thisPosition === 'r') {
+			arrow.rotate(90);
+			arrow.y(referredFrom.y());
+		}
+		
+		
+		
+		//var targetId = getSvgId(elementRefs, conf.next);
+		//var targetEl = SVG.get(getSvgId(elementRefs, conf.next)[0].id);
+		//console.log(conf.next);
+		// It has to point to the yes label for the next stage
+		// find where the Yes line is for the target
+		
+		
+		
+		
+
+		group
+		.add(rect)
+		.add(text)
+		.add(arrow);
+		return group;
 	}
 
-  ///extra action
-	if (exports.otherAction !== undefined) {
-		exports.lowerGroup.click(function () {
-			showHide(exports.otherAction);
-		});
-	}
-
-	exports.visible = false;
-	exports.group.opacity(0);
-	decisionSet.push(exports);
-	return exports;
-}
-
-function flowAction(conf) {
-	"use strict";
-	var exports = {};
-	exports.conf = conf || {};
-	exports.group = draw.group();
-	exports.group.attr({"class" : "action-group"});
-	exports.stepType = "flowAction";
-    var h = config.rowHeight * 4;
-	exports.height = function (h) {
-	        return h;
-	};
-    
-	exports.rect = draw
-		.rect(240, exports.conf.height || h)
-		.attr({
-			fill : 'green',
-			"class" : "fc-action",
-            'opacity' : 0.3
-		}).radius(10)
-		.move(35, 0);
-
-	exports.text = draw
-		.text('Add the action here');
-
-	exports.group
-		.add(exports.rect)
-		.add(exports.text);
-
-  // add the end button
-	exports.endLine = draw.line(80, 20, 90,	20).stroke({
-		width : 1
-	});
-	exports.endBox = draw
-		.rect(240, config.rowHeight * 2)
-		.attr({
-			fill : 'blue',
-			'opacity' : 0.3,
-			'class' : 'fc-end'
-		})
-		.radius(20)
-		.move(100, 0);
-	exports.endText = draw
-		.text('Finish').move(203, 12);
-
-	arrowHead = draw.polygon('0,0 10,0 5,10').fill({ color: 'rgb(51, 51, 51)', opacity: 1.0 });
-	exports.endGroup = draw.group()
-		.add(exports.endLine)
-		.add(arrowHead.rotate(270).move(-15, 90))
-		.add(exports.endBox)
-		.add(exports.endText)
-		.move(195, 20);
-    exports.endGroup.attr({"class" : "fc-finish"});
-	exports.group.add(exports.endGroup);
-	shapeSet.add(exports.group);
-    exports.visible = false;
-	exports.group.opacity(0);
-	decisionSet.push(exports);
-	return exports;
-}
-
-function drawGrid(draw) {
-	"use strict";
-	var startPoint = 0,
-		numCols = Math.round(draw.width() / config.gridCol),
-		colHeight = draw.height(),
-		pageWidth = draw.width(),
-		numRows = Math.round(colHeight / config.rowHeight),
-		startRow = 0,
-		i,
-		j;
-
-	for (i = 0; i < numCols + 1; i += 1) {
-		draw.line(startPoint, 0, startPoint, colHeight).stroke({
-			width : 0.15
-		});
-		startPoint += config.gridCol;
-	}
-
-	for (j = 0; j < numRows + 1; j += 1) {
-		draw.line(0, startRow, pageWidth, startRow).stroke({
-			width : 0.15
-		});
-		startRow += config.rowHeight;
-	}
-}
-
-///////////////////// start flow chart ////////////////////////////////////////////////////////////
-var startbtn = flowStart();
-
-var actionOne = flowAction();
-actionOne.text.text('University of Warwick OA Policy \napplies - deposit to WRAP.').move(45, 25);
-
-var decOne = flowDecision(startbtn, actionOne);
-decOne.text(
-	function (add) {
+	function drawGrid(draw) {
 		"use strict";
-		add.tspan('Is your research/are you').dy(40).dx(-15);
-		add.tspan('funded?').dy(20).dx(-90);
+		var startPoint = 0,
+			numCols = Math.round(draw.width() / config.gridCol),
+			colHeight = draw.height(),
+			pageWidth = draw.width(),
+			numRows = Math.round(colHeight / config.rowHeight),
+			startRow = 0,
+			i,
+			j;
+
+		for (i = 0; i < numCols + 1; i += 1) {
+			draw.line(startPoint, 0, startPoint, colHeight).stroke({
+				width: 0.15
+			});
+			startPoint += config.gridCol;
+		}
+
+		for (j = 0; j < numRows + 1; j += 1) {
+			draw.line(0, startRow, pageWidth, startRow).stroke({
+				width: 0.15
+			});
+			startRow += config.rowHeight;
+		}
 	}
-);
 
-var actionTwo = flowAction();
-actionTwo.text.text('Contact the Library...').move(45, 25);
-
-var decTwo = flowDecision(decOne, actionTwo);
-decTwo.text(
-	function (add) {
-		"use strict";
-		add.tspan('Do you know if').dy(20).dx(10);
-		add.tspan('your funder expects your work').newLine().dx(-30);
-		add.tspan('to be published open').newLine().dx(-6);
-		add.tspan('access?').newLine().dx(28);
+	return {
+		flowStart: flowStart,
+		finish: finish,
+		decision: decision,
+		drawGrid: drawGrid,
+		unhide: unhide
 	}
-);
 
-var funderNo = flowAction();
-funderNo.text.text('University of Warwick OA Policy \napplies.').move(45, 25);
-
-var funderExpect = flowDecision(decTwo, funderNo);
-funderExpect.text(
-	function (add) {
-		"use strict";
-		add.tspan('Does your').dy(20).dx(22);
-		add.tspan('funder expect your work to be').newLine().dx(-28);
-		add.tspan('published open access?').newLine().dx(-14);
-		//add.tspan('access?').newLine().dx(13);
-
-	}
-);
-
-var contactLibrary = flowAction();
-contactLibrary.text.text('Contact the Library on \nopenaccessfund@warwick.ac.uk.').move(45, 25);
-
-var journalComply = flowDecision(funderExpect, contactLibrary);
-journalComply.text(
-	function (add) {
-		"use strict";
-		add.tspan('Does the').dy(20).dx(25);
-		add.tspan('journal I want to publish in').newLine().dx(-20);
-		add.tspan('comply with my funder\'s ').newLine().dx(-14);
-		add.tspan('policy?').newLine().dx(32);
-	}
-);
-
-var depositToWrap = flowAction();
-depositToWrap.text.text('Deposit to WRAP as per UoW OA \npolicy.').move(45, 25);
-
-var greenAndGold = flowDecision(journalComply, depositToWrap);
-greenAndGold.text(
-	function (add) {
-		"use strict";
-		add.tspan('Compliant both Green').dy(40).dx(-13);
-		add.tspan('and Gold?').newLine().dx(20);
-	}
-);
-greenAndGold.rightText.text('Yes');
-greenAndGold.lowerText.text('No');
-
-var onlyGold = flowDecision(greenAndGold);
-onlyGold.text(
-	function (add) {
-		"use strict";
-		add.tspan('Only compliant for Gold OA?').dy(40).dx(-26);
-	}
-);
-onlyGold.rightGroup.remove();
-
-var contactFunding = flowAction();
-contactFunding.rect.attr({ "height": 100 });
-contactFunding.text.text('Contact the Library for further \ninformation on your funder\'s policy \nopenaccessfund@warwick.ac.uk.').move(45, 25);
-
-var availableFunding = flowAction({ 
-"height": 220 
 });
-availableFunding.group.move(5, 1340);
-
-availableFunding.text.text([
-	'The University has funds for RCUK',
-	'and Wellcome Trust. Apply via the',
-	'funding request form h/link.',
-	'Applications will be generally be',
-	'responded to within 24-48 hours. You',
-	'will receive an email* from the Open',
-	'Open Access Officer.',
-	'*this email contains instructions for the',
-	'next financial steps.'
-].join('\n')).move(45, 24);
-
-availableFunding.inline = true;
-
-var howFunded = flowDecision(onlyGold, contactFunding, availableFunding);
-howFunded.text(
-	function (add) {
-		"use strict";
-		add.tspan('Are you RCUK or Wellcome').dy(40).dx(-25);
-		add.tspan('Trust funded?').dy(20).dx(-114);
-	}
-);
-
 //drawGrid(draw);
 //unhide();

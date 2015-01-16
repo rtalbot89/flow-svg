@@ -2,7 +2,7 @@
 <head>
 	<link rel="stylesheet" type="text/css" href="http://www2.warwick.ac.uk/static_war/render/css/standard6/fonts/traditional.css.613118271012"/>
 	<link rel="stylesheet" type="text/css" href="http://www2.warwick.ac.uk/services/library-staging/ourstyles.css"/>
-	<script src="http://www2.warwick.ac.uk/static_war/render/scripts/id6scripts.js.272510929367"></script>
+	<!--<script src="http://www2.warwick.ac.uk/static_war/render/scripts/id6scripts.js.272510929367"></script>-->
 <style>
 #drawing {
 width:960px;
@@ -21,10 +21,10 @@ stroke: rgb(66, 66, 66);
 }
 
 g.fc-decision text {
-  fill:white;
+  /*fill:white;*/
 }
 
-g.action-group text {
+g.finish-group text {
   fill:white;
 }
 g.fc-finish text {
@@ -41,9 +41,14 @@ g.fc-response text {
   color: white;
    
 }
-rect.fc-action  {
+rect.fc-finish  {
   fill : #0F6C7E;
   opacity: 1.0;
+}
+rect.fc-process  {
+  fill : #FFF;
+  opacity: 1.0;
+  stroke: rgb(66, 66, 66);
 }
 g.fc-response rect {
   fill : #D6D6D6;
@@ -68,16 +73,95 @@ rect.fc-end {
   stroke: rgb(66, 66, 66);
 }
 </style>
+<!--<script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>-->
+<script src="http://www2.warwick.ac.uk/static_war/render/scripts/id6scripts.js.272510929367"></script>
+<script src="svg.js"></script>
+<script src="workflow.js"></script>
+
+<script>
+///////////////////// start flow chart ////////////////////////////////////////////////////////////
+jQuery(document).ready(function() {
+	var draw = SVG('drawing').size(1200, 1600);
+	var flow = Flow({
+		root: draw,
+		start: 'decOne',
+		shapes: [{
+				type: 'decision',
+				label: 'decOne',
+				text: 'Know journal\'s OA policy?',
+				yes: 'decTwo',
+				no: 'processOne',
+				orient: {
+					yes: 'b', //correct
+					no: 'r' // correct
+				}
+			}, {
+				type: 'process',
+				label: 'processOne',
+				text: 'Check the journal info',
+				out: 'b',
+				next: 'decTwo',
+				connect: 't'
+
+			}, {
+				type: 'decision',
+				label: 'decTwo',
+				text: 'CC-BY offered?',
+				yes: 'actTwo',
+				no: 'decThree',
+				orient: {
+					yes: 'r',
+					no: 'b'
+				}
+			}, {
+				type: 'finish',
+				label: 'actTwo',
+				text: 'please complete application form'
+			}, {
+				type: 'decision',
+				label: 'decThree',
+				text: 'Can you go green?',
+				yes: 'decFour',
+				no: 'actThree',
+				orient: {
+					yes: 'b',
+					no: 'r'
+				}
+			}, {
+				type: 'finish',
+				label: 'actThree',
+				text: 'You cannot comply, contact journal'
+			}, {
+				type: 'decision',
+				label: 'decFour',
+				text: 'time limits acceptable?',
+				yes: 'actFour',
+				orient: {
+					yes: 'r',
+					no: 'b'
+				}
+			}, {
+				type: 'finish',
+				label: 'actFour',
+				text: 'deposit in WRAP'
+			}
+		]
+	});
+});
+
+</script>
 </head>
 <body>
-
-<img style="float:right; padding-right:12px; margin-top:-30px" alt="Open Access logo" src="../../../../images/open_access_logo.png" border="0" /> <a href="javascript:unhide();">Unhide</a> <div id="drawing"></div>
+	<h1>RCUK</h1>
+<div id="drawing"></div>
+<!--
+<img style="float:right; padding-right:12px; margin-top:-30px" alt="Open Access logo" src="../../../../images/open_access_logo.png" border="0" /> 
+	-->
+	<a href="javascript:unhide();">Unhide</a> 
+	
 
 <script src="jquery.scrollintoview.js"></script>
 
-<script src="svg.js"></script>
-
-<script src="workflow.js"></script>
 
 
 </body></html>
