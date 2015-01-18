@@ -234,7 +234,8 @@ var Flow = function (conf) {
 		    arrow = arrowLine();
 		    group.add(arrow);
 		    referrer = referringElement(conf.shapes, conf.label)[0];
-		    console.log(referrer.id);
+			console.log('process referrer');
+		    console.log(referrer);
 		    if (referrer.no === conf.label) {
 			    target = referrer.orient.yes;
 			    thisPosition = referrer.orient.no;
@@ -251,12 +252,20 @@ var Flow = function (conf) {
 		// This is going to be the most common case
 		    if (target === 'b' && thisPosition === 'r') {
 			    arrow.rotate(90);
-			    arrow.y(referredFrom.y());
+				// first set the cy of the arrow to something predictable
+				
+				console.log(referredFrom.get(2).attr('id'));
+			    arrow.cy(referredFrom.get(2).cy() - 20 );
+				 arrow.x(referredFrom.first().x()  - 140 );
+				
+				 //arrow.y(referredFrom.bbox().y);
+				 //arrow.y(referredFrom.first().height() + referredFrom.first().y());
+				 //arrow.x(-150);
 		    }
 		    group
 		        .add(rect)
-		        .add(text)
-		        .add(arrow);
+		        .add(text);
+		       // .add(arrow);
 		    return group;
 	    }
 	    shapeFuncs = {
@@ -264,56 +273,107 @@ var Flow = function (conf) {
 	        finish: finish,
 	        process: process
 	    };
-
-	    conf.shapes.forEach(function (element, index) {
+		// This where the real work of generating and laying out shapes is done
+		// add the actual id
+		// capture the IDs. Like to not do this if I can figure out how
+		var itemIds = {};
+	    conf.shapes.forEach(function (element) {
 	        var shape = shapeFuncs[element.type](element);
-		    if (index === 0) {
-		        shape.move(config.leftMargin, startEl.bbox().height);
-		    }
 		    element.id = shape.attr('id');
+			itemIds[element.label] = element.id;
 	    });
-
-	    function getSvgId(shapes, el) {
-		    var filteredEls = shapes.filter(function (d) {
-			    if (d.label === el) {
-				    return d;
-			    }
-		    });
-		    return filteredEls;
-	    }
-	//console.log(getSvgId(conf.shapes, 'decTwo'));
-	// This is where things get moved into position
-	    conf.shapes.forEach(function (el) {
-		    var yesElement, noElement,
-		        element = SVG.get(getSvgId(conf.shapes, el.label)[0].id),
-		        elBox = element.bbox();
-		    if (el.yes) {
-			    yesElement = SVG.get(getSvgId(conf.shapes, el.yes)[0].id);
-
-			    if (el.orient.yes === 'b') {
-				    yesElement.move(element.x(), element.y() + elBox.height);
-			    }
-
-			    if (el.orient.yes === 'r') {
-				    yesElement.x(element.x() + elBox.width);
-				    yesElement.cy((element.first().bbox().height / 2) + element.y());
-			    }
+		
+		
+		console.log(itemIds);
+		// now add the id for the previous and next
+		var shapeRefs = conf.shapes.slice();
+		conf.shapes.forEach(function (element) {
+		    if ( element.yes ) {
+			    element.yesid = itemIds[element.yes];
+			}
+			 if ( element.no ) {
+			    element.noid = itemIds[element.no];
+			}
+			 if ( element.next ) {
+			    element.nextid = itemIds[element.next];
+			}
+	    });
+		
+		// Now add the ids for the preceding 
+		var lookup = {};
+		for (var i = 0, len = conf.shapes.length; i < len; i++) {
+		    lookup[conf.shapes[i].label] = i;
+		}
+		
+		console.log(lookup);
+		conf.shapes.forEach(function (element) {
+		var next;
+		 if ( element.yes ) {
+		      next = lookup[element.yes];
+			  conf.shapes[next].previd = element.id;
+			}
+			 if ( element.no ) {
+			    next = lookup[element.no];
+			    conf.shapes[next].previd = element.id;
+			}
+			 if ( element.next ) {
+			    next = lookup[element.next];
+				conf.shapes[next].previd = element.id;
+			}
+		
+		});
+		
+console.log(conf.shapes);
+//console.log(shapeRefs);
+		// add references to connected shapes
+		conf.shapes.forEach(function (element, index) {
+		//return false;
+		    var ce = SVG.get(element.id);
+		    //var tempElement;
+		    if (index === 0) {
+		        SVG.get(element.id).move(config.leftMargin, startEl.bbox().height);
+				
 		    }
-
-		    if (el.no) {
-			    noElement = SVG.get(getSvgId(conf.shapes, el.no)[0].id);
-
-			    if (el.orient.no === 'b') {
-				    noElement.move(element.x(), elBox.height + element.y());
-			    }
-
-			    if (el.orient.no === 'r') {
-				    noElement.x(element.x() + elBox.width);
-				    noElement.cy((element.first().bbox().height / 2) + element.y());
-			    }
-		    }
-	    }
-	        );
+			
+			if (element.yes) {
+				if (element.orient.yes === 'b') {
+					var te = SVG.get(element.yesid);
+					te.x(ce.x());
+					te.y(ce.y() + ce.bbox().height );
+				}
+			}
+			
+			if (element.no) {
+				if (element.orient.no === 'b') {
+					var te = SVG.get(element.noid);
+					te.x(ce.x());
+					te.y(ce.y() + ce.bbox().height );
+				}
+			}
+			
+			if (element.yes) {
+				if (element.orient.yes === 'r') {
+					var te = SVG.get(element.yesid);
+					te.x(ce.x() + ce.bbox().width);
+					var cHeight = ce.first().height();
+					var tHeight = te.first().height();
+					var diff = (cHeight / 2) - (tHeight / 2);
+					te.y(ce.y() + diff );
+				}
+			}
+			
+			if (element.no) {
+				if (element.orient.no === 'r') {
+					var te = SVG.get(element.noid);
+				    te.x(ce.x() + ce.bbox().width);
+					var cHeight = ce.first().height();
+					var tHeight = te.first().height();
+					var diff = (cHeight / 2) - (tHeight / 2);
+					te.y(ce.y() + diff );
+				}
+			}
+		});
+		//console.log(conf.shapes);
 
 	    function unhide(draw) {
 		    draw.each(function () {
@@ -408,8 +468,7 @@ var Flow = function (conf) {
 	    }
 
 	    return {
-		config: config,
-		
+		    config: config,
 		    flowStart: flowStart,
 		    finish: finish,
 		    decision: decision,
