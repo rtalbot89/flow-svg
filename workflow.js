@@ -16,11 +16,13 @@ var Flow = function (chart) {
             lowerConnector,
             startEl,
             shapeFuncs,
-            showHide,
             chartGroup,
             itemIds,
-            shapeRefs,
             lookup,
+            intY,
+            intX,
+            endPoint,
+            ah,
             i;
 
         function init() {
@@ -57,11 +59,11 @@ var Flow = function (chart) {
         chartGroup.x(config.leftMargin);
 
         function arrowHead() {
-            var coords = "0,0 " + config.arrowHeadHeight + ",0 " + config.arrowHeadHeight / 2 + "," + config.arrowHeadHeight,
-                ah = draw.polygon(coords).fill({
-                    color: config.arrowHeadColor,
-                    opacity: config.arrowHeadOpacity
-                });
+            var coords = "0,0 " + config.arrowHeadHeight + ",0 " + config.arrowHeadHeight / 2 + "," + config.arrowHeadHeight;
+            ah = draw.polygon(coords).fill({
+                color: config.arrowHeadColor,
+                opacity: config.arrowHeadOpacity
+            });
             return ah;
         }
 
@@ -83,8 +85,7 @@ var Flow = function (chart) {
         }
 
         function arrowLine() {
-            var ah,
-                group = draw.group(),
+            var group = draw.group(),
                 line = draw
                     .line(0, 0, 0, config.connectorLength - config.arrowHeadHeight)
                     .stroke({
@@ -255,18 +256,6 @@ var Flow = function (chart) {
             text.cy(rect.bbox().cy);
             return group;
         }
-
-// Find the element pointing to this one
-        function referringElement(shapes, el) {
-            console.log(shapes);
-            var filteredEls = chart.shapes.filter(function (d) {
-                    if ((d.yes === el) || (d.no === el)) {
-                        return d;
-                    }
-                });
-            return filteredEls;
-        }
-
   // The process shape that has an outlet, but no choice
         function process() {
             var text, rect, txtArray,
@@ -337,7 +326,6 @@ var Flow = function (chart) {
         });
 
   // Add the ids for yes and no elements
-        shapeRefs = chart.shapes.slice();
         chart.shapes.forEach(function (element) {
             if (element.yes) {
                 element.yesid = itemIds[element.yes];
@@ -353,217 +341,215 @@ var Flow = function (chart) {
   // Generate a lookup that gives Array IDs from SVG ids
         lookup = {};
         for (i = 0; i < chart.shapes.length; i += 1) {
-          lookup[chart.shapes[i].label] = i;
+            lookup[chart.shapes[i].label] = i;
         }
 
   // Add the ids of previous (referring) elements to the array
-  chart.shapes.forEach(function(element) {
-    var next;
-    if (element.yes) {
-      next = lookup[element.yes];
-      chart.shapes[next].previd = element.id;
-    }
-    if (element.no) {
-      next = lookup[element.no];
-      chart.shapes[next].previd = element.id;
-    }
-    if (element.next) {
-      next = lookup[element.next];
-      chart.shapes[next].previd = element.id;
-    }
+        chart.shapes.forEach(function (element) {
+            var next;
+            if (element.yes) {
+                next = lookup[element.yes];
+                chart.shapes[next].previd = element.id;
+            }
+            if (element.no) {
+                next = lookup[element.no];
+                chart.shapes[next].previd = element.id;
+            }
+            if (element.next) {
+                next = lookup[element.next];
+                chart.shapes[next].previd = element.id;
+            }
 
-  });
+        });
 
-  console.log(chart.shapes);
+        console.log(chart.shapes);
 
   // Layout the shapes
-  chart.shapes.forEach(function(element, index) {
-    //return false;
-    var ce = SVG.get(element.id);
-    //var tempElement;
-    if (index === 0) {
-      //SVG.get(element.id).move(config.leftMargin, startEl.bbox().height);
-      SVG.get(element.id).y(startEl.bbox().height);
+        chart.shapes.forEach(function (element, index) {
+          //return false;
+            var ce = SVG.get(element.id), te, cHeight, tHeight, diff;
+            //var tempElement;
+            if (index === 0) {
+              //SVG.get(element.id).move(config.leftMargin, startEl.bbox().height);
+                SVG.get(element.id).y(startEl.bbox().height);
 
-    }
+            }
 
-    if (element.yes) {
-      if (element.orient.yes === 'b') {
-        var te = SVG.get(element.yesid);
-        te.x(ce.x());
-        te.y(ce.y() + ce.bbox().height);
-      }
-    }
+            if (element.yes) {
+                if (element.orient.yes === 'b') {
+                    te = SVG.get(element.yesid);
+                    te.x(ce.x());
+                    te.y(ce.y() + ce.bbox().height);
+                }
+            }
 
-    if (element.no) {
-      if (element.orient.no === 'b') {
-        var te = SVG.get(element.noid);
-        te.x(ce.x());
-        te.y(ce.y() + ce.bbox().height);
-      }
-    }
+            if (element.no) {
+                if (element.orient.no === 'b') {
+                    te = SVG.get(element.noid);
+                    te.x(ce.x());
+                    te.y(ce.y() + ce.bbox().height);
+                }
+            }
 
-    if (element.yes) {
-      if (element.orient.yes === 'r') {
-        var te = SVG.get(element.yesid);
-        te.x(ce.x() + ce.bbox().width);
-        var cHeight = ce.first().height();
-        var tHeight = te.first().height();
-        var diff = (cHeight / 2) - (tHeight / 2);
-        te.y(ce.y() + diff);
-      }
-    }
+            if (element.yes) {
+                if (element.orient.yes === 'r') {
+                    te = SVG.get(element.yesid);
+                    te.x(ce.x() + ce.bbox().width);
+                    cHeight = ce.first().height();
+                    tHeight = te.first().height();
+                    diff = (cHeight / 2) - (tHeight / 2);
+                    te.y(ce.y() + diff);
+                }
+            }
 
-    if (element.no) {
-      if (element.orient.no === 'r') {
-        var te = SVG.get(element.noid);
-        te.x(ce.x() + ce.bbox().width);
-        var cHeight = ce.first().height();
-        var tHeight = te.first().height();
-        var diff = (cHeight / 2) - (tHeight / 2);
-        te.y(ce.y() + diff);
-      }
-    }
+            if (element.no) {
+                if (element.orient.no === 'r') {
+                    te = SVG.get(element.noid);
+                    te.x(ce.x() + ce.bbox().width);
+                    cHeight = ce.first().height();
+                    tHeight = te.first().height();
+                    diff = (cHeight / 2) - (tHeight / 2);
+                    te.y(ce.y() + diff);
+                }
+            }
 
-  });
+        });
 
   // Process shapes have a next line which needs adding after
   // because the line is outside the groups
-  chart.shapes.forEach(function(element, index) {
-    if (element.next) {
-      var el = SVG.get(element.id),
-        target = SVG.get(element.previd),
-        coords = [],
-        startX = el.rbox().x + (el.rbox().width / 2),
-        startY = el.y() + el.rbox().height,
-        endX = target.get(2).rbox().x + target.get(2).rbox().width + config.arrowHeadHeight,
-        endY = target.get(2).rbox().y + ((config.connectorLength - config.arrowHeadHeight) / 2),
-        startPoint = [startX, startY];
+        chart.shapes.forEach(function (element) {
+            if (element.next) {
+                var el = SVG.get(element.id),
+                    target = SVG.get(element.previd),
+                    coords = [],
+                    startX = el.rbox().x + (el.rbox().width / 2),
+                    startY = el.y() + el.rbox().height,
+                    endX = target.get(2).rbox().x + target.get(2).rbox().width + config.arrowHeadHeight,
+                    endY = target.get(2).rbox().y + ((config.connectorLength - config.arrowHeadHeight) / 2),
+                    startPoint = [startX, startY];
 
-      coords.push(startPoint);
+                coords.push(startPoint);
 
-      if (endY > startY) {
-        var intY = startY + (endY - startY);
-        var intX = startX;
-        coords.push([intX, intY]);
-      }
+                if (endY > startY) {
+                    intY = startY + (endY - startY);
+                    intX = startX;
+                    coords.push([intX, intY]);
+                }
 
-      var endPoint = [endX, endY];
-      coords.push(endPoint);
+                endPoint = [endX, endY];
+                coords.push(endPoint);
 
-      var polyline = draw.polyline(coords).fill('none').stroke({
-        width: 1
-      });
-      var ah = arrowHead();
+                draw.polyline(coords).fill('none').stroke({
+                    width: 1
+                });
+                ah = arrowHead();
 
-      ah.x(endX - config.arrowHeadHeight);
-      ah.y(endY - (config.arrowHeadHeight / 2));
-      ah.rotate(90);
-    }
-  });
+                ah.x(endX - config.arrowHeadHeight);
+                ah.y(endY - (config.arrowHeadHeight / 2));
+                ah.rotate(90);
+            }
+        });
 
-  function unhide(draw) {
-    draw.each(function() {
-      if (this.opacity(0)) {
-        this.opacity(1);
-      }
-    });
-  }
-  showHide = function showHide(element, next) {
-    var i, id, finishSet;
-    if (element.visible === false) {
-      if (element.stepType === "decision") {
-        element.visible = true;
-      }
-      element.group.animate().opacity(1).after(function() {});
-
-      if ((element.stepType !== undefined) && (element.stepType === "finish")) {
-        for (i = 0; i < finishSet.length; i += 1) {
-          if (finishSet[i].visible === true) {
-            //finishSet[i].group.animate().opacity(0); //off for dev
-            finishSet[i].visible = false;
-          }
+        function unhide(draw) {
+            draw.each(function () {
+                if (this.opacity(0)) {
+                    this.opacity(1);
+                }
+            });
         }
-        element.visible = true;
-        finishSet.push(element);
-      }
-      if ((element.last !== undefined) && (element.last.finish !== undefined) && (element.last.finish.visible === true)) {
-        element.last.finish.group.animate().opacity(0);
-        element.last.finish.visible = false;
-      }
+        function showHide(element, next, finishSet) {
+            var id;
+            if (element.visible === false) {
+                if (element.stepType === "decision") {
+                    element.visible = true;
+                }
 
-      if ((element.inline !== undefined) && (element.inline === true)) {
-        element.group.animate().opacity(1);
-      }
+                if ((element.stepType !== undefined) && (element.stepType === "finish")) {
+                    for (i = 0; i < finishSet.length; i += 1) {
+                        if (finishSet[i].visible === true) {
+                          //finishSet[i].group.animate().opacity(0); //off for dev
+                            finishSet[i].visible = false;
+                        }
+                    }
+                    element.visible = true;
+                    finishSet.push(element);
+                }
+                if ((element.last !== undefined) && (element.last.finish !== undefined) && (element.last.finish.visible === true)) {
+                    element.last.finish.group.animate().opacity(0);
+                    element.last.finish.visible = false;
+                }
 
-      if ((next !== undefined) && (next.visible === true)) {
-        showHide(next);
-      }
+                if ((element.inline !== undefined) && (element.inline === true)) {
+                    element.group.animate().opacity(1);
+                }
 
-      id = element.group.attr('id');
-      scrollTo(id);
-      return;
-    }
+                if ((next !== undefined) && (next.visible === true)) {
+                    showHide(next);
+                }
 
-    if (element.visible === true) {
-      element.group.animate().opacity(0);
-      if ((element.finish !== undefined) && (element.finish.visible === true)) {
-        element.finish.group.animate().opacity(0);
-      }
-      if ((element.next !== undefined) && (element.next.visible === true)) {
-        showHide(element.next);
-      }
-      if ((element.otherAction !== undefined) && (element.otherAction.visible === true)) {
-        element.otherAction.group.animate().opacity(0);
-        element.otherAction.visible = false;
-      }
-      element.visible = false;
-      if ((element.last !== undefined) && (element.last.last !== undefined)) {
-        if (element.last.last.group !== undefined) {
-          id = element.last.last.group.attr('id');
-          scrollTo(id);
-        } else {
-          id = element.last.group.attr('id');
-          scrollTo(id);
+                id = element.group.attr('id');
+                scrollTo(id);
+                return;
+            }
+
+            if (element.visible === true) {
+                element.group.animate().opacity(0);
+                if ((element.finish !== undefined) && (element.finish.visible === true)) {
+                    element.finish.group.animate().opacity(0);
+                }
+                if ((element.next !== undefined) && (element.next.visible === true)) {
+                    showHide(element.next);
+                }
+                if ((element.otherAction !== undefined) && (element.otherAction.visible === true)) {
+                    element.otherAction.group.animate().opacity(0);
+                    element.otherAction.visible = false;
+                }
+                element.visible = false;
+                if ((element.last !== undefined) && (element.last.last !== undefined)) {
+                    if (element.last.last.group !== undefined) {
+                        id = element.last.last.group.attr('id');
+                        scrollTo(id);
+                    } else {
+                        id = element.last.group.attr('id');
+                        scrollTo(id);
+                    }
+                }
+            } // end true
         }
-      }
-    } // end true
-  };
 
-  function drawGrid(draw) {
-    var startPoint = 0,
-      numCols = Math.round(draw.width() / config.gridCol),
-      colHeight = draw.height(),
-      pageWidth = draw.width(),
-      numRows = Math.round(colHeight / config.rowHeight),
-      startRow = 0,
-      i,
-      j;
+        function drawGrid(draw) {
+            var startPoint = 0,
+                numCols = Math.round(draw.width() / config.gridCol),
+                colHeight = draw.height(),
+                pageWidth = draw.width(),
+                numRows = Math.round(colHeight / config.rowHeight),
+                startRow = 0,
+                j;
 
-    for (i = 0; i < numCols + 1; i += 1) {
-      draw.line(startPoint, 0, startPoint, colHeight).stroke({
-        width: 0.15
-      });
-      startPoint += config.gridCol;
-    }
+            for (i = 0; i < numCols + 1; i += 1) {
+                draw.line(startPoint, 0, startPoint, colHeight).stroke({
+                    width: 0.15
+                });
+                startPoint += config.gridCol;
+            }
 
-    for (j = 0; j < numRows + 1; j += 1) {
-      draw.line(0, startRow, pageWidth, startRow).stroke({
-        width: 0.15
-      });
-      startRow += config.rowHeight;
-    }
-  }
+            for (j = 0; j < numRows + 1; j += 1) {
+                draw.line(0, startRow, pageWidth, startRow).stroke({
+                    width: 0.15
+                });
+                startRow += config.rowHeight;
+            }
+        }
 
-  return {
-    config: config,
-    flowStart: flowStart,
-    finish: finish,
-    decision: decision,
-    drawGrid: drawGrid,
-    unhide: unhide
-  };
+        return {
+            config: config,
+            flowStart: flowStart,
+            finish: finish,
+            decision: decision,
+            drawGrid: drawGrid,
+            unhide: unhide
+        };
 
-};
+    };
 //drawGrid(draw);
 //unhide();
