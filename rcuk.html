@@ -5,7 +5,7 @@
 	<!--<script src="http://www2.warwick.ac.uk/static_war/render/scripts/id6scripts.js.272510929367"></script>-->
 <style>
 #drawing {
-width:960px;
+width:1200px;
 /*font-size:12px;
 line-height:20px; */
 }
@@ -20,8 +20,8 @@ stroke-width: 0.1;
 stroke: rgb(66, 66, 66);
 }
 
-g.fc-decision text {
-  /*fill:white;*/
+g.fc-decision tspan {
+  fill:white;
 }
 
 g.finish-group text {
@@ -39,6 +39,12 @@ g.fc-response text {
   fill : #8b3572;
   opacity: 1.0;
   color: white;
+   
+}
+
+.rhombus text {
+ color: white;
+  fill: white;
    
 }
 rect.fc-finish  {
@@ -84,76 +90,105 @@ jQuery(document).ready(function() {
 	var draw = SVG('drawing').size(1200, 1600);
 	var flow = Flow({
 		root: draw,
-		start: 'decOne',
-		shapes: [{
-				type: 'decision',
-				label: 'decOne',
-				text: 'Know journal\'s OA policy?',
-				yes: 'decTwo',
-				no: 'processOne',
-				orient: {
-					yes: 'b', //correct
-					no: 'r' // correct
-				}
-			}, {
-				type: 'process',
-				label: 'processOne',
-				text: 'Check the journal info',
-				out: 'b',
-				next: 'decTwo',
-				connect: 't'
-
-			}, {
-				type: 'decision',
-				label: 'decTwo',
-				text: 'CC-BY offered?',
-				yes: 'actTwo',
-				no: 'decThree',
-				orient: {
-                    yes: 'r',
-					no: 'b'
-					//yes: 'b',
-					//no: 'r'
-				}
-			}, {
-				type: 'finish',
-				label: 'actTwo',
-				text: 'please complete application form'
-			}, {
-				type: 'decision',
-				label: 'decThree',
-				text: 'Can you go green?',
-				yes: 'decFour',
-				no: 'actThree',
-				orient: {
-					yes: 'b',
-					no: 'r'
-					//yes: 'r',
-					//no: 'b'
-				}
-			}, {
-				type: 'finish',
-				label: 'actThree',
-				text: 'You cannot comply, contact journal'
-			}, {
-				type: 'decision',
-				label: 'decFour',
-				text: 'time limits acceptable?',
-				yes: 'actFour',
-				orient: {
-					yes: 'b',
-					no: 'r'
-				}
-			}, {
-				type: 'finish',
-				label: 'actFour',
-				text: 'deposit in WRAP'
+		shapes: [
+            {
+			label: 'd1',
+			type: 'decision',
+			text: [
+				'Do you know the Open Access','policy of the journal?'
+			],
+			yes: 'd1-y',
+			no: 'd1-n',
+			orient: {
+				yes: 'b',
+				no: 'r'
 			}
-		]
+		}, 
+        {
+			label: 'd1-y',
+			type: 'decision',
+			text: [
+				'Does it have Open','Access paid option or is it an ',' Open Access journal?'
+			],
+			yes: 'd1-y-y',
+			no: 'd1-y-n',
+			orient: {
+				yes: 'b',
+				no: 'r'
+			}
+		}, 
+		{
+			label: 'd1-y-y',
+			type: 'decision',
+			text: ['Creative Commons licence','CC-BY offered?'],
+            yes: 'd1-y-y-y',
+            no:'',
+			orient: {
+				yes: 'b',
+				no: 'r'
+			}
+		},
+        {
+            label: 'd1-y-y-y',
+            type: 'finish',
+            text: ['Great - can comply. ','Please complete application form (link)']
+        },
+		{
+			label: 'd1-y-n',
+			type: 'decision',
+			text: ['Can you archive in WRAP','and/or Subject repository?'],
+			yes: 'd1-y-n-y',
+			no: 'dont-comply',
+			orient: {
+				yes: 'b',
+				no: 'r'
+			}
+		}, 
+        /*    
+        {
+			label: 'check-green-route',
+			type: 'process',
+			text: ['Check the journal\'s policy on the green route'],
+			next: 'can-you-go-green',
+		}, 
+        */
+        {
+			label: 'd1-y-n-y',
+			type: 'process',
+			text: [
+				'Make sure the time limits acceptable','6 month Stem','12 month AHSS'
+			],
+            next: 'd1-y-n-y-f'
+		},
+        
+        {
+            label: 'd1-y-n-y-f',
+            type: 'finish',
+            text: ['Deposit in WRAP here or contact team']
+            
+        },
+        /*
+		{
+			label: 'green-allowed',
+			type: 'decision',		
+		},
+		*/
+		{
+			label: 'd1-n',
+			type: 'process',
+			text: [
+				'Check journal website or go',' to SHERPA FACT/ROMEO (link)'
+			],
+			out: 'b',
+			next: 'd1',
+			connect: 't'
+
+		}]
 	});
 });
 
 </script>
+
 </head>
 <body>
 	<h1>RCUK</h1>

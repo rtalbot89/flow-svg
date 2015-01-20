@@ -43,7 +43,7 @@ var Flow = function (chart) {
                 labelHeight: 20,
                 labelRadius: 5,
                 labelStroke: 0.1,
-                labelFill: 'yellow',
+                labelFill: 'grey',
                 labelOpacity: 1.0,
                 arrowStroke: 1.0,
                 arrowHeadColor: 'rgb(51, 51, 51)',
@@ -67,16 +67,8 @@ var Flow = function (chart) {
             return ah;
         }
 
-        function shapeText() {
-            var txtArray = [
-                    'Lorem',
-                    'ipsum dolor',
-                    'sit amet consectetur,',
-                    //'Cras sodales imperdiet auctor.',
-                    'Nunc ultrices lectus at erat'
-                    //'dictum pharetra elementum ante'
-                ],
-                txt = draw.text(function (add) {
+        function shapeText(txtArray) {
+                var txt = draw.text(function (add) {
                     txtArray.forEach(function (l) {
                         add.tspan(l).newLine().attr('text-anchor', 'middle');
                     });
@@ -146,14 +138,9 @@ var Flow = function (chart) {
             arrowGroup.add(labelGroup);
 
             if (txt === 'Yes') {
-                if (options.orient.yes === 'r') {
+                if (options.orient !== undefined && options.orient.yes === 'r') {
                     arrowGroup.rotate(270);
                     labelGroup.rotate(90);
-                }
-
-                if (options.orient.yes === 'l') {
-                    arrowGroup.rotate(90);
-                    labelGroup.rotate(-90);
                 }
             }
 
@@ -182,9 +169,10 @@ var Flow = function (chart) {
                     opacity: 1.0,
                     "class": 'rhombus'
                 });
+            group.attr('class','fc-decision');
             group.add(shape);
             shape.clone();
-            text = shapeText();
+            text = shapeText(options.text || ['put the text here']);
             group.add(text);
             text.clipWith(shape);
 
@@ -221,7 +209,7 @@ var Flow = function (chart) {
             return group;
         }
 
-        function finish() {
+        function finish(options) {
             var rect, text, txtArray,
                 group = draw.group();
             group.attr({
@@ -235,16 +223,8 @@ var Flow = function (chart) {
                     'opacity': 0.3
                 }).radius(20);
 
-            txtArray = [
-                'Lorem',
-                'ipsum dolor',
-                'sit amet consectetur,',
-                'Cras sodales imperdiet auctor.',
-                'Nunc ultrices lectus at erat',
-                'dictum pharetra elementum ante'
-            ];
             text = draw.text(function (add) {
-                txtArray.forEach(function (l) {
+                options.text.forEach(function (l) {
                     add.tspan(l).newLine();
                 });
             });
@@ -257,7 +237,7 @@ var Flow = function (chart) {
             return group;
         }
   // The process shape that has an outlet, but no choice
-        function process() {
+        function process(options) {
             var text, rect, txtArray,
                 group = draw.group();
             group.attr({
@@ -273,31 +253,9 @@ var Flow = function (chart) {
                 });
             group.add(rect);
 
-                //text = draw.text(options.text !== '' ? options.text : 'Add the process here');
-            txtArray = [
-                'Lorem',
-                //ipsum dolor',
-                'sit amet consectetur,',
-                'Cras sodales imperdiet auctor.',
-                'Nunc ultrices lectus at erat',
-                'dictum pharetra elementum ante'
-
-            ];
-
-                /*
-                group.add(shape);
-    
-                var sc = shape.clone();
-    
-                text = shapeText();
-                group.add(text);
-                text.clipWith(shape);
-    
-    
-                */
             rect.clone();
             text = draw.text(function (add) {
-                txtArray.forEach(function (l) {
+                options.text.forEach(function (l) {
                     add.tspan(l).newLine();
                 });
             });
@@ -307,6 +265,18 @@ var Flow = function (chart) {
             //.backward();
 
             text.move(20, 0);
+            
+            // Add a bottom arrow if this is not looping back
+            console.log('process options')
+            console.log(options);
+            if (options.nextid !== options.previd) {
+                console.log('diffrent ids');
+                 var shapeBbox = rect.bbox();
+                var arrowYes = arrowConnector(options, 'Yes');
+                group.add(arrowYes);
+                arrowYes.x(shapeBbox.width / 2);
+                arrowYes.y(shapeBbox.height);
+            }
             return group;
         }
         shapeFuncs = {
@@ -319,6 +289,17 @@ var Flow = function (chart) {
   // capture the IDs. Like to not do this if I can figure out how
         itemIds = {};
         chart.shapes.forEach(function (element) {
+			
+			if (element.type === undefined) {
+				//return;
+				console.log(element.type);
+				
+			}
+			if (element.type && (typeof shapeFuncs[element.type] !== 'function')) {
+				//return;
+				console.log(element.type);
+				
+			}
             var shape = shapeFuncs[element.type](element);
             chartGroup.add(shape);
             element.id = shape.attr('id');
@@ -349,15 +330,22 @@ var Flow = function (chart) {
             var next;
             if (element.yes) {
                 next = lookup[element.yes];
-                chart.shapes[next].previd = element.id;
+                if (chart.shapes[next]){
+                     chart.shapes[next].previd = element.id;
+                }
+               
             }
             if (element.no) {
                 next = lookup[element.no];
-                chart.shapes[next].previd = element.id;
+                if (chart.shapes[next]){
+                     chart.shapes[next].previd = element.id;
+                }
             }
             if (element.next) {
                 next = lookup[element.next];
-                chart.shapes[next].previd = element.id;
+                if (chart.shapes[next]){
+                     chart.shapes[next].previd = element.id;
+                }
             }
 
         });
@@ -374,9 +362,11 @@ var Flow = function (chart) {
                 SVG.get(element.id).y(startEl.bbox().height);
 
             }
+			
+			// check if orient is set. Otherwise default to yes b and no r
 
             if (element.yes) {
-                if (element.orient.yes === 'b') {
+                if ((element.orient === undefined && element.yesid !== undefined) || (element.orient !== undefined && element.orient.yes !== undefined && element.orient.yes === 'b')) {
                     te = SVG.get(element.yesid);
                     te.x(ce.x());
                     te.y(ce.y() + ce.bbox().height);
@@ -384,7 +374,7 @@ var Flow = function (chart) {
             }
 
             if (element.no) {
-                if (element.orient.no === 'b') {
+                if (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'b') {
                     te = SVG.get(element.noid);
                     te.x(ce.x());
                     te.y(ce.y() + ce.bbox().height);
@@ -392,7 +382,7 @@ var Flow = function (chart) {
             }
 
             if (element.yes) {
-                if (element.orient.yes === 'r') {
+                if (element.orient !== undefined && element.yesid !== undefined && element.orient.yes !== undefined && element.orient.yes === 'r') {
                     te = SVG.get(element.yesid);
                     te.x(ce.x() + ce.bbox().width);
                     cHeight = ce.first().height();
@@ -403,13 +393,24 @@ var Flow = function (chart) {
             }
 
             if (element.no) {
-                if (element.orient.no === 'r') {
+                if ((element.orient === undefined && element.noid !== undefined) || (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'r')) {
                     te = SVG.get(element.noid);
                     te.x(ce.x() + ce.bbox().width);
                     cHeight = ce.first().height();
                     tHeight = te.first().height();
                     diff = (cHeight / 2) - (tHeight / 2);
                     te.y(ce.y() + diff);
+                }
+            }
+            
+            if (element.next) {
+                // Make sure it's not already laid out
+                // Assume it's at the bottom for now
+                if(element.nextid !== element.previd) {
+                    te = SVG.get(element.nextid);
+                    te.x(ce.x());
+                    te.y(ce.y() + ce.bbox().height);
+                    
                 }
             }
 
@@ -419,34 +420,58 @@ var Flow = function (chart) {
   // because the line is outside the groups
         chart.shapes.forEach(function (element) {
             if (element.next) {
+                console.log(element);
                 var el = SVG.get(element.id),
                     target = SVG.get(element.previd),
                     coords = [],
                     startX = el.rbox().x + (el.rbox().width / 2),
-                    startY = el.y() + el.rbox().height,
-                    endX = target.get(2).rbox().x + target.get(2).rbox().width + config.arrowHeadHeight,
-                    endY = target.get(2).rbox().y + ((config.connectorLength - config.arrowHeadHeight) / 2),
-                    startPoint = [startX, startY];
+                startY = el.y() + el.rbox().height;
+                   
+                   // It's a loop back to the yes option of the referring element
+                    if (target !== undefined && element.nextid === element.previd)  {
+                        
+                        var endX = target.get(2).rbox().x + target.get(2).rbox().width + config.arrowHeadHeight,
+                        endY = target.get(2).rbox().y + ((config.connectorLength - config.arrowHeadHeight) / 2),
+                        startPoint = [startX, startY];
+                         coords.push(startPoint);
+                         if (endY > startY) {
+                             intY = startY + (endY - startY);
+                             intX = startX;
+                             coords.push([intX, intY]);
+                         }
 
-                coords.push(startPoint);
+                         endPoint = [endX, endY];
+                         coords.push(endPoint);
 
-                if (endY > startY) {
-                    intY = startY + (endY - startY);
-                    intX = startX;
-                    coords.push([intX, intY]);
-                }
+                         draw.polyline(coords).fill('none').stroke({
+                             width: 1
+                         });
+                         ah = arrowHead();
 
-                endPoint = [endX, endY];
-                coords.push(endPoint);
-
-                draw.polyline(coords).fill('none').stroke({
-                    width: 1
-                });
-                ah = arrowHead();
-
-                ah.x(endX - config.arrowHeadHeight);
-                ah.y(endY - (config.arrowHeadHeight / 2));
-                ah.rotate(90);
+                         ah.x(endX - config.arrowHeadHeight);
+                         ah.y(endY - (config.arrowHeadHeight / 2));
+                         ah.rotate(90);                
+                    } // end loop back
+                    /*
+                    if (target !== undefined && element.nextid !== element.previd) {
+                        console.log('different');
+                        console.log(el.bbox());
+                        console.log(el.rbox());
+                        var startX = el.x();
+                        var startY = el.y();
+                        console.log(el.x());
+                        draw.line(
+                            el.x(), 
+                            560, 
+                            560, 
+                           620
+                        ).stroke({width: 1});
+                        
+                        var nextEl = SVG.get(element.nextid);
+                        //console.log(nextEl);
+                        nextEl.dy(config.connectorLength);
+                    }
+                    */
             }
         });
 
