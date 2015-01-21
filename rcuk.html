@@ -87,7 +87,7 @@ rect.fc-end {
 <script>
 ///////////////////// start flow chart ////////////////////////////////////////////////////////////
 jQuery(document).ready(function() {
-	var draw = SVG('drawing').size(1200, 1600);
+	var draw = SVG('drawing').size(1600, 1600);
 	var flow = Flow({
 		root: draw,
 		shapes: [
@@ -112,6 +112,7 @@ jQuery(document).ready(function() {
 			],
 			yes: 'd1-y-y',
 			no: 'd1-y-n',
+            noline: 360,
 			orient: {
 				yes: 'b',
 				no: 'r'
@@ -122,7 +123,7 @@ jQuery(document).ready(function() {
 			type: 'decision',
 			text: ['Creative Commons licence','CC-BY offered?'],
             yes: 'd1-y-y-y',
-            no:'',
+            no:'d1-y-y-p',
 			orient: {
 				yes: 'b',
 				no: 'r'
@@ -138,20 +139,57 @@ jQuery(document).ready(function() {
 			type: 'decision',
 			text: ['Can you archive in WRAP','and/or Subject repository?'],
 			yes: 'd1-y-n-y',
-			no: 'dont-comply',
+			no: 'd1-y-n-n',
 			orient: {
-				yes: 'b',
-				no: 'r'
+				yes: 'r',
+				no: 'b'
 			}
 		}, 
-        /*    
         {
-			label: 'check-green-route',
+            label: 'd1-y-n-n',
+            type: 'finish',
+            text: ['You do not comply at all. Is this ','really the only journal you want to use? ','Choose another or make ','representations to journal']
+            
+        },       
+        {
+			label: 'd1-y-y-p',
 			type: 'process',
-			text: ['Check the journal\'s policy on the green route'],
-			next: 'can-you-go-green',
+			text: ['Check the journal\'s policy on',' the green route'],
+			next: 'd1-y-y-n',
 		}, 
-        */
+        {
+            label: 'd1-y-y-n',
+            type: 'decision',
+            text: ['Does the journal allow this?'],
+            yes: 'd1-y-y-n-p',
+            no: 'd1-y-y-n-n',
+            orient: {
+                yes:'b',
+                no: 'r'
+            }
+            
+        },
+        {
+			label: 'd1-y-y-n-p',
+			type: 'process',
+			text: [
+				'Make sure the time limits acceptable','6 month Stem','12 month AHSS'
+			],
+            next: 'd1-y-y-n-p-y',
+            
+        },
+        {
+            label: 'd1-y-y-n-n',
+            type: 'finish',
+            text: ['You cannot comply with RCUK policy. ','Contact journal to discuss or choose ','another']
+            
+        },
+        {
+            label: 'd1-y-y-n-p-y',
+            type: 'finish',
+            text: ['Deposit in WRAP here or contact team']
+            
+        },
         {
 			label: 'd1-y-n-y',
 			type: 'process',
