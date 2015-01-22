@@ -52,10 +52,10 @@ var SVGFlow = (function () {
                 baseUnit: 80,
                 gridCol: 80,
                 rowHeight: 20,
-                leftMargin: 140,
+                leftMargin: 10,
                 connectorLength: 60,
                 arrowHeadHeight: 20,
-                startWidth: 240,
+                startWidth: 180,
                 startHeight: 40,
                 startCornerRadius: 20,
                 startFill: '#d6d6d6',
@@ -63,18 +63,20 @@ var SVGFlow = (function () {
                 startStrokeColour: 'rgb(66, 66, 66)',
                 startText: 'Start',
                 startFontSize: 12,
-                decisionWidth: 240,
+                decisionWidth: 180,
                 decisionFill: '#8b3572',
                 decisionTextColour: '#fff',
                 decisionFontSize: 12,
                 finishTextColour: '#fff',
-                decisionHeight: 120,
-                finishWidth: 240,
+                decisionHeight: 140,
+                finishWidth: 180,
                 finishHeight: 120,
+                finishLeftMargin: 20,
                 finishFill: '#0F6C7E',
                 finishFontSize: 12,
-                processWidth: 240,
-                processHeight: 120,
+                processWidth: 180,
+                processHeight: 100,
+                processLeftMargin: 20,
                 processFill: '#fff',
                 processStrokeColour: 'rgb(66, 66, 66)',
                 processStrokeWidth: 0.1,
@@ -272,7 +274,7 @@ var SVGFlow = (function () {
             rect.clone();
             group.add(text);
             text.clipWith(rect);
-            text.x(20);
+            text.x(config.finishLeftMargin);
             text.cy(rect.bbox().cy);
             return group;
         }
@@ -303,7 +305,7 @@ var SVGFlow = (function () {
             text.clipWith(rect);
             text.height(rect.height());
             text.cy(rect.bbox().cy);
-            text.move(20);
+            text.move(config.processLeftMargin);
             text.font({size: config.processFontSize});
 
             // Add a bottom arrow that can be removed later
