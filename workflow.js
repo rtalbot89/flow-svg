@@ -47,11 +47,6 @@ var SVGFlow = (function () {
             return config;
         }
 
-/*fill : #d6d6d6;
-  opacity: 1.0;
-  stroke-width: 0.1;
-  stroke: rgb(66, 66, 66);
-}*/
         function init() {
             return {
                 baseUnit: 80,
@@ -67,28 +62,35 @@ var SVGFlow = (function () {
                 startStrokeWidth: 0.1,
                 startStrokeColour: 'rgb(66, 66, 66)',
                 startText: 'Start',
+                startFontSize: 12,
                 decisionWidth: 240,
                 decisionFill: '#8b3572',
                 decisionTextColour: '#fff',
+                decisionFontSize: 12,
                 finishTextColour: '#fff',
                 decisionHeight: 120,
                 finishWidth: 240,
                 finishHeight: 120,
                 finishFill: '#0F6C7E',
+                finishFontSize: 12,
                 processWidth: 240,
                 processHeight: 120,
                 processFill: '#fff',
                 processStrokeColour: 'rgb(66, 66, 66)',
                 processStrokeWidth: 0.1,
                 processTextColour: 'black',
+                processFontSize: 12,
                 labelWidth: 30,
                 labelHeight: 20,
                 labelRadius: 5,
                 labelStroke: 0.1,
                 labelFill: 'grey',
                 labelOpacity: 1.0,
+                labelFontSize: 12,
                 arrowStroke: 1.0,
                 arrowHeadColor: 'rgb(51, 51, 51)',
+                arrowTextColour: '#fff',
+                arrowFontSize: 12,
                 arrowHeadOpacity: 1.0
             };
         }
@@ -151,13 +153,13 @@ var SVGFlow = (function () {
                 config.labelHeight / 2
             );
 
-            text = draw.text(txt);
+            text = draw.text(txt).attr({
+                fill: config.arrowTextColour,
+                'text-anchor': 'middle',
+                'font-size' : config.arrowFontSize
+            });
+            text.cy(label.cy());
             labelGroup.add(text);
-            text.move(
-                -(config.labelHeight / 2),
-                config.labelWidth / 2
-            );
-
             arrowGroup.add(labelGroup);
 
             if (txt === 'Yes') {
@@ -207,7 +209,7 @@ var SVGFlow = (function () {
                     add.tspan(l).newLine().attr('text-anchor', 'middle');
                 });
             });
-            text.fill(config.decisionTextColour);
+            text.fill(config.decisionTextColour).font({size: config.decisionFontSize});
             group.add(text);
             text.clipWith(shape);
 
@@ -265,7 +267,7 @@ var SVGFlow = (function () {
                     add.tspan(l).newLine();
                 });
             });
-            text.fill(config.finishTextColour);
+            text.fill(config.finishTextColour).font({size: config.finishFontSize});
             group.add(rect);
             rect.clone();
             group.add(text);
@@ -302,6 +304,7 @@ var SVGFlow = (function () {
             text.height(rect.height());
             text.cy(rect.bbox().cy);
             text.move(20);
+            text.font({size: config.processFontSize});
 
             // Add a bottom arrow that can be removed later
             shapeBbox = rect.bbox();
@@ -335,7 +338,10 @@ var SVGFlow = (function () {
                 .radius(config.startCornerRadius);
 
             lowerConnector = arrowLine();
-            text = draw.text(function (add) { add.tspan(config.startText).newLine().attr('text-anchor', 'middle'); });
+            text = draw.text(function (add) { add.tspan(config.startText).newLine().attr({
+                'text-anchor': 'middle',
+                'font-size': config.startFontSize
+            }); });
             group.add(rect);
             group.add(text);
             shapeBox = rect.bbox();
