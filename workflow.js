@@ -3,27 +3,55 @@
 //var jQuery = jQuery || {};
 //var SVG = SVG || {};
 
+/*
 function scrollTo(id) {
     "use strict";
     jQuery('#' + id).scrollintoview();
 }
-var Flow = function (chart) {
+*/
+
+var myRevealingModule = (function () {
+    "use strict";
+    var privateVar = "Ben Cherry",
+        publicVar  = "Hey there!";
+
+    function privateFunction() {
+        console.log("Name:" + privateVar);
+    }
+
+    function publicSetName(strName) {
+        privateVar = strName;
+    }
+
+    function publicGetName() {
+        privateFunction();
+    }
+
+
+        // Reveal public pointers to
+        // private functions and properties
+
+    return {
+        setName: publicSetName,
+        greeting: publicVar,
+        getName: publicGetName
+    };
+}());
+
+var SVGFlow = (function () {
         "use strict";
+        var draw, chartGroup, shapes, startEl, lowerConnector, shapeFuncs, itemIds, lookup, intY, intX, ah, i, config;
 
-        var draw = chart.root,
-            config,
-            flowStart,
-            lowerConnector,
-            startEl,
-            shapeFuncs,
-            chartGroup,
-            itemIds,
-            lookup,
-            intY,
-            intX,
-            ah,
-            i;
+        function fConfig(cnf) {
+            config = cnf;
+            return config;
+        }
 
+/*fill : #d6d6d6;
+  opacity: 1.0;
+  stroke-width: 0.1;
+  stroke: rgb(66, 66, 66);
+}*/
         function init() {
             return {
                 baseUnit: 80,
@@ -32,12 +60,27 @@ var Flow = function (chart) {
                 leftMargin: 140,
                 connectorLength: 60,
                 arrowHeadHeight: 20,
+                startWidth: 240,
+                startHeight: 40,
+                startCornerRadius: 20,
+                startFill: '#d6d6d6',
+                startStrokeWidth: 0.1,
+                startStrokeColour: 'rgb(66, 66, 66)',
+                startText: 'Start',
                 decisionWidth: 240,
+                decisionFill: '#8b3572',
+                decisionTextColour: '#fff',
+                finishTextColour: '#fff',
                 decisionHeight: 120,
                 finishWidth: 240,
                 finishHeight: 120,
+                finishFill: '#0F6C7E',
                 processWidth: 240,
                 processHeight: 120,
+                processFill: '#fff',
+                processStrokeColour: 'rgb(66, 66, 66)',
+                processStrokeWidth: 0.1,
+                processTextColour: 'black',
                 labelWidth: 30,
                 labelHeight: 20,
                 labelRadius: 5,
@@ -51,11 +94,6 @@ var Flow = function (chart) {
         }
 
         config = init();
-
-  // Create a group to hold all the shapes. This should make
-  // margins etc simpler
-        chartGroup = draw.group();
-        chartGroup.x(config.leftMargin);
 
         function arrowHead() {
             var coords =
@@ -72,18 +110,7 @@ var Flow = function (chart) {
             return ah;
         }
 
-        function shapeText(txtArray) {
-            var txt = draw.text(function (add) {
-                    txtArray.forEach(function (l) {
-                        add.tspan(l).newLine().attr('text-anchor', 'middle');
-                    });
-                });
-            return txt;
-        }
-
         function arrowLine() {
-
-           // var lineEnd = options.noline ? option.noline !== undefined : config.connectorLength - config.arrowHeadHeight;
             var group = draw.group(),
                 line = draw
                     .line(0, 0, 0, config.connectorLength - config.arrowHeadHeight)
@@ -99,27 +126,6 @@ var Flow = function (chart) {
             );
             return group;
         }
-
-        flowStart = function () {
-            var text, shapeBox, rect,
-                group = draw.group().attr({
-                    "cursor": "pointer",
-                    "class": "fc-start"
-                });
-            rect = draw.rect(config.decisionWidth, config.rowHeight * 2).fill('blue').opacity(0.3).radius(20);
-
-            lowerConnector = arrowLine();
-            text = draw.text("Start").move(100, 12);
-            group.add(rect);
-            group.add(text);
-            shapeBox = rect.bbox();
-            lowerConnector.move(shapeBox.cx, shapeBox.height);
-            group.add(lowerConnector);
-            return group;
-        };
-
-        startEl = flowStart();
-        chartGroup.add(startEl);
 
         function arrowConnector(options, txt) {
             var text,
@@ -151,7 +157,6 @@ var Flow = function (chart) {
                 -(config.labelHeight / 2),
                 config.labelWidth / 2
             );
-
 
             arrowGroup.add(labelGroup);
 
@@ -190,14 +195,19 @@ var Flow = function (chart) {
 
             shape = draw.polygon(coords)
                 .attr({
-                    fill: 'red',
-                    opacity: 1.0,
-                    "class": 'rhombus'
+                    fill: config.decisionFill,
+                    "class": 'fc-rhombus'
                 });
             group.attr('class', 'fc-decision');
             group.add(shape);
             shape.clone();
-            text = shapeText(options.text || ['put the text here']);
+
+            text = draw.text(function (add) {
+                options.text.forEach(function (l) {
+                    add.tspan(l).newLine().attr('text-anchor', 'middle');
+                });
+            });
+            text.fill(config.decisionTextColour);
             group.add(text);
             text.clipWith(shape);
 
@@ -225,9 +235,6 @@ var Flow = function (chart) {
                 arrowNo.x(shapeBbox.width + (config.connectorLength / 2));
                 if (options.orient.no === 'r') {
                     if (options.noline) {
-                        //console.log(options.noline);
-                        //console.log(arrowNo.get(0).bbox());
-                        console.log(arrowNo.get(1));
                         arrowNo.get(0).attr('y2', options.noline);
                         arrowNo.get(1).y(options.noline - config.arrowHeadHeight);
                     }
@@ -237,7 +244,6 @@ var Flow = function (chart) {
                     arrowNo.y(shapeBbox.height);
                 }
             }
-
             return group;
         }
 
@@ -250,9 +256,8 @@ var Flow = function (chart) {
             rect = draw
                 .rect(config.finishWidth, config.finishHeight)
                 .attr({
-                    fill: 'green',
+                    fill: config.finishFill,
                     "class": "fc-finish",
-                    'opacity': 0.3
                 }).radius(20);
 
             text = draw.text(function (add) {
@@ -260,6 +265,7 @@ var Flow = function (chart) {
                     add.tspan(l).newLine();
                 });
             });
+            text.fill(config.finishTextColour);
             group.add(rect);
             rect.clone();
             group.add(text);
@@ -278,10 +284,9 @@ var Flow = function (chart) {
             rect = draw
                 .rect(config.processWidth, config.processHeight)
                 .attr({
-                    fill: 'white',
-                    stroke: 'grey',
-                    "class": "fc-process",
-                    'opacity': 1.0
+                    fill: config.processFill,
+                    stroke: config.processStrokeColour,
+                    "class": "fc-process"
                 });
             group.add(rect);
 
@@ -314,164 +319,203 @@ var Flow = function (chart) {
             finish: finish,
             process: process
         };
+
+        function flowStart() {
+            var text, shapeBox, rect,
+                group = draw.group().attr({
+                    "cursor": "pointer",
+                    "class": "fc-start"
+                });
+            rect = draw.rect(config.startWidth, config.startHeight)
+                .attr({
+                    fill: config.startFill,
+                    'stroke-width' : config.startStrokeWidth,
+                    stroke: config.startStrokeWidth
+                })
+                .radius(config.startCornerRadius);
+
+            lowerConnector = arrowLine();
+            text = draw.text(function (add) { add.tspan(config.startText).newLine().attr('text-anchor', 'middle'); });
+            group.add(rect);
+            group.add(text);
+            shapeBox = rect.bbox();
+            lowerConnector.move(shapeBox.cx, shapeBox.height);
+            text.move(shapeBox.cx);
+            text.cy(shapeBox.cy);
+            group.add(lowerConnector);
+            return group;
+        }
+
+        function setRoot(el) {
+            draw = el;
+            chartGroup = draw.group();
+            chartGroup.x(config.leftMargin);
+            startEl = flowStart();
+            chartGroup.add(startEl);
+        }
+
   // This where the real work of generating and laying out shapes is done
   // add the actual id
   // capture the IDs. Like to not do this if I can figure out how
-        itemIds = {};
-        chart.shapes.forEach(function (element) {
-
-            if (element.type === undefined) {
-                console.log(element.type);
-            }
-            if (element.type && (typeof shapeFuncs[element.type] !== 'function')) {
-                console.log(element.type);
-            }
-            var shape = shapeFuncs[element.type](element);
-            chartGroup.add(shape);
-            element.id = shape.attr('id');
-            itemIds[element.label] = element.id;
-        });
+        function layoutShapes() {
+            itemIds = {};
+            shapes.forEach(function (element) {
+                if (element.type === undefined) {
+                    console.log(element.type);
+                }
+                if (element.type && (typeof shapeFuncs[element.type] !== 'function')) {
+                    console.log(element.type);
+                }
+                var shape = shapeFuncs[element.type](element);
+                chartGroup.add(shape);
+                element.id = shape.attr('id');
+                itemIds[element.label] = element.id;
+            });
 
   // Add the ids for yes and no elements
-        chart.shapes.forEach(function (element) {
-            if (element.yes) {
-                element.yesid = itemIds[element.yes];
-            }
-            if (element.no) {
-                element.noid = itemIds[element.no];
-            }
-            if (element.next) {
-                element.nextid = itemIds[element.next];
-            }
-        });
+            shapes.forEach(function (element) {
+                if (element.yes) {
+                    element.yesid = itemIds[element.yes];
+                }
+                if (element.no) {
+                    element.noid = itemIds[element.no];
+                }
+                if (element.next) {
+                    element.nextid = itemIds[element.next];
+                }
+            });
 
   // Generate a lookup that gives Array IDs from SVG ids
-        lookup = {};
-        for (i = 0; i < chart.shapes.length; i += 1) {
-            lookup[chart.shapes[i].label] = i;
-        }
+            lookup = {};
+            for (i = 0; i < shapes.length; i += 1) {
+                lookup[shapes[i].label] = i;
+            }
 
   // Add the ids of previous (referring) elements to the array
-        chart.shapes.forEach(function (element) {
-            var next;
-            if (element.yes) {
-                next = lookup[element.yes];
-                if (chart.shapes[next]) {
-                    chart.shapes[next].previd = element.id;
+            shapes.forEach(function (element) {
+                var next;
+                if (element.yes) {
+                    next = lookup[element.yes];
+                    if (shapes[next]) {
+                        shapes[next].previd = element.id;
+                    }
                 }
-            }
-            if (element.no) {
-                next = lookup[element.no];
-                if (chart.shapes[next]) {
-                    chart.shapes[next].previd = element.id;
+                if (element.no) {
+                    next = lookup[element.no];
+                    if (shapes[next]) {
+                        shapes[next].previd = element.id;
+                    }
                 }
-            }
-            if (element.next) {
-                next = lookup[element.next];
-                if (chart.shapes[next]) {
-                    chart.shapes[next].previd = element.id;
+                if (element.next) {
+                    next = lookup[element.next];
+                    if (shapes[next]) {
+                        shapes[next].previd = element.id;
+                    }
                 }
-            }
 
-        });
-
-        console.log(chart.shapes);
+            });
 
   // Layout the shapes
-        chart.shapes.forEach(function (element, index) {
-            var ce = SVG.get(element.id), te, cHeight, tHeight, diff;
-            if (index === 0) {
-                SVG.get(element.id).y(startEl.bbox().height);
-            }
-
-      // check if orient is set. Otherwise default to yes b and no r
-            if (element.yes) {
-                if ((element.orient === undefined && element.yesid !== undefined) || (element.orient !== undefined && element.orient.yes !== undefined && element.orient.yes === 'b')) {
-                    SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height);
+            shapes.forEach(function (element, index) {
+                var ce = SVG.get(element.id), te, cHeight, tHeight, diff;
+                if (index === 0) {
+                    SVG.get(element.id).y(startEl.bbox().height);
                 }
-            }
 
-            if (element.no) {
-                if (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'b') {
-                    SVG.get(element.noid).move(ce.x(), ce.y() + ce.bbox().height);
+          // check if orient is set. Otherwise default to yes b and no r
+                if (element.yes) {
+                    if ((element.orient === undefined && element.yesid !== undefined) || (element.orient !== undefined && element.orient.yes !== undefined && element.orient.yes === 'b')) {
+                        SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height);
+                    }
                 }
-            }
 
-            if (element.yes) {
-                if (element.orient !== undefined && element.yesid !== undefined && element.orient.yes !== undefined && element.orient.yes === 'r') {
-                    te = SVG.get(element.yesid);
-                    cHeight = ce.first().height();
-                    tHeight = te.first().height();
-                    diff = (cHeight / 2) - (tHeight / 2);
-                    te.move(ce.x() + ce.bbox().width, ce.y() + diff);
+                if (element.no) {
+                    if (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'b') {
+                        SVG.get(element.noid).move(ce.x(), ce.y() + ce.bbox().height);
+                    }
                 }
-            }
 
-            if (element.no) {
-                if ((element.orient === undefined && element.noid !== undefined) || (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'r')) {
-                    te = SVG.get(element.noid);
-                    cHeight = ce.first().height();
-                    tHeight = te.first().height();
-                    diff = (cHeight / 2) - (tHeight / 2);
-                    te.move(ce.x() + ce.bbox().width, ce.y() + diff);
+                if (element.yes) {
+                    if (element.orient !== undefined && element.yesid !== undefined && element.orient.yes !== undefined && element.orient.yes === 'r') {
+                        te = SVG.get(element.yesid);
+                        cHeight = ce.first().height();
+                        tHeight = te.first().height();
+                        diff = (cHeight / 2) - (tHeight / 2);
+                        te.move(ce.x() + ce.bbox().width, ce.y() + diff);
+                    }
                 }
-            }
 
-            if (element.next) {
-                // Make sure it's not already laid out
-                // Assume it's at the bottom for now
-                if (element.nextid !== element.previd) {
-                    SVG.get(element.nextid).move(ce.x(), ce.y() + ce.bbox().height);
+                if (element.no) {
+                    if ((element.orient === undefined && element.noid !== undefined) || (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'r')) {
+                        te = SVG.get(element.noid);
+                        cHeight = ce.first().height();
+                        tHeight = te.first().height();
+                        diff = (cHeight / 2) - (tHeight / 2);
+                        te.move(ce.x() + ce.bbox().width, ce.y() + diff);
+                    }
                 }
-            }
 
-        });
+                if (element.next) {
+                    // Make sure it's not already laid out
+                    // Assume it's at the bottom for now
+                    if (element.nextid !== element.previd) {
+                        SVG.get(element.nextid).move(ce.x(), ce.y() + ce.bbox().height);
+                    }
+                }
+
+            });
 
   // Process shapes have a next line which needs adding after
   // because the line is outside the groups
-        chart.shapes.forEach(function (element) {
-            if (element.next) {
-                var el = SVG.get(element.id),
-                    target = SVG.get(element.previd),
-                    coords = [],
-                    startX,
-                    startY,
-                    endX,
-                    endY,
-                    startPoint,
-                    endPoint;
+            shapes.forEach(function (element) {
+                if (element.next) {
+                    var el = SVG.get(element.id),
+                        target = SVG.get(element.previd),
+                        coords = [],
+                        startX,
+                        startY,
+                        endX,
+                        endY,
+                        startPoint,
+                        endPoint;
 
-                   // It's a loop back to the yes option of the referring element
-                if (target !== undefined && element.nextid === element.previd) {
-                        // Remove the arrow
-                    el.get(2).remove();
-                    startX = el.rbox().x + (el.rbox().width / 2);
-                    startY = el.y() + el.rbox().height;
+                       // It's a loop back to the yes option of the referring element
+                    if (target !== undefined && element.nextid === element.previd) {
+                            // Remove the arrow
+                        el.get(2).remove();
+                        startX = el.rbox().x + (el.rbox().width / 2);
+                        startY = el.y() + el.rbox().height;
 
-                    endX = target.get(2).rbox().x + target.get(2).rbox().width + config.arrowHeadHeight;
-                    endY = target.get(2).rbox().y + ((config.connectorLength - config.arrowHeadHeight) / 2);
-                    startPoint = [startX, startY];
-                    coords.push(startPoint);
-                    if (endY > startY) {
-                        intY = startY + (endY - startY);
-                        intX = startX;
-                        coords.push([intX, intY]);
-                    }
+                        endX = target.get(2).rbox().x + target.get(2).rbox().width + config.arrowHeadHeight;
+                        endY = target.get(2).rbox().y + ((config.connectorLength - config.arrowHeadHeight) / 2);
+                        startPoint = [startX, startY];
+                        coords.push(startPoint);
+                        if (endY > startY) {
+                            intY = startY + (endY - startY);
+                            intX = startX;
+                            coords.push([intX, intY]);
+                        }
 
-                    endPoint = [endX, endY];
-                    coords.push(endPoint);
+                        endPoint = [endX, endY];
+                        coords.push(endPoint);
 
-                    draw.polyline(coords).fill('none').stroke({
-                        width: 1
-                    });
-                    ah = arrowHead();
+                        draw.polyline(coords).fill('none').stroke({
+                            width: 1
+                        });
+                        ah = arrowHead();
 
-                    ah.x(endX - config.arrowHeadHeight);
-                    ah.y(endY - (config.arrowHeadHeight / 2));
-                    ah.rotate(90);
-                } // end loop back
-            }
-        });
+                        ah.x(endX - config.arrowHeadHeight);
+                        ah.y(endY - (config.arrowHeadHeight / 2));
+                        ah.rotate(90);
+                    } // end loop back
+                }
+            });
+        }
+
+        function setShapes(s) {
+            shapes = s;
+            layoutShapes();
+        }
 
         function unhide(draw) {
             draw.each(function () {
@@ -480,6 +524,7 @@ var Flow = function (chart) {
                 }
             });
         }
+        /*
         function showHide(element, next, finishSet) {
             var id;
             if (element.visible === false) {
@@ -539,7 +584,7 @@ var Flow = function (chart) {
                 }
             } // end true
         }
-
+*/
         function drawGrid(draw) {
             var startPoint = 0,
                 numCols = Math.round(draw.width() / config.gridCol),
@@ -570,9 +615,12 @@ var Flow = function (chart) {
             finish: finish,
             decision: decision,
             drawGrid: drawGrid,
-            unhide: unhide
+            unhide: unhide,
+            draw: setRoot,
+            cfg: fConfig,
+            shapes: setShapes
         };
 
-    };
+    }());
 //drawGrid(draw);
 //unhide();
