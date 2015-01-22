@@ -42,67 +42,71 @@ var SVGFlow = (function () {
         "use strict";
         var draw, chartGroup, shapes, startEl, lowerConnector, shapeFuncs, itemIds, lookup, intY, intX, ah, i, config, params;
 
-        function fConfig(cnf) {
-            config = cnf;
-            return config;
-        }
-
         function init(params) {
-            var defaults = {
-                baseUnit: 80,
-                gridCol: 80,
-                rowHeight: 20,
-                leftMargin: 10,
-                connectorLength: 60,
-                arrowHeadHeight: 20,
-                startWidth: 180,
-                startHeight: 40,
-                startCornerRadius: 20,
-                startFill: '#d6d6d6',
-                startStrokeWidth: 0.1,
-                startStrokeColour: 'rgb(66, 66, 66)',
-                startText: 'Start',
-                startFontSize: 12,
-                decisionWidth: 180,
-                decisionFill: '#8b3572',
-                decisionTextColour: '#fff',
-                decisionFontSize: 12,
-                finishTextColour: '#fff',
-                decisionHeight: 140,
-                finishWidth: 180,
-                finishHeight: 140,
-                finishLeftMargin: 20,
-                finishFill: '#0F6C7E',
-                finishFontSize: 12,
-                processWidth: 180,
-                processHeight: 140,
-                processLeftMargin: 20,
-                processFill: '#fff',
-                processStrokeColour: 'rgb(66, 66, 66)',
-                processStrokeWidth: 0.1,
-                processTextColour: 'black',
-                processFontSize: 12,
-                labelWidth: 30,
-                labelHeight: 20,
-                labelRadius: 5,
-                labelStroke: 0.1,
-                labelFill: 'grey',
-                labelOpacity: 1.0,
-                labelFontSize: 12,
-                arrowStroke: 1.0,
-                arrowHeadColor: 'rgb(51, 51, 51)',
-                arrowTextColour: '#fff',
-                arrowFontSize: 12,
-                arrowHeadOpacity: 1.0
-            },
+          // Set default dimensions
+            var w = 180,
+                h = 140,
+                defaults = {
+                    shapeWidth: w,
+                    shapeHeight: h,
+                    baseUnit: 80,
+                    gridCol: 80,
+                    rowHeight: 20,
+                    leftMargin: 10,
+                    connectorLength: 60,
+                    arrowHeadHeight: 20,
+                    startWidth: w,
+                    startHeight: 40,
+                    startCornerRadius: 20,
+                    startFill: '#d6d6d6',
+                    startStrokeWidth: 0.1,
+                    startStrokeColour: 'rgb(66, 66, 66)',
+                    startText: 'Start',
+                    startFontSize: 12,
+                    decisionWidth: w,
+                    decisionHeight: h,
+                    decisionFill: '#8b3572',
+                    decisionTextColour: '#fff',
+                    decisionFontSize: 12,
+                    finishTextColour: '#fff',
+                    finishWidth: w,
+                    finishHeight: h,
+                    finishLeftMargin: 20,
+                    finishFill: '#0F6C7E',
+                    finishFontSize: 12,
+                    processWidth: w,
+                    processHeight: h,
+                    processLeftMargin: 20,
+                    processFill: '#fff',
+                    processStrokeColour: 'rgb(66, 66, 66)',
+                    processStrokeWidth: 0.1,
+                    processTextColour: 'black',
+                    processFontSize: 12,
+                    labelWidth: 30,
+                    labelHeight: 20,
+                    labelRadius: 5,
+                    labelStroke: 0.1,
+                    labelFill: 'grey',
+                    labelOpacity: 1.0,
+                    labelFontSize: 12,
+                    arrowStroke: 1.0,
+                    arrowHeadColor: 'rgb(51, 51, 51)',
+                    arrowTextColour: '#fff',
+                    arrowFontSize: 12,
+                    arrowHeadOpacity: 1.0
+                },
                 property;
+
             if (params) {
                 for (property in params) {
                     if (params.hasOwnProperty(property)) {
                         defaults[property] = params[property];
                     }
                 }
-                return defaults;
+               // defaults.decisionWidth = params.decisionWidth || params.shapeWidth || defaults.decisionWidth;
+               // defaults.processWidth = params.processWidth || params.shapeWidth || defaults.processWidth;
+               // defaults.startWidth = params.startWidth || params.shapeWidth || defaults.startWidth;
+               // defaults.finishWidth = params.finishWidth || params.shapeWidth || defaults.finishWidth;
             }
             return defaults;
         }
@@ -344,6 +348,7 @@ var SVGFlow = (function () {
                     "cursor": "pointer",
                     "class": "fc-start"
                 });
+
             rect = draw.rect(config.startWidth, config.startHeight)
                 .attr({
                     fill: config.startFill,
@@ -369,17 +374,17 @@ var SVGFlow = (function () {
 
         function setRoot(el) {
             draw = el;
-            config = init();
-            chartGroup = draw.group();
-            chartGroup.x(config.leftMargin);
-            startEl = flowStart();
-            chartGroup.add(startEl);
         }
 
   // This where the real work of generating and laying out shapes is done
   // add the actual id
   // capture the IDs. Like to not do this if I can figure out how
         function layoutShapes() {
+            config = init();
+            chartGroup = draw.group();
+            chartGroup.x(config.leftMargin);
+            startEl = flowStart();
+            chartGroup.add(startEl);
             itemIds = {};
             shapes.forEach(function (element) {
                 if (element.type === undefined) {
@@ -607,6 +612,7 @@ var SVGFlow = (function () {
             } // end true
         }
 */
+        /*
         function drawGrid(draw) {
             var startPoint = 0,
                 numCols = Math.round(draw.width() / config.gridCol),
@@ -630,6 +636,7 @@ var SVGFlow = (function () {
                 startRow += config.rowHeight;
             }
         }
+        */
 
         return {
             config: setParams,
