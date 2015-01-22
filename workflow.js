@@ -633,13 +633,8 @@ var SVGFlow = (function () {
 
         return {
             config: setParams,
-            flowStart: flowStart,
-            finish: finish,
-            decision: decision,
-            drawGrid: drawGrid,
             unhide: unhide,
             draw: setRoot,
-            cfg: fConfig,
             shapes: setShapes
         };
 
