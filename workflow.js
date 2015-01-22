@@ -40,15 +40,15 @@ var myRevealingModule = (function () {
 
 var SVGFlow = (function () {
         "use strict";
-        var draw, chartGroup, shapes, startEl, lowerConnector, shapeFuncs, itemIds, lookup, intY, intX, ah, i, config;
+        var draw, chartGroup, shapes, startEl, lowerConnector, shapeFuncs, itemIds, lookup, intY, intX, ah, i, config, params;
 
         function fConfig(cnf) {
             config = cnf;
             return config;
         }
 
-        function init() {
-            return {
+        function init(params) {
+            var defaults = {
                 baseUnit: 80,
                 gridCol: 80,
                 rowHeight: 20,
@@ -70,12 +70,12 @@ var SVGFlow = (function () {
                 finishTextColour: '#fff',
                 decisionHeight: 140,
                 finishWidth: 180,
-                finishHeight: 120,
+                finishHeight: 140,
                 finishLeftMargin: 20,
                 finishFill: '#0F6C7E',
                 finishFontSize: 12,
                 processWidth: 180,
-                processHeight: 100,
+                processHeight: 140,
                 processLeftMargin: 20,
                 processFill: '#fff',
                 processStrokeColour: 'rgb(66, 66, 66)',
@@ -94,10 +94,23 @@ var SVGFlow = (function () {
                 arrowTextColour: '#fff',
                 arrowFontSize: 12,
                 arrowHeadOpacity: 1.0
-            };
+            },
+                property;
+            if (params) {
+                for (property in params) {
+                    if (params.hasOwnProperty(property)) {
+                        defaults[property] = params[property];
+                    }
+                }
+                return defaults;
+            }
+            return defaults;
         }
 
-        config = init();
+        function setParams(p) {
+            params = p;
+            config = init(params);
+        }
 
         function arrowHead() {
             var coords =
@@ -356,6 +369,7 @@ var SVGFlow = (function () {
 
         function setRoot(el) {
             draw = el;
+            config = init();
             chartGroup = draw.group();
             chartGroup.x(config.leftMargin);
             startEl = flowStart();
@@ -618,7 +632,7 @@ var SVGFlow = (function () {
         }
 
         return {
-            config: config,
+            config: setParams,
             flowStart: flowStart,
             finish: finish,
             decision: decision,
