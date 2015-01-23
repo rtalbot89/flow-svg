@@ -7,7 +7,7 @@ function scrollTo(id) {
 */
 var SVGFlow = (function () {
         "use strict";
-        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet;
+        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes;
 
         function setParams(u) {
             userOpts = u;
@@ -358,7 +358,8 @@ var SVGFlow = (function () {
   // This where the real work of generating and laying out shapes is done
   // add the actual id
   // capture the IDs. Like to not do this if I can figure out how
-        function layoutShapes(shapes) {
+        function layoutShapes(s) {
+            shapes = s;
             config = init();
             var chartGroup = draw.group(),
                 startEl = flowStart(shapes),
@@ -629,74 +630,20 @@ var SVGFlow = (function () {
                 });
             });
         }
-        function unhide(draw) {
+
+        function unhide() {
             draw.each(function () {
-                if (this.opacity(0)) {
+                if (this.opacity() === 0) {
                     this.opacity(1);
                 }
-            });
+            }, true);
         }
-        /*
-        function showHide(element, next, finishSet) {
-            var id;
-            if (element.visible === false) {
-                if (element.stepType === "decision") {
-                    element.visible = true;
-                }
 
-                if ((element.stepType !== undefined) && (element.stepType === "finish")) {
-                    for (i = 0; i < finishSet.length; i += 1) {
-                        if (finishSet[i].visible === true) {
-                          //finishSet[i].group.animate().opacity(0); //off for dev
-                            finishSet[i].visible = false;
-                        }
-                    }
-                    element.visible = true;
-                    finishSet.push(element);
-                }
-                if ((element.last !== undefined) && (element.last.finish !== undefined) && (element.last.finish.visible === true)) {
-                    element.last.finish.group.animate().opacity(0);
-                    element.last.finish.visible = false;
-                }
-
-                if ((element.inline !== undefined) && (element.inline === true)) {
-                    element.group.animate().opacity(1);
-                }
-
-                if ((next !== undefined) && (next.visible === true)) {
-                    showHide(next);
-                }
-
-                id = element.group.attr('id');
-                scrollTo(id);
-                return;
-            }
-
-            if (element.visible === true) {
-                element.group.animate().opacity(0);
-                if ((element.finish !== undefined) && (element.finish.visible === true)) {
-                    element.finish.group.animate().opacity(0);
-                }
-                if ((element.next !== undefined) && (element.next.visible === true)) {
-                    showHide(element.next);
-                }
-                if ((element.otherAction !== undefined) && (element.otherAction.visible === true)) {
-                    element.otherAction.group.animate().opacity(0);
-                    element.otherAction.visible = false;
-                }
-                element.visible = false;
-                if ((element.last !== undefined) && (element.last.last !== undefined)) {
-                    if (element.last.last.group !== undefined) {
-                        id = element.last.last.group.attr('id');
-                        scrollTo(id);
-                    } else {
-                        id = element.last.group.attr('id');
-                        scrollTo(id);
-                    }
-                }
-            } // end true
+        function hide() {
+            draw.clear();
+            setRoot(draw);
+            layoutShapes(shapes);
         }
-*/
         /*
         function drawGrid(draw) {
             var startPoint = 0,
@@ -726,6 +673,7 @@ var SVGFlow = (function () {
         return {
             config: setParams,
             unhide: unhide,
+            hide: hide,
             draw: setRoot,
             shapes: layoutShapes
         };
