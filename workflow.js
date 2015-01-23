@@ -1,119 +1,79 @@
 /*global SVG, jQuery, console*/
-//var console = console || {};
-//var jQuery = jQuery || {};
-//var SVG = SVG || {};
-
 /*
 function scrollTo(id) {
     "use strict";
     jQuery('#' + id).scrollintoview();
 }
 */
-
-var myRevealingModule = (function () {
-    "use strict";
-    var privateVar = "Ben Cherry",
-        publicVar  = "Hey there!";
-
-    function privateFunction() {
-        console.log("Name:" + privateVar);
-    }
-
-    function publicSetName(strName) {
-        privateVar = strName;
-    }
-
-    function publicGetName() {
-        privateFunction();
-    }
-
-
-        // Reveal public pointers to
-        // private functions and properties
-
-    return {
-        setName: publicSetName,
-        greeting: publicVar,
-        getName: publicGetName
-    };
-}());
-
 var SVGFlow = (function () {
         "use strict";
-        var draw, chartGroup, shapes, startEl, lowerConnector, shapeFuncs, itemIds, lookup, intY, intX, ah, i, config, params;
+        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {};
 
-        function init(params) {
-          // Set default dimensions
-            var w = 180,
-                h = 140,
-                defaults = {
-                    shapeWidth: w,
-                    shapeHeight: h,
-                    baseUnit: 80,
-                    gridCol: 80,
-                    rowHeight: 20,
-                    leftMargin: 10,
-                    connectorLength: 60,
-                    arrowHeadHeight: 20,
-                    startWidth: w,
-                    startHeight: 40,
-                    startCornerRadius: 20,
-                    startFill: '#d6d6d6',
-                    startStrokeWidth: 0.1,
-                    startStrokeColour: 'rgb(66, 66, 66)',
-                    startText: 'Start',
-                    startFontSize: 12,
-                    decisionWidth: w,
-                    decisionHeight: h,
-                    decisionFill: '#8b3572',
-                    decisionTextColour: '#fff',
-                    decisionFontSize: 12,
-                    finishTextColour: '#fff',
-                    finishWidth: w,
-                    finishHeight: h,
-                    finishLeftMargin: 20,
-                    finishFill: '#0F6C7E',
-                    finishFontSize: 12,
-                    processWidth: w,
-                    processHeight: h,
-                    processLeftMargin: 20,
-                    processFill: '#fff',
-                    processStrokeColour: 'rgb(66, 66, 66)',
-                    processStrokeWidth: 0.1,
-                    processTextColour: 'black',
-                    processFontSize: 12,
-                    labelWidth: 30,
-                    labelHeight: 20,
-                    labelRadius: 5,
-                    labelStroke: 0.1,
-                    labelFill: 'grey',
-                    labelOpacity: 1.0,
-                    labelFontSize: 12,
-                    arrowStroke: 1.0,
-                    arrowHeadColor: 'rgb(51, 51, 51)',
-                    arrowTextColour: '#fff',
-                    arrowFontSize: 12,
-                    arrowHeadOpacity: 1.0
-                },
-                property;
-
-            if (params) {
-                for (property in params) {
-                    if (params.hasOwnProperty(property)) {
-                        defaults[property] = params[property];
-                    }
-                }
-               // defaults.decisionWidth = params.decisionWidth || params.shapeWidth || defaults.decisionWidth;
-               // defaults.processWidth = params.processWidth || params.shapeWidth || defaults.processWidth;
-               // defaults.startWidth = params.startWidth || params.shapeWidth || defaults.startWidth;
-               // defaults.finishWidth = params.finishWidth || params.shapeWidth || defaults.finishWidth;
-            }
-            return defaults;
+        function setParams(u) {
+            userOpts = u;
+            return userOpts;
         }
 
-        function setParams(p) {
-            params = p;
-            config = init(params);
+        function init() {
+          // Set defaults
+            var w = userOpts.w || 180,
+                h = userOpts.w || 140,
+                arrowColour = userOpts.arrowColour || 'grey',
+                shapeStrokeColour = 'rgb(66, 66, 66)',
+                lightText = '#fff',
+                darkText = 'rgb(51, 51, 51)',
+                defaults = {
+                    shapeWidth: userOpts.shapeWidth || userOpts.w || w,
+                    shapeHeight: userOpts.shapeHeight || userOpts.h || h,
+                    baseUnit: userOpts.baseUnit || 80,
+                    gridCol: userOpts.gridCol || 80,
+                    rowHeight: userOpts.rowHeight || 20,
+                    leftMargin: userOpts.leftMargin || 10,
+                    connectorLength: userOpts.connectorLength || 60,
+                    startWidth: userOpts.startWidth || userOpts.w || w,
+                    startHeight: userOpts.startHeight || 40,
+                    startCornerRadius: userOpts.startCornerRadius || 20,
+                    startFill:  userOpts.startFill || arrowColour,
+                    startStrokeWidth: userOpts.startStrokeWidth || 0.1,
+                    startStrokeColour: userOpts.startStrokeColour || 'rgb(66, 66, 66)',
+                    startTextColour: userOpts.startTextColour || lightText,
+                    startText: userOpts.startText || 'Start',
+                    startFontSize: userOpts.startFontSize || 12,
+                    decisionWidth: userOpts.decisionWidth || userOpts.w || w,
+                    decisionHeight: userOpts.decisionHeight || userOpts.h || h,
+                    decisionFill: userOpts.decisionFill || '#8b3572',
+                    decisionTextColour: userOpts.decisionTextColour || '#fff',
+                    decisionFontSize: userOpts.decisionFontSize || 12,
+                    finishTextColour: userOpts.finishTextColour || '#fff',
+                    finishWidth: userOpts.finishWidth || userOpts.w || w,
+                    finishHeight: userOpts.finishHeight || userOpts.h || h,
+                    finishLeftMargin: userOpts.finishLeftMargin || 20,
+                    finishFill: userOpts.finishFill || '#0F6C7E',
+                    finishFontSize: userOpts.finishFontSize || 12,
+                    processWidth: userOpts.processWidth || userOpts.w || w,
+                    processHeight: userOpts.processHeight || userOpts.h || h,
+                    processLeftMargin: userOpts.processLeftMargin || 20,
+                    processFill: userOpts.processFill || '#fff',
+                    processStrokeColour: userOpts.processStrokeColour || shapeStrokeColour,
+                    processStrokeWidth: userOpts.processStrokeWidth || 0.1,
+                    processTextColour: userOpts.processTextColour || darkText,
+                    processFontSize: userOpts.processFontSize || 12,
+                    labelWidth: userOpts.labelWidth || 30,
+                    labelHeight: userOpts.labelHeight || 20,
+                    labelRadius: userOpts.labelRadius || 5,
+                    labelStroke: userOpts.labelStroke || 0.1,
+                    labelFill: userOpts.labelFill || arrowColour,
+                    labelOpacity: userOpts.labelOpacity || 1.0,
+                    labelFontSize: userOpts.labelFontSize || 12,
+                    arrowHeadHeight: userOpts.arrowHeadHeight || 20,
+                    arrowStroke: userOpts.arrowStroke || 1.0,
+                    arrowLineColour: userOpts.arrowLineColour || arrowColour,
+                    arrowHeadColor: userOpts.arrowHeadColor || arrowColour,
+                    arrowTextColour: userOpts.arrowTextColour || '#fff',
+                    arrowFontSize: userOpts.arrowFontSize || 12,
+                    arrowHeadOpacity: userOpts.arrowHeadOpacity || 1.0
+                };
+            return defaults;
         }
 
         function arrowHead() {
@@ -122,29 +82,30 @@ var SVGFlow = (function () {
                     config.arrowHeadHeight
                     + ",0 "
                     + config.arrowHeadHeight / 2
-                    + "," + config.arrowHeadHeight;
+                    + "," + config.arrowHeadHeight,
 
-            ah = draw.polygon(coords).fill({
-                color: config.arrowHeadColor,
-                opacity: config.arrowHeadOpacity
-            });
+                ah = draw.polygon(coords).fill({
+                    color: config.arrowHeadColor,
+                    opacity: config.arrowHeadOpacity
+                });
             return ah;
         }
 
         function arrowLine() {
             var group = draw.group(),
+                ah = arrowHead()
+                    .move(
+                        -(config.arrowHeadHeight / 2),
+                        config.connectorLength - config.arrowHeadHeight
+                    ),
                 line = draw
                     .line(0, 0, 0, config.connectorLength - config.arrowHeadHeight)
-                    .stroke({
-                        width: config.arrowStroke
+                    .attr({
+                        width: config.arrowStroke,
+                        stroke: config.arrowLineColour
                     });
-            group.add(line);
-            ah = arrowHead();
-            group.add(ah);
-            ah.move(
-                -(config.arrowHeadHeight / 2),
-                config.connectorLength - config.arrowHeadHeight
-            );
+            group.add(line).add(ah);
+
             return group;
         }
 
@@ -297,32 +258,34 @@ var SVGFlow = (function () {
         }
   // The process shape that has an outlet, but no choice
         function process(options) {
-            var text, rect, shapeBbox, arrowYes,
-                group = draw.group();
-            group.attr({
-                "class": "process-group"
-            });
-            rect = draw
+            var text, shapeBbox, arrowYes,
+                group = draw.group()
+                .attr({
+                    "class": "process-group"
+                }),
+                rect = draw
                 .rect(config.processWidth, config.processHeight)
                 .attr({
                     fill: config.processFill,
                     stroke: config.processStrokeColour,
                     "class": "fc-process"
                 });
-            group.add(rect);
 
-            rect.clone();
             text = draw.text(function (add) {
                 options.text.forEach(function (l) {
                     add.tspan(l).newLine();
                 });
             });
 
+            text.y(0);
+            group.add(rect);
+            rect.clone();
             group.add(text);
             text.clipWith(rect);
-            text.height(rect.height());
+
+              // This is buggy but best that can be done for now
             text.cy(rect.bbox().cy);
-            text.move(config.processLeftMargin);
+            text.move(config.finishLeftMargin);
             text.font({size: config.processFontSize});
 
             // Add a bottom arrow that can be removed later
@@ -360,7 +323,8 @@ var SVGFlow = (function () {
             lowerConnector = arrowLine();
             text = draw.text(function (add) { add.tspan(config.startText).newLine().attr({
                 'text-anchor': 'middle',
-                'font-size': config.startFontSize
+                'font-size': config.startFontSize,
+                'fill' : config.startTextColour
             }); });
             group.add(rect);
             group.add(text);
@@ -379,24 +343,25 @@ var SVGFlow = (function () {
   // This where the real work of generating and laying out shapes is done
   // add the actual id
   // capture the IDs. Like to not do this if I can figure out how
-        function layoutShapes() {
+        function layoutShapes(shapes) {
             config = init();
-            chartGroup = draw.group();
+            var chartGroup = draw.group(),
+                startEl = flowStart(),
+                itemIds = {};
+
             chartGroup.x(config.leftMargin);
-            startEl = flowStart();
             chartGroup.add(startEl);
-            itemIds = {};
+
             shapes.forEach(function (element) {
-                if (element.type === undefined) {
-                    console.log(element.type);
+                if (element.type && (typeof shapeFuncs[element.type] === 'function')) {
+                    var shape = shapeFuncs[element.type](element);
+                    chartGroup.add(shape);
+                    element.id = shape.attr('id');
+                    itemIds[element.label] = element.id;
+                } else {
+                    console.log(element.type + ' is not a valid shape.');
+                    return false;
                 }
-                if (element.type && (typeof shapeFuncs[element.type] !== 'function')) {
-                    console.log(element.type);
-                }
-                var shape = shapeFuncs[element.type](element);
-                chartGroup.add(shape);
-                element.id = shape.attr('id');
-                itemIds[element.label] = element.id;
             });
 
   // Add the ids for yes and no elements
@@ -504,7 +469,8 @@ var SVGFlow = (function () {
                         endX,
                         endY,
                         startPoint,
-                        endPoint;
+                        endPoint,
+                        ah;
 
                        // It's a loop back to the yes option of the referring element
                     if (target !== undefined && element.nextid === element.previd) {
@@ -526,8 +492,9 @@ var SVGFlow = (function () {
                         endPoint = [endX, endY];
                         coords.push(endPoint);
 
-                        draw.polyline(coords).fill('none').stroke({
-                            width: 1
+                        draw.polyline(coords).fill('none').attr({
+                            width: config.arrowStroke,
+                            stroke: config.arrowLineColour
                         });
                         ah = arrowHead();
 
@@ -537,11 +504,6 @@ var SVGFlow = (function () {
                     } // end loop back
                 }
             });
-        }
-
-        function setShapes(s) {
-            shapes = s;
-            layoutShapes();
         }
 
         function unhide(draw) {
@@ -642,7 +604,7 @@ var SVGFlow = (function () {
             config: setParams,
             unhide: unhide,
             draw: setRoot,
-            shapes: setShapes
+            shapes: layoutShapes
         };
 
     }());
