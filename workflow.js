@@ -66,7 +66,7 @@ var SVGFlow = (function () {
                     labelOpacity: userOpts.labelOpacity || 1.0,
                     labelFontSize: userOpts.labelFontSize || 12,
                     arrowHeadHeight: userOpts.arrowHeadHeight || 20,
-                    arrowStroke: userOpts.arrowStroke || 1.0,
+                    arrowStroke: userOpts.arrowStroke ||  1.0,
                     arrowLineColour: userOpts.arrowLineColour || arrowColour,
                     arrowHeadColor: userOpts.arrowHeadColor || arrowColour,
                     arrowTextColour: userOpts.arrowTextColour || '#fff',
@@ -101,8 +101,8 @@ var SVGFlow = (function () {
                 line = draw
                     .line(0, 0, 0, config.connectorLength - config.arrowHeadHeight)
                     .attr({
-                        width: config.arrowStroke,
-                        stroke: config.arrowLineColour
+                        'stroke-width': config.arrowStroke,
+                        'stroke': config.arrowLineColour
                     });
             group.add(line).add(ah);
 
@@ -241,7 +241,7 @@ var SVGFlow = (function () {
                 .rect(config.finishWidth, config.finishHeight)
                 .attr({
                     fill: config.finishFill,
-                    "class": "fc-finish",
+                    "class": "fc-finish"
                 }).radius(20);
 
             text = draw.text(function (add) {
@@ -341,6 +341,7 @@ var SVGFlow = (function () {
                 if (firstShape.opacity() === 0) {
                     firstShape.animate().opacity(1);
                 } else {
+                    firstShape.animate().opacity(1);
                     shapes.forEach(function (s) {
                         SVG.get(s.id).animate().opacity(0);
                     });
@@ -362,8 +363,7 @@ var SVGFlow = (function () {
             var chartGroup = draw.group(),
                 startEl = flowStart(shapes),
                 itemIds = {},
-                indexFromId = {},
-                clickTracker = [];
+                indexFromId = {};
 
             chartGroup.x(config.leftMargin);
             chartGroup.add(startEl);
@@ -527,49 +527,97 @@ var SVGFlow = (function () {
             // The show/hide function
             arrowSet.each(function () {
                 this.click(function () {
-                    console.log('clicked');
                     var txt = this.get(2).get(1).content,
                         parentId = this.parent.attr('id'),
                         parentIndex = indexFromId[parentId],
                         parentOptions = shapes[parentIndex],
-                        el,
-                        currentIndex,
-                        removeArray;
+                        el;
 
                     if (txt === 'Yes') {
                         el = SVG.get(parentOptions.yesid);
                         if (el.opacity() === 0) {
-                            clickTracker.push(parentOptions.yesid);
-                            el.animate().opacity(1);
+                            el.animate().opacity(1)
+                                .after(function () {
+                                    SVG.get(parentOptions.noid).animate().opacity(0)
+                                        .after(function () {
+                                            shapes.forEach(function (element) {
+                                                if (SVG.get(element.id).opacity() === 0) {
+                                                    if (element.yesid) {
+                                                        SVG.get(element.yesid).animate(500).opacity(0);
+                                                    }
+                                                    if (element.noid) {
+                                                        SVG.get(element.noid).animate(500).opacity(0);
+                                                    }
+                                                    if (element.nextid) {
+                                                        console.log('tba');
+                                                    }
+                                                }
+                                            });
+                                        });
+                                });
                         } else {
-                            el.animate().opacity(0);
-                            currentIndex = clickTracker.indexOf(parentOptions.id);
-                            removeArray = clickTracker.slice(currentIndex - 1, clickTracker.length);
-                            //console.log(clickTracker);
-                            //console.log(removeArray);
-                            for (i = 0; i < removeArray.length; i += 1) {
-                                SVG.get(removeArray[i]).animate().opacity(0);
-                            }
-
-                            shapes.forEach(function (element) {
-                                if (element.id === parentOptions.yesid) {
-                                    if (element.noid) {
-                                       // idArray.push(element.noid);
+                            el.animate().opacity(0)
+                                .after(
+                                    function () {
+                                        shapes.forEach(function (element) {
+                                            if (SVG.get(element.id).opacity() === 0) {
+                                                if (element.yesid) {
+                                                    SVG.get(element.yesid).animate(500).opacity(0);
+                                                }
+                                                if (element.noid) {
+                                                    SVG.get(element.noid).animate(500).opacity(0);
+                                                }
+                                                if (element.nextid) {
+                                                    console.log('tba');
+                                                }
+                                            }
+                                        });
                                     }
-                                    if (element.previd) {
-                                        //idArray.push(element.previd);
-                                    }
-                                }
-                            });
+                                );
                         }
                     }
 
                     if (txt === 'No') {
                         el = SVG.get(parentOptions.noid);
                         if (el.opacity() === 0) {
-                            el.animate().opacity(1);
+                            el.animate().opacity(1)
+                                .after(function () {
+                                    SVG.get(parentOptions.yesid).animate().opacity(0)
+                                        .after(function () {
+                                            shapes.forEach(function (element) {
+                                                if (SVG.get(element.id).opacity() === 0) {
+                                                    if (element.yesid) {
+                                                        SVG.get(element.yesid).animate(500).opacity(0);
+                                                    }
+                                                    if (element.noid) {
+                                                        SVG.get(element.noid).animate(500).opacity(0);
+                                                    }
+                                                    if (element.nextid) {
+                                                        console.log('tba');
+                                                    }
+                                                }
+                                            });
+                                        });
+                                });
                         } else {
-                            el.animate().opacity(0);
+                            el.animate().opacity(0)
+                                .after(
+                                    function () {
+                                        shapes.forEach(function (element) {
+                                            if (SVG.get(element.id).opacity() === 0) {
+                                                if (element.yesid) {
+                                                    SVG.get(element.yesid).animate(500).opacity(0);
+                                                }
+                                                if (element.noid) {
+                                                    SVG.get(element.noid).animate(500).opacity(0);
+                                                }
+                                                if (element.nextid) {
+                                                    console.log('tba');
+                                                }
+                                            }
+                                        });
+                                    }
+                                );
                         }
                     }
 
@@ -581,7 +629,6 @@ var SVGFlow = (function () {
                 });
             });
         }
-
         function unhide(draw) {
             draw.each(function () {
                 if (this.opacity(0)) {
