@@ -7,7 +7,7 @@ function scrollTo(id) {
 */
 var SVGFlow = (function () {
         "use strict";
-        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {};
+        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet;
 
         function setParams(u) {
             userOpts = u;
@@ -160,6 +160,8 @@ var SVGFlow = (function () {
                     labelGroup.rotate(-90);
                 }
             }
+            arrowGroup.attr({"cursor": "pointer", "class" : "fc-arrow"});
+            arrowSet.add(arrowGroup);
             return arrowGroup;
         }
 
@@ -305,10 +307,9 @@ var SVGFlow = (function () {
             process: process
         };
 
-        function flowStart() {
+        function flowStart(shapes) {
             var text, shapeBox, rect,
                 group = draw.group().attr({
-                    "cursor": "pointer",
                     "class": "fc-start"
                 });
 
@@ -333,11 +334,24 @@ var SVGFlow = (function () {
             text.move(shapeBox.cx);
             text.cy(shapeBox.cy);
             group.add(lowerConnector);
+            group.attr({"cursor": "pointer"});
+
+            group.click(function () {
+                var firstShape = SVG.get(shapes[0].id);
+                if (firstShape.opacity() === 0) {
+                    firstShape.animate().opacity(1);
+                } else {
+                    shapes.forEach(function (s) {
+                        SVG.get(s.id).animate().opacity(0);
+                    });
+                }
+            });
             return group;
         }
 
         function setRoot(el) {
             draw = el;
+            arrowSet = draw.set();
         }
 
   // This where the real work of generating and laying out shapes is done
@@ -346,18 +360,22 @@ var SVGFlow = (function () {
         function layoutShapes(shapes) {
             config = init();
             var chartGroup = draw.group(),
-                startEl = flowStart(),
-                itemIds = {};
+                startEl = flowStart(shapes),
+                itemIds = {},
+                indexFromId = {},
+                clickTracker = [];
 
             chartGroup.x(config.leftMargin);
             chartGroup.add(startEl);
 
-            shapes.forEach(function (element) {
+            shapes.forEach(function (element, index) {
                 if (element.type && (typeof shapeFuncs[element.type] === 'function')) {
                     var shape = shapeFuncs[element.type](element);
                     chartGroup.add(shape);
                     element.id = shape.attr('id');
                     itemIds[element.label] = element.id;
+                    indexFromId[element.id] = index;
+                    shape.opacity(0);
                 } else {
                     console.log(element.type + ' is not a valid shape.');
                     return false;
@@ -469,8 +487,7 @@ var SVGFlow = (function () {
                         endX,
                         endY,
                         startPoint,
-                        endPoint,
-                        ah;
+                        endPoint;
 
                        // It's a loop back to the yes option of the referring element
                     if (target !== undefined && element.nextid === element.previd) {
@@ -491,6 +508,7 @@ var SVGFlow = (function () {
 
                         endPoint = [endX, endY];
                         coords.push(endPoint);
+                        /*
 
                         draw.polyline(coords).fill('none').attr({
                             width: config.arrowStroke,
@@ -501,8 +519,66 @@ var SVGFlow = (function () {
                         ah.x(endX - config.arrowHeadHeight);
                         ah.y(endY - (config.arrowHeadHeight / 2));
                         ah.rotate(90);
+                        */
                     } // end loop back
                 }
+            });
+
+            // The show/hide function
+            arrowSet.each(function () {
+                this.click(function () {
+                    console.log('clicked');
+                    var txt = this.get(2).get(1).content,
+                        parentId = this.parent.attr('id'),
+                        parentIndex = indexFromId[parentId],
+                        parentOptions = shapes[parentIndex],
+                        el,
+                        currentIndex,
+                        removeArray;
+
+                    if (txt === 'Yes') {
+                        el = SVG.get(parentOptions.yesid);
+                        if (el.opacity() === 0) {
+                            clickTracker.push(parentOptions.yesid);
+                            el.animate().opacity(1);
+                        } else {
+                            el.animate().opacity(0);
+                            currentIndex = clickTracker.indexOf(parentOptions.id);
+                            removeArray = clickTracker.slice(currentIndex - 1, clickTracker.length);
+                            //console.log(clickTracker);
+                            //console.log(removeArray);
+                            for (i = 0; i < removeArray.length; i += 1) {
+                                SVG.get(removeArray[i]).animate().opacity(0);
+                            }
+
+                            shapes.forEach(function (element) {
+                                if (element.id === parentOptions.yesid) {
+                                    if (element.noid) {
+                                       // idArray.push(element.noid);
+                                    }
+                                    if (element.previd) {
+                                        //idArray.push(element.previd);
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    if (txt === 'No') {
+                        el = SVG.get(parentOptions.noid);
+                        if (el.opacity() === 0) {
+                            el.animate().opacity(1);
+                        } else {
+                            el.animate().opacity(0);
+                        }
+                    }
+
+                    if (el.opacity() === 0) {
+                        console.log('not visible');
+                    } else {
+                        console.log('visible');
+                    }
+                });
             });
         }
 
