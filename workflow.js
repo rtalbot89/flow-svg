@@ -1,21 +1,4 @@
-/*global SVG, jQuery, console*/
-
-function scrollTo(id) {
-//console.log(id);
-   // "use strict";
-   // $('#' + id).scrollintoview();
-   var sid = '#' + id;
-   console.log(sid);
-   $.scrollTo(id, 800, {easing:'elasout'} );
-   
-}
-
-function windowscroll(yscroll,scrollspeed){
-    window.scrollBy(0,-9000);//initial scroll to the top of the page
-    for (var iscroll=0;iscroll<yscroll;iscroll++){
-        setTimeout('window.scrollBy(0,' + iscroll + ')',scrollspeed*iscroll);
-    }
-}
+/*global SVG, jQuery, $,  console*/
 var SVGFlow = (function () {
         "use strict";
         var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes;
@@ -244,7 +227,9 @@ var SVGFlow = (function () {
 
         function finish(options) {
             var rect, text,
-                group = draw.group();
+                group = draw.group(),
+                content = draw.group();
+
             group.attr({
                 "class": "finish-group"
             });
@@ -262,11 +247,24 @@ var SVGFlow = (function () {
             });
             text.fill(config.finishTextColour).font({size: config.finishFontSize});
             group.add(rect);
-            rect.clone();
-            group.add(text);
-            text.clipWith(rect);
-            text.x(config.finishLeftMargin);
-            text.cy(rect.bbox().cy);
+            group.add(content);
+            content.add(text);
+            // Dealing with links
+            if (options.links) {
+                options.links.forEach(function (l) {
+                    var url = draw.link(l.url),
+                        txt = draw.text(l.text),
+                        tbox;
+                    url.add(txt);
+                    txt.fill('yellow').font({size: config.finishFontSize});
+                    tbox = content.bbox();
+                    txt.dmove(0, tbox.height + 5);
+                    content.add(url);
+                });
+            }
+            // check content y. might be a bit of a gap
+            content.cy(config.finishHeight / 2);
+            content.x(config.finishLeftMargin);
             return group;
         }
   // The process shape that has an outlet, but no choice
@@ -543,16 +541,12 @@ var SVGFlow = (function () {
                         parentId = this.parent.attr('id'),
                         parentIndex = indexFromId[parentId],
                         parentOptions = shapes[parentIndex],
-                        el;
+                        el,
+                        tid;
 
                     if (txt === 'Yes') {
-                    console.log(parentOptions);
-                   // window.scrollBy({ top: 100, behavior: 'smooth' });
-                   // window.scrollBy(0, 100);
-                   var tid = '#' + parentOptions.previd;
-                   
-                    $.scrollTo(tid, 1500);
-                    //scrollTo('#' + parentOptions.yesid);
+                        tid = '#' + parentOptions.previd;
+                        $.scrollTo(tid, 1500);
                         el = SVG.get(parentOptions.yesid);
                         if (el.opacity() === 0) {
                             el.animate().opacity(1)
@@ -638,12 +632,6 @@ var SVGFlow = (function () {
                                     }
                                 );
                         }
-                    }
-
-                    if (el.opacity() === 0) {
-                        //console.log('not visible');
-                    } else {
-                        //console.log('visible');
                     }
                 });
             });
