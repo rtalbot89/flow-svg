@@ -1,10 +1,21 @@
 /*global SVG, jQuery, console*/
-/*
+
 function scrollTo(id) {
-    "use strict";
-    jQuery('#' + id).scrollintoview();
+//console.log(id);
+   // "use strict";
+   // $('#' + id).scrollintoview();
+   var sid = '#' + id;
+   console.log(sid);
+   $.scrollTo(id, 800, {easing:'elasout'} );
+   
 }
-*/
+
+function windowscroll(yscroll,scrollspeed){
+    window.scrollBy(0,-9000);//initial scroll to the top of the page
+    for (var iscroll=0;iscroll<yscroll;iscroll++){
+        setTimeout('window.scrollBy(0,' + iscroll + ')',scrollspeed*iscroll);
+    }
+}
 var SVGFlow = (function () {
         "use strict";
         var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes;
@@ -535,6 +546,13 @@ var SVGFlow = (function () {
                         el;
 
                     if (txt === 'Yes') {
+                    console.log(parentOptions);
+                   // window.scrollBy({ top: 100, behavior: 'smooth' });
+                   // window.scrollBy(0, 100);
+                   var tid = '#' + parentOptions.previd;
+                   
+                    $.scrollTo(tid, 1500);
+                    //scrollTo('#' + parentOptions.yesid);
                         el = SVG.get(parentOptions.yesid);
                         if (el.opacity() === 0) {
                             el.animate().opacity(1)
@@ -623,9 +641,9 @@ var SVGFlow = (function () {
                     }
 
                     if (el.opacity() === 0) {
-                        console.log('not visible');
+                        //console.log('not visible');
                     } else {
-                        console.log('visible');
+                        //console.log('visible');
                     }
                 });
             });
