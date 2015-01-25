@@ -1,10 +1,12 @@
 /*global SVG, jQuery, $,  console*/
 var SVGFlow = (function () {
         "use strict";
-        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes;
+        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes, interactive = true;
 
         function setParams(u) {
             userOpts = u;
+            interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
+            console.log(interactive);
             return userOpts;
         }
 
@@ -364,6 +366,15 @@ var SVGFlow = (function () {
             arrowSet = draw.set();
         }
 
+        function unhide() {
+            draw.each(function () {
+                if (this.opacity() === 0) {
+                    this.opacity(1);
+                }
+            }, true);
+            interactive = false;
+        }
+
   // This where the real work of generating and laying out shapes is done
   // add the actual id
   // capture the IDs. Like to not do this if I can figure out how
@@ -377,6 +388,8 @@ var SVGFlow = (function () {
 
             chartGroup.x(config.leftMargin);
             chartGroup.add(startEl);
+
+            console.log(interactive + 'layoutShapes');
 
             shapes.forEach(function (element, index) {
                 if (element.type && (typeof shapeFuncs[element.type] === 'function')) {
@@ -631,21 +644,18 @@ var SVGFlow = (function () {
                     }
                 });
             });
-        }
-
-        function unhide() {
-            draw.each(function () {
-                if (this.opacity() === 0) {
-                    this.opacity(1);
-                }
-            }, true);
+            if (interactive === false) {
+                unhide();
+            }
         }
 
         function hide() {
             draw.clear();
             setRoot(draw);
+            interactive = true;
             layoutShapes(shapes);
         }
+
         /*
         function drawGrid(draw) {
             var startPoint = 0,
