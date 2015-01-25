@@ -107,7 +107,7 @@ var SVGFlow = (function () {
             var text,
                 arrowGroup = arrowLine(options),
                 labelGroup = draw.group(),
-                label = draw
+                label = labelGroup
                       .rect(
                         config.labelWidth,
                         config.labelHeight
@@ -120,20 +120,20 @@ var SVGFlow = (function () {
                         fill: config.labelFill
                     });
 
-            labelGroup.add(label);
+            //labelGroup.add(label);
 
             label.move(
                 -(config.labelWidth / 2),
                 config.labelHeight / 2
             );
 
-            text = draw.text(txt).attr({
+            text = labelGroup.text(txt).attr({
                 fill: config.arrowTextColour,
                 'text-anchor': 'middle',
                 'font-size' : config.arrowFontSize
             });
             text.cy(label.cy());
-            labelGroup.add(text);
+            //labelGroup.add(text);
             arrowGroup.add(labelGroup);
 
             if (txt === 'Yes') {
@@ -171,22 +171,22 @@ var SVGFlow = (function () {
                 " " + config.decisionWidth / 2 + ","
                 + config.decisionHeight;
 
-            shape = draw.polygon(coords)
+            shape = group.polygon(coords)
                 .attr({
                     fill: config.decisionFill,
                     "class": 'fc-rhombus'
                 });
             group.attr('class', 'fc-decision');
-            group.add(shape);
+            //group.add(shape);
             shape.clone();
 
-            text = draw.text(function (add) {
+            text = group.text(function (add) {
                 options.text.forEach(function (l) {
                     add.tspan(l).newLine().attr('text-anchor', 'middle');
                 });
             });
             text.fill(config.decisionTextColour).font({size: config.decisionFontSize});
-            group.add(text);
+            //group.add(text);
             text.clipWith(shape);
 
             text.cx(shape.cx() + text.bbox().width + text.bbox().x);
@@ -233,22 +233,22 @@ var SVGFlow = (function () {
             group.attr({
                 "class": "finish-group"
             });
-            rect = draw
+            rect = group
                 .rect(config.finishWidth, config.finishHeight)
                 .attr({
                     fill: config.finishFill,
                     "class": "fc-finish"
                 }).radius(20);
 
-            text = draw.text(function (add) {
+            text = content.text(function (add) {
                 options.text.forEach(function (l) {
                     add.tspan(l).newLine();
                 });
             });
             text.fill(config.finishTextColour).font({size: config.finishFontSize});
-            group.add(rect);
+            //group.add(rect);
             group.add(content);
-            content.add(text);
+            //content.add(text);
             // Dealing with links
             if (options.links) {
                 options.links.forEach(function (l) {
@@ -274,7 +274,7 @@ var SVGFlow = (function () {
                 .attr({
                     "class": "process-group"
                 }),
-                rect = draw
+                rect = group
                 .rect(config.processWidth, config.processHeight)
                 .attr({
                     fill: config.processFill,
@@ -282,17 +282,17 @@ var SVGFlow = (function () {
                     "class": "fc-process"
                 });
 
-            text = draw.text(function (add) {
+            text = group.text(function (add) {
                 options.text.forEach(function (l) {
                     add.tspan(l).newLine();
                 });
             });
 
-            text.y(0);
-            group.add(rect);
-            rect.clone();
-            group.add(text);
-            text.clipWith(rect);
+            //text.y(0);
+            //group.add(rect);
+            //rect.clone();
+            //group.add(text);
+            //text.clipWith(rect);
 
               // This is buggy but best that can be done for now
             text.cy(rect.bbox().cy);
