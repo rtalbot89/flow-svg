@@ -226,14 +226,14 @@ var SVGFlow = (function () {
         }
 
         function finish(options) {
-            var rect, text,
+            var text,
                 group = draw.group(),
                 content = draw.group();
 
             group.attr({
                 "class": "finish-group"
             });
-            rect = group
+            group
                 .rect(config.finishWidth, config.finishHeight)
                 .attr({
                     fill: config.finishFill,
@@ -322,7 +322,7 @@ var SVGFlow = (function () {
                     "class": "fc-start"
                 });
 
-            rect = draw.rect(config.startWidth, config.startHeight)
+            rect = group.rect(config.startWidth, config.startHeight)
                 .attr({
                     fill: config.startFill,
                     'stroke-width' : config.startStrokeWidth,
@@ -331,13 +331,13 @@ var SVGFlow = (function () {
                 .radius(config.startCornerRadius);
 
             lowerConnector = arrowLine();
-            text = draw.text(function (add) { add.tspan(config.startText).newLine().attr({
+            text = group.text(function (add) { add.tspan(config.startText).newLine().attr({
                 'text-anchor': 'middle',
                 'font-size': config.startFontSize,
                 'fill' : config.startTextColour
             }); });
-            group.add(rect);
-            group.add(text);
+            //group.add(rect);
+            //group.add(text);
             shapeBox = rect.bbox();
             lowerConnector.move(shapeBox.cx, shapeBox.height);
             text.move(shapeBox.cx);
@@ -435,44 +435,40 @@ var SVGFlow = (function () {
 
             });
 
-  // Layout the shapes
+            // Layout the shapes
             shapes.forEach(function (element, index) {
                 var ce = SVG.get(element.id), te, cHeight, tHeight, diff;
                 if (index === 0) {
                     SVG.get(element.id).y(startEl.bbox().height);
                 }
 
-          // check if orient is set. Otherwise default to yes b and no r
-                if (element.yes) {
-                    if ((element.orient === undefined && element.yesid !== undefined) || (element.orient !== undefined && element.orient.yes !== undefined && element.orient.yes === 'b')) {
-                        SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height);
-                    }
+                // Check if orient is set. If not, set to defaults
+                if (!element.orient) {
+                    element.orient = {yes: 'b', no: 'r'};
                 }
 
-                if (element.no) {
-                    if (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'b') {
-                        SVG.get(element.noid).move(ce.x(), ce.y() + ce.bbox().height);
-                    }
+                if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
+                    SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height);
                 }
 
-                if (element.yes) {
-                    if (element.orient !== undefined && element.yesid !== undefined && element.orient.yes !== undefined && element.orient.yes === 'r') {
-                        te = SVG.get(element.yesid);
-                        cHeight = ce.first().height();
-                        tHeight = te.first().height();
-                        diff = (cHeight / 2) - (tHeight / 2);
-                        te.move(ce.x() + ce.bbox().width, ce.y() + diff);
-                    }
+                if (element.no && element.noid !== undefined && element.orient.no === 'b') {
+                    SVG.get(element.noid).move(ce.x(), ce.y() + ce.bbox().height);
                 }
 
-                if (element.no) {
-                    if ((element.orient === undefined && element.noid !== undefined) || (element.orient !== undefined && element.noid !== undefined && element.orient.no !== undefined && element.orient.no === 'r')) {
-                        te = SVG.get(element.noid);
-                        cHeight = ce.first().height();
-                        tHeight = te.first().height();
-                        diff = (cHeight / 2) - (tHeight / 2);
-                        te.move(ce.x() + ce.bbox().width, ce.y() + diff);
-                    }
+                if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
+                    te = SVG.get(element.yesid);
+                    cHeight = ce.first().height();
+                    tHeight = te.first().height();
+                    diff = (cHeight / 2) - (tHeight / 2);
+                    te.move(ce.x() + ce.bbox().width, ce.y() + diff);
+                }
+
+                if (element.no && element.noid !== undefined && element.orient.no === 'r') {
+                    te = SVG.get(element.noid);
+                    cHeight = ce.first().height();
+                    tHeight = te.first().height();
+                    diff = (cHeight / 2) - (tHeight / 2);
+                    te.move(ce.x() + ce.bbox().width, ce.y() + diff);
                 }
 
                 if (element.next) {
