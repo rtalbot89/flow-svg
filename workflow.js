@@ -1,7 +1,7 @@
 /*global SVG, jQuery, $,  console*/
 var SVGFlow = (function () {
         "use strict";
-        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl;
+        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId;
 
         function setParams(u) {
             userOpts = u;
@@ -336,6 +336,8 @@ var SVGFlow = (function () {
                 })
                 .radius(config.startCornerRadius);
 
+            startId = group.attr('id');
+
             lowerConnector = arrowLine();
             text = group.text(function (add) { add.tspan(config.startText).newLine().attr({
                 'text-anchor': 'middle',
@@ -522,6 +524,7 @@ var SVGFlow = (function () {
             var ce = SVG.get(element.id), te, cHeight, tHeight, diff;
             if (index === 0) {
                 SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
+                element.previd = startId;
             }
 
             // Check if orient is set. If not, set to defaults
@@ -642,23 +645,59 @@ var SVGFlow = (function () {
             shapes.forEach(processConnectors);
 
             // The show/hide function
+            var tracker = [], toHide = [];
             arrowSet.each(function () {
                 this.click(function () {
                     var txt = this.get(2).get(1).content,
                         parentId = this.parent.attr('id'),
                         parentIndex = indexFromId[parentId],
                         parentOptions = shapes[parentIndex],
-                        el,
-                        tid,
-                        procOptions;
+                        n,
+                        y;
 
                     if (txt === 'Yes') {
-                       
+                        tracker.push(parentOptions.yesid);
+                        n = tracker.indexOf(parentOptions.noid);
+                        console.log('yesid selected: ' + parentOptions.yesid);
+                        if (n > -1) {
+                            tracker.splice(n, 1);
+                            toHide.push(parentOptions.noid);
+                        }
+                        y = toHide.indexOf(parentOptions.yesid);
+                        if (y > -1) {
+                            toHide.splice(y, 1);
+                        }
                     }
 
                     if (txt === 'No') {
-                    
+                        tracker.push(parentOptions.noid);
+                        n = tracker.indexOf(parentOptions.yesid);
+                        console.log('noid selected: ' + parentOptions.noid);
+                        if (n > -1) {
+                            tracker.splice(n, 1);
+                            toHide.push(parentOptions.yesid);
+                        }
+
+                        y = toHide.indexOf(parentOptions.noid);
+                        if (y > -1) {
+                            toHide.splice(y, 1);
+                        }
                     }
+
+                    //console.log(tracker);
+                    tracker.forEach(function (element) {
+                        console.log('showing: ' + element);
+                        SVG.get(element).opacity(1);
+                    });
+                    toHide.forEach(function (element) {
+                        console.log('hiding: ' + element);
+                        SVG.get(element).opacity(0);
+                    });
+                    shapes.forEach(function (element) {
+                        if (element.previd && SVG.get(element.previd).opacity() === 0) {
+                            SVG.get(element.id).opacity(0);
+                        }
+                    });
                 });
             });
             if (interactive === false) {
