@@ -649,13 +649,22 @@ var SVGFlow = (function () {
                         parentIndex = indexFromId[parentId],
                         parentOptions = shapes[parentIndex],
                         el,
-                        tid;
+                        tid,
+                        procOptions;
 
                     if (txt === 'Yes') {
+                        this.data({clicked: 'yes'});
                         tid = '#' + parentOptions.previd;
                         $.scrollTo(tid, 1500);
                         el = SVG.get(parentOptions.yesid);
                         if (el.opacity() === 0) {
+
+                            // see if the destination element is a process by looking for a nextid
+                            procOptions = shapes[indexFromId[parentOptions.yesid]];
+                            if (procOptions.nextid && procOptions.nextid !== procOptions.previd) {
+                                SVG.get(procOptions.nextid).animate().opacity(1);
+                            }
+
                             el.animate().opacity(1)
                                 .after(function () {
                                     SVG.get(parentOptions.noid).animate().opacity(0)
@@ -669,13 +678,19 @@ var SVGFlow = (function () {
                                                         SVG.get(element.noid).animate(500).opacity(0);
                                                     }
                                                     if (element.nextid) {
-                                                        console.log('tba');
+                                                        // SVG.get(element.nextid).animate(500).opacity(0);
                                                     }
                                                 }
                                             });
                                         });
                                 });
                         } else {
+                            
+                            // see if the destination element is a process by looking for a nextid
+                            procOptions = shapes[indexFromId[parentOptions.yesid]];
+                            if (procOptions.nextid && procOptions.nextid !== procOptions.previd) {
+                                SVG.get(procOptions.nextid).animate().opacity(0);
+                            }
                             el.animate().opacity(0)
                                 .after(
                                     function () {
@@ -688,7 +703,7 @@ var SVGFlow = (function () {
                                                     SVG.get(element.noid).animate(500).opacity(0);
                                                 }
                                                 if (element.nextid) {
-                                                    console.log('tba');
+                                                     //SVG.get(element.nextid).animate(500).opacity(0);
                                                 }
                                             }
                                         });
@@ -700,6 +715,11 @@ var SVGFlow = (function () {
                     if (txt === 'No') {
                         el = SVG.get(parentOptions.noid);
                         if (el.opacity() === 0) {
+                            // see if the destination element is a process by looking for a nextid
+                            procOptions = shapes[indexFromId[parentOptions.noid]];
+                            if (procOptions.nextid && procOptions.nextid !== procOptions.previd) {
+                                SVG.get(procOptions.nextid).animate().opacity(1);
+                            }
                             el.animate().opacity(1)
                                 .after(function () {
                                     SVG.get(parentOptions.yesid).animate().opacity(0)
@@ -713,16 +733,23 @@ var SVGFlow = (function () {
                                                         SVG.get(element.noid).animate(500).opacity(0);
                                                     }
                                                     if (element.nextid) {
-                                                        console.log('tba');
+                                                          //SVG.get(element.nextid).animate(500).opacity(0);
                                                     }
                                                 }
                                             });
                                         });
                                 });
                         } else {
+                            
                             el.animate().opacity(0)
                                 .after(
                                     function () {
+                                        // see if the destination element is a process by looking for a nextid
+                                        procOptions = shapes[indexFromId[parentOptions.noid]];
+                                        if (procOptions.nextid && procOptions.nextid !== procOptions.previd) {
+                                            SVG.get(procOptions.nextid).animate().opacity(0);
+                                        }
+                            
                                         shapes.forEach(function (element) {
                                             if (SVG.get(element.id).opacity() === 0) {
                                                 if (element.yesid) {
@@ -732,7 +759,7 @@ var SVGFlow = (function () {
                                                     SVG.get(element.noid).animate(500).opacity(0);
                                                 }
                                                 if (element.nextid) {
-                                                    console.log('tba');
+                                                     //SVG.get(element.nextid).animate(500).opacity(0);
                                                 }
                                             }
                                         });
