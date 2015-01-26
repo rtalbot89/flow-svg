@@ -318,7 +318,7 @@ var SVGFlow = (function () {
             process: process
         };
 
-        function flowStart(shapes) {
+        function start(shapes) {
             var text, shapeBox, rect,
                 group = draw.group().attr({
                     "class": "fc-start"
@@ -382,7 +382,7 @@ var SVGFlow = (function () {
             shapes = s;
             config = init();
             var chartGroup = draw.group(),
-                startEl = flowStart(shapes),
+                startEl = start(shapes),
                 itemIds = {},
                 indexFromId = {};
 
