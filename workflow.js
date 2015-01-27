@@ -124,8 +124,6 @@ var SVGFlow = (function () {
                         fill: config.labelFill
                     });
 
-            //labelGroup.add(label);
-
             label.move(
                 -(config.labelWidth / 2),
                 config.labelHeight / 2
@@ -137,7 +135,7 @@ var SVGFlow = (function () {
                 'font-size' : config.arrowFontSize
             });
             text.cy(label.cy());
-            //labelGroup.add(text);
+
             arrowGroup.add(labelGroup);
 
             if (txt === 'Yes') {
@@ -181,7 +179,7 @@ var SVGFlow = (function () {
                     "class": 'fc-rhombus'
                 });
             group.attr('class', 'fc-decision');
-            //group.add(shape);
+
             shape.clone();
 
             text = group.text(function (add) {
@@ -190,7 +188,7 @@ var SVGFlow = (function () {
                 });
             });
             text.fill(config.decisionTextColour).font({size: config.decisionFontSize});
-            //group.add(text);
+
             text.clipWith(shape);
 
             text.cx(shape.cx() + text.bbox().width + text.bbox().x);
@@ -250,9 +248,9 @@ var SVGFlow = (function () {
                 });
             });
             text.fill(config.finishTextColour).font({size: config.finishFontSize});
-            //group.add(rect);
+
             group.add(content);
-            //content.add(text);
+
             // Dealing with links
             if (options.links) {
                 options.links.forEach(function (l) {
@@ -271,7 +269,8 @@ var SVGFlow = (function () {
             content.x(config.finishLeftMargin);
             return group;
         }
-  // The process shape that has an outlet, but no choice
+
+        // The process shape that has an outlet, but no choice
         function process(options) {
             var text, shapeBbox, arrowYes,
                 group = draw.group()
@@ -327,7 +326,6 @@ var SVGFlow = (function () {
                     "class": "fc-start"
                 });
 
-            //group.add(buttonBar());
             rect = group.rect(config.startWidth, config.startHeight)
                 .attr({
                     fill: config.startFill,
@@ -344,8 +342,7 @@ var SVGFlow = (function () {
                 'font-size': config.startFontSize,
                 'fill' : config.startTextColour
             }); });
-            //group.add(rect);
-            //group.add(text);
+
             shapeBox = rect.bbox();
             lowerConnector.move(shapeBox.cx, shapeBox.height);
             text.move(shapeBox.cx);
@@ -364,7 +361,7 @@ var SVGFlow = (function () {
                     });
                 }
             });
-            //group.move(0,100);
+
             return group;
         }
 
@@ -614,7 +611,72 @@ var SVGFlow = (function () {
             }
         }
 
-        // Lay out the shapes in position
+
+        function arrowEvents() {
+            var tracker = [], toHide = [];
+            arrowSet.each(function () {
+                this.click(function () {
+                    var txt = this.get(2).get(1).content,
+                        parentId = this.parent.attr('id'),
+                        parentIndex = indexFromId[parentId],
+                        parentOptions = shapes[parentIndex],
+                        n,
+                        y;
+
+                    if (txt === 'Yes') {
+                        tracker.push(parentOptions.yesid);
+                        n = tracker.indexOf(parentOptions.noid);
+                        if (n > -1) {
+                            tracker.splice(n, 1);
+                            toHide.push(parentOptions.noid);
+                        }
+                        y = toHide.indexOf(parentOptions.yesid);
+                        if (y > -1) {
+                            toHide.splice(y, 1);
+                        }
+                    }
+
+                    if (txt === 'No') {
+                        tracker.push(parentOptions.noid);
+                        n = tracker.indexOf(parentOptions.yesid);
+                        if (n > -1) {
+                            tracker.splice(n, 1);
+                            toHide.push(parentOptions.yesid);
+                        }
+                        y = toHide.indexOf(parentOptions.noid);
+                        if (y > -1) {
+                            toHide.splice(y, 1);
+                        }
+                    }
+
+                    tracker.forEach(function (element) {
+                        shapes[indexFromId[element]].visible = true;
+                        if (shapes[indexFromId[element]].nextid) {
+                            var nextid = shapes[indexFromId[element]].nextid;
+                            shapes[indexFromId[nextid]].visible = true;
+                        }
+
+                    });
+                    toHide.forEach(function (element) {
+                        shapes[indexFromId[element]].visible = false;
+                    });
+                    shapes.forEach(function (element) {
+                        if (element.previd && shapes[indexFromId[element.previd]] !== undefined && shapes[indexFromId[element.previd]].visible === false) {
+                            element.visible = false;
+                        }
+                    });
+                    shapes.forEach(function (element) {
+                        if (element.visible === false) {
+                            SVG.get(element.id).animate().opacity(0);
+                        }
+                        if (element.visible === true) {
+                            SVG.get(element.id).animate().opacity(1);
+                        }
+                    });
+                });
+            });
+        }
+
         layoutShapes = function (s) {
             shapes = s;
             config = init();
@@ -645,61 +707,8 @@ var SVGFlow = (function () {
             shapes.forEach(processConnectors);
 
             // The show/hide function
-            var tracker = [], toHide = [];
-            arrowSet.each(function () {
-                this.click(function () {
-                    var txt = this.get(2).get(1).content,
-                        parentId = this.parent.attr('id'),
-                        parentIndex = indexFromId[parentId],
-                        parentOptions = shapes[parentIndex],
-                        n,
-                        y;
+            arrowEvents();
 
-                    if (txt === 'Yes') {
-                        tracker.push(parentOptions.yesid);
-                        n = tracker.indexOf(parentOptions.noid);
-                        console.log('yesid selected: ' + parentOptions.yesid);
-                        if (n > -1) {
-                            tracker.splice(n, 1);
-                            toHide.push(parentOptions.noid);
-                        }
-                        y = toHide.indexOf(parentOptions.yesid);
-                        if (y > -1) {
-                            toHide.splice(y, 1);
-                        }
-                    }
-
-                    if (txt === 'No') {
-                        tracker.push(parentOptions.noid);
-                        n = tracker.indexOf(parentOptions.yesid);
-                        console.log('noid selected: ' + parentOptions.noid);
-                        if (n > -1) {
-                            tracker.splice(n, 1);
-                            toHide.push(parentOptions.yesid);
-                        }
-
-                        y = toHide.indexOf(parentOptions.noid);
-                        if (y > -1) {
-                            toHide.splice(y, 1);
-                        }
-                    }
-
-                    //console.log(tracker);
-                    tracker.forEach(function (element) {
-                        console.log('showing: ' + element);
-                        SVG.get(element).opacity(1);
-                    });
-                    toHide.forEach(function (element) {
-                        console.log('hiding: ' + element);
-                        SVG.get(element).opacity(0);
-                    });
-                    shapes.forEach(function (element) {
-                        if (element.previd && SVG.get(element.previd).opacity() === 0) {
-                            SVG.get(element.id).opacity(0);
-                        }
-                    });
-                });
-            });
             if (interactive === false) {
                 unhide();
             }
