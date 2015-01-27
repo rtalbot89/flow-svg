@@ -6,7 +6,7 @@ var SVGFlow = (function () {
         function setParams(u) {
             userOpts = u;
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
-            console.log(interactive);
+            //console.log(interactive);
             return userOpts;
         }
 
@@ -213,10 +213,18 @@ var SVGFlow = (function () {
                 group.add(arrowNo);
                 arrowNo.cy(config.decisionHeight / 2);
                 arrowNo.x(shapeBbox.width + (config.connectorLength / 2));
+                 //console.log('interactive:' + interactive);
+                // Extend line from options if static
                 if (options.orient.no === 'r') {
-                    if (options.noline) {
+
+                    if (options.noline && interactive !== true) {
                         arrowNo.get(0).attr('y2', options.noline);
                         arrowNo.get(1).y(options.noline - config.arrowHeadHeight);
+                    }
+                    if (options.noline && interactive === true) {
+                        //console.log('this should work');
+                        arrowNo.get(0).attr('y2', config.connectorLength);
+                        arrowNo.get(1).y(config.connectorLength - config.arrowHeadHeight);
                     }
                 }
                 if (options.orient.no === 'b') {
@@ -369,21 +377,32 @@ var SVGFlow = (function () {
             draw = el;
             arrowSet = draw.set();
             chartGroup = draw.group();
+            if (userOpts.interactive === false) {
+                layoutShapes(shapes);
+                draw.each(function () {
+                    if (this.opacity() === 0) {
+                        this.opacity(1);
+                    }
+                }, true);
+            }
         }
 
         function unhide() {
+            draw.clear();
+            interactive = false;
+            setRoot(draw);
+            layoutShapes(shapes);
             draw.each(function () {
                 if (this.opacity() === 0) {
                     this.opacity(1);
                 }
             }, true);
-            interactive = false;
         }
 
         function hide() {
             draw.clear();
-            setRoot(draw);
             interactive = true;
+            setRoot(draw);
             layoutShapes(shapes);
         }
 
@@ -710,7 +729,8 @@ var SVGFlow = (function () {
             arrowEvents();
 
             if (interactive === false) {
-                unhide();
+                console.log('not implemented yet');
+                //unhide();
             }
         };
 
