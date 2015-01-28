@@ -773,17 +773,34 @@ var SVGFlow = (function () {
             if (element.nextid && element.orient.next === 'b') {
                 var nextElement = SVG.get(element.nextid);
                 
+                var yLevel;
+                
+                if (currentElement.y() < nextElement.y()) {
+                  yLevel = nextElement.y();
+                }
+                if (currentElement.y() >= nextElement.y()) {
+                  yLevel = nextElement.y() + nextElement.get(0).height();
+                }
+                
                 var line = draw.line(
                     (currentElement.get(0).width() / 2) + currentElement.x(), 
                     currentElement.y() + currentElement.get(0).height(), 
+                  
                     nextElement.x() + (nextElement.get(0).width() / 2), 
-                    //nextElement.x() + 30,
-                    nextElement.y() + nextElement.get(0).height()
+                  yLevel
                 ).stroke({ width: 1 });
+            }
+            
+            if (element.nextid && element.orient.next === 'r') {
+                var nextElement = SVG.get(element.nextid);
                 
-                
-                //console.log(nextElement.x());
-                //console.log(nextElement.y());
+                var line = draw.line(
+                    currentElement.get(0).width() + currentElement.x(), 
+                    currentElement.y() + (currentElement.get(0).height() / 2), 
+                  
+                  nextElement.x(), 
+                    nextElement.y() + (nextElement.get(0).height() / 2)
+                ).stroke({ width: 1 });
             }
            
             //console.log(element);
