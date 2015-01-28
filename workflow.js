@@ -26,7 +26,7 @@ var SVGFlow = (function () {
                     baseUnit: userOpts.baseUnit || 80,
                     gridCol: userOpts.gridCol || 80,
                     rowHeight: userOpts.rowHeight || 20,
-                    leftMargin: userOpts.leftMargin || 10,
+                    leftMargin: userOpts.leftMargin || 0,
                     connectorLength: userOpts.connectorLength || 60,
                     startWidth: userOpts.startWidth || userOpts.w || w,
                     startHeight: userOpts.startHeight || 40,
@@ -199,6 +199,7 @@ var SVGFlow = (function () {
             shapeBbox = shape.bbox();
 
             if (options.yes) {
+                /*
                 arrowYes = arrowConnector(options, 'Yes');
                 group.add(arrowYes);
                 if (options.orient.yes === 'r') {
@@ -209,15 +210,16 @@ var SVGFlow = (function () {
                     arrowYes.x(shapeBbox.width / 2);
                     arrowYes.y(shapeBbox.height);
                 }
+                */
             }
 
             if (options.no) {
+                
+                /*
                 arrowNo = arrowConnector(options, 'No');
                 group.add(arrowNo);
                 arrowNo.cy(config.decisionHeight / 2);
                 arrowNo.x(shapeBbox.width + (config.connectorLength / 2));
-                 //console.log('interactive:' + interactive);
-                // Extend line from options if static
                 if (options.orient.no === 'r') {
 
                     if (options.noline && interactive !== true) {
@@ -225,7 +227,6 @@ var SVGFlow = (function () {
                         arrowNo.get(1).y(options.noline - config.arrowHeadHeight);
                     }
                     if (options.noline && interactive === true) {
-                        //console.log('this should work');
                         arrowNo.get(0).attr('y2', config.connectorLength);
                         arrowNo.get(1).y(config.connectorLength - config.arrowHeadHeight);
                     }
@@ -234,8 +235,10 @@ var SVGFlow = (function () {
                     arrowNo.x(shapeBbox.width / 2);
                     arrowNo.y(shapeBbox.height);
                 }
+                */
             }
             return group;
+          
         }
 
         function finish(options) {
@@ -308,13 +311,13 @@ var SVGFlow = (function () {
             text.font({size: config.processFontSize});
 
             // Add a bottom arrow that can be removed later
-            shapeBbox = rect.bbox();
-            arrowYes = arrowConnector(options, 'Yes');
-            group.add(arrowYes);
-            arrowYes.x(shapeBbox.width / 2);
-            arrowYes.y(shapeBbox.height);
+            //shapeBbox = rect.bbox();
+            //arrowYes = arrowConnector(options, 'Yes');
+            //group.add(arrowYes);
+            //arrowYes.x(shapeBbox.width / 2);
+            //arrowYes.y(shapeBbox.height);
             // Remove the label
-            arrowYes.get(2).remove();
+            //arrowYes.get(2).remove();
             return group;
         }
 
@@ -538,25 +541,41 @@ var SVGFlow = (function () {
                 }
             }
         }
+        
+        // Check that something has not already been positioned
+        var positionLogger = [];
 
         function positionShapes(element, index) {
+            console.log(index);
             var ce = SVG.get(element.id), te, cHeight, tHeight, diff;
-            if (index === 0) {
-                SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
-                element.previd = startId;
-            }
-
             // Check if orient is set. If not, set to defaults
             if (!element.orient) {
-                element.orient = {yes: 'b', no: 'r'};
+                element.orient = {yes: 'b', no: 'r', next: 'b'};
             }
+            if (index === 0) {
+              //  console.log(index);
+               SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
+                element.previd = startId;
+                //return false;
+            }
+            
+            if (positionLogger.indexOf(element.id) > -1) {
+                console.log('already laid out');
+                return;
+            }
+            
+            positionLogger.push(element.id);
+            
+            var rightMargin = element.noline !== undefined ? element.noline : config.connectorLength;
+
+            
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
-                SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height);
+                SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height + config.connectorLength);
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
-                SVG.get(element.noid).move(ce.x(), ce.y() + ce.bbox().height);
+                SVG.get(element.noid).move(ce.x() , ce.y() + ce.bbox().height + config.connectorLength);
             }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
@@ -564,7 +583,7 @@ var SVGFlow = (function () {
                 cHeight = ce.first().height();
                 tHeight = te.first().height();
                 diff = (cHeight / 2) - (tHeight / 2);
-                te.move(ce.x() + ce.bbox().width, ce.y() + diff);
+                te.move(ce.x() + ce.bbox().width + rightMargin, ce.y() + diff);
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'r') {
@@ -572,15 +591,20 @@ var SVGFlow = (function () {
                 cHeight = ce.first().height();
                 tHeight = te.first().height();
                 diff = (cHeight / 2) - (tHeight / 2);
-                te.move(ce.x() + ce.bbox().width, ce.y() + diff);
+                te.move(ce.x() + ce.bbox().width + rightMargin, ce.y() + diff);
             }
 
-            if (element.next) {
-                // Make sure it's not already laid out
-                // Assume it's at the bottom for now
-                if (element.nextid !== element.previd) {
-                    SVG.get(element.nextid).move(ce.x(), ce.y() + ce.bbox().height);
-                }
+            if (element.next && element.orient.next === 'b' && element.nextid !== element.previd) {
+                  SVG.get(element.nextid).move(ce.x(), ce.y() + ce.bbox().height + rightMargin);
+            }
+            
+            if (element.next && element.orient.next === 'r'  && element.nextid !== element.previd) {
+                  SVG.get(element.nextid).move(ce.x() + ce.get(0).width() + rightMargin, ce.y());
+            }
+            
+            if (index === 0) {
+               // SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
+               // element.previd = startId;
             }
         }
 
@@ -697,6 +721,73 @@ var SVGFlow = (function () {
                 });
             });
         }
+        
+        // If there are indirect connections between any shapes look for them here
+ 
+        function adjustConnectors (element, index, array) {
+            var currentElement = SVG.get(element.id);
+         
+            if (element.yesid && element.orient.yes === 'b') {
+                var yesElement = SVG.get(element.yesid);
+               
+                var line = draw.line(
+                    currentElement.cx(), 
+                    currentElement.y() + currentElement.get(0).height(), 
+                    currentElement.cx(), 
+                    yesElement.y()
+                ).stroke({ width: 1 });
+            }
+            
+            if (element.noid && element.orient.no === 'b') {
+                var noElement = SVG.get(element.noid);
+               
+                var line = draw.line(
+                    currentElement.cx(), 
+                    currentElement.y() + currentElement.get(0).height(), 
+                    currentElement.cx(), 
+                    noElement.y()
+                ).stroke({ width: 1 });
+            }
+            
+            
+            if (element.yesid && element.orient.yes === 'r') {
+                var yesElement = SVG.get(element.yesid);
+                var line = draw.line(
+                    currentElement.get(0).width() + currentElement.x(), 
+                    currentElement.y() + (currentElement.get(0).height() / 2),
+                    yesElement.x(), 
+                    yesElement.y() + (yesElement.get(0).height() / 2)
+                ).stroke({ width: 1 });
+            }
+               
+            if (element.noid && element.orient.no === 'r') {
+                var noElement = SVG.get(element.noid);
+                var line = draw.line(
+                    currentElement.get(0).width() + currentElement.x(), 
+                    currentElement.y() + (currentElement.get(0).height() / 2),
+                    noElement.x(), 
+                    noElement.y() + (noElement.get(0).height() / 2)
+                ).stroke({ width: 1 });
+            }
+            
+            if (element.nextid && element.orient.next === 'b') {
+                var nextElement = SVG.get(element.nextid);
+                
+                var line = draw.line(
+                    (currentElement.get(0).width() / 2) + currentElement.x(), 
+                    currentElement.y() + currentElement.get(0).height(), 
+                    nextElement.x() + (nextElement.get(0).width() / 2), 
+                    //nextElement.x() + 30,
+                    nextElement.y() + nextElement.get(0).height()
+                ).stroke({ width: 1 });
+                
+                
+                //console.log(nextElement.x());
+                //console.log(nextElement.y());
+            }
+           
+            //console.log(element);
+        }
 
         layoutShapes = function (s) {
             shapes = s;
@@ -725,7 +816,10 @@ var SVGFlow = (function () {
             // Layout the shapes
             shapes.forEach(positionShapes);
 
-            shapes.forEach(processConnectors);
+            //shapes.forEach(processConnectors);
+            
+            shapes.forEach(adjustConnectors);
+            
 
             // The show/hide function. Only apply if we are in interactive mode
             if (interactive === true) {

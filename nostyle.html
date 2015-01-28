@@ -13,7 +13,7 @@
 </head>
 <body>
 	<h1>RCUK</h1>
-<div id="drawing"></div>
+<div id="drawing" style="margin-left:10px"></div>
 <!--
 <img style="float:right; padding-right:12px; margin-top:-30px" alt="Open Access logo" src="../../../../images/open_access_logo.png" border="0" /> 
 	-->
@@ -27,7 +27,7 @@
     var depositInWrap = ['Deposit in WRAP here or ','contact team'];
     SVGFlow.draw(SVG('drawing').size(940, 1600));
     SVGFlow.config({
-      //interactive: false
+      interactive: false
        // processHeight: 100
     });
     SVGFlow.shapes(
@@ -98,12 +98,15 @@
 			type: 'process',
 			text: ['Check the journal\'s policy','on the green route'],
 			next: 'd1-y-y-n',
+            orient: {next: 'r'}
 		}, 
         {
             label: 'd1-y-y-n',
             type: 'decision',
             text: ['Does the journal allow this?'],
             yes: 'd1-y-y-n-p',
+            //yes: 'd1-y-n-y',
+            
             no: 'd1-y-y-n-n',
             orient: {
                 yes:'b',
@@ -116,6 +119,7 @@
 			type: 'process',
 			text: timeLimits,
             next: 'd1-y-y-n-p-y',
+            orient: {next: 'b'}
             
         },
         {
@@ -149,9 +153,10 @@
 			text: [
 				'Check journal website','or go to ',' SHERPA FACT/ROMEO ','(link)'
 			],
-			out: 'b',
 			next: 'd1',
-			connect: 't'
+            orient: {
+                next: 'b'
+            }
         }
     ]);
 </script>
