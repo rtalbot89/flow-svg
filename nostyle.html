@@ -53,7 +53,7 @@
 			],
 			yes: 'd1-y-y',
 			no: 'd1-y-n',
-            noline: 400,
+            noline: 300,
 			orient: {
 				yes: 'b',
 				no: 'r'
@@ -66,8 +66,8 @@
             yes: 'd1-y-y-y',
             no:'d1-y-y-p',
 			orient: {
-				yes: 'r',
-				no: 'b'
+				yes: 'b',
+				no: 'r'
 			}
 		},
         {
@@ -80,7 +80,8 @@
 			label: 'd1-y-n',
 			type: 'decision',
 			text: ['Can you archive in ','WRAP and/or Subject','repository?'],
-			yes: 'd1-y-n-y',
+			//yes: 'd1-y-n-y',
+      yes: 'd1-y-y-n-p',
 			no: 'd1-y-n-n',
 			orient: {
 				yes: 'r',
@@ -98,7 +99,7 @@
 			type: 'process',
 			text: ['Check the journal\'s policy','on the green route'],
 			next: 'd1-y-y-n',
-            orient: {next: 'r'}
+            orient: {next: 'b'}
 		}, 
         {
             label: 'd1-y-y-n',
@@ -109,8 +110,8 @@
             
             no: 'd1-y-y-n-n',
             orient: {
-                yes:'b',
-                no: 'r'
+                yes:'r',
+                no: 'b'
             }
             
         },
@@ -134,12 +135,14 @@
             text: depositInWrap
             
         },
+        /*
         {
 			label: 'd1-y-n-y',
 			type: 'process',
 			text: timeLimits,
             next: 'd1-y-n-y-f'
-		},
+		},*/
+        /*
         
         {
             label: 'd1-y-n-y-f',
@@ -147,6 +150,7 @@
             text: depositInWrap
             
         },
+        */
 		{
 			label: 'd1-n',
 			type: 'process',
