@@ -156,7 +156,10 @@ var SVGFlow = (function () {
                     labelGroup.rotate(-90);
                 }
             }
-            arrowGroup.attr({"cursor": "pointer", "class" : "fc-arrow"});
+            arrowGroup.attr({"class" : "fc-arrow"});
+            if (interactive === true) {
+                arrowGroup.attr({"cursor": "pointer"});
+            }
             arrowSet.add(arrowGroup);
             return arrowGroup;
         }
@@ -299,13 +302,7 @@ var SVGFlow = (function () {
                 });
             });
 
-            //text.y(0);
-            //group.add(rect);
-            //rect.clone();
-            //group.add(text);
-            //text.clipWith(rect);
-
-              // This is buggy but best that can be done for now
+            // This is buggy but best that can be done for now
             text.cy(rect.bbox().cy);
             text.move(config.finishLeftMargin);
             text.font({size: config.processFontSize});
@@ -318,7 +315,6 @@ var SVGFlow = (function () {
             arrowYes.y(shapeBbox.height);
             // Remove the label
             arrowYes.get(2).remove();
-
             return group;
         }
 
@@ -356,19 +352,21 @@ var SVGFlow = (function () {
             text.move(shapeBox.cx);
             text.cy(shapeBox.cy);
             group.add(lowerConnector);
-            group.attr({"cursor": "pointer"});
 
-            group.click(function () {
-                var firstShape = SVG.get(shapes[0].id);
-                if (firstShape.opacity() === 0) {
-                    firstShape.animate().opacity(1);
-                } else {
-                    firstShape.animate().opacity(1);
-                    shapes.forEach(function (s) {
-                        SVG.get(s.id).animate().opacity(0);
-                    });
-                }
-            });
+            if (interactive === true) {
+                group.attr({"cursor": "pointer"});
+                group.click(function () {
+                    var firstShape = SVG.get(shapes[0].id);
+                    if (firstShape.opacity() === 0) {
+                        firstShape.animate().opacity(1);
+                    } else {
+                        firstShape.animate().opacity(1);
+                        shapes.forEach(function (s) {
+                            SVG.get(s.id).animate().opacity(0);
+                        });
+                    }
+                });
+            }
 
             return group;
         }
@@ -378,9 +376,9 @@ var SVGFlow = (function () {
             arrowSet = draw.set();
             chartGroup = draw.group();
             if (userOpts.interactive === false) {
-                layoutShapes(shapes);
                 draw.each(function () {
                     if (this.opacity() === 0) {
+                        layoutShapes(shapes);
                         this.opacity(1);
                     }
                 }, true);
@@ -495,7 +493,12 @@ var SVGFlow = (function () {
                 element.id = shape.attr('id');
                 itemIds[element.label] = element.id;
                 indexFromId[element.id] = index;
-                shape.opacity(0);
+                //console.log(interactive);
+                if (interactive === false) {
+                    shape.opacity(1);
+                } else {
+                    shape.opacity(0);
+                }
             } else {
                 console.log(element.type + ' is not a valid shape.');
                 return false;
@@ -581,8 +584,8 @@ var SVGFlow = (function () {
             }
         }
 
-        // Process shapes have a next line which needs adding after
-        // because the line is outside the groups
+        /* Process shapes have a next line which needs adding after
+        because the line is outside the groups */
         function processConnectors(element) {
             if (element.next) {
                 var el = SVG.get(element.id),
@@ -593,7 +596,8 @@ var SVGFlow = (function () {
                     endX,
                     endY,
                     startPoint,
-                    endPoint;
+                    endPoint,
+                    ah;
 
                  // It's a loop back to the yes option of the referring element
                 if (target !== undefined && element.nextid === element.previd) {
@@ -614,7 +618,6 @@ var SVGFlow = (function () {
 
                     endPoint = [endX, endY];
                     coords.push(endPoint);
-                    /*
 
                     draw.polyline(coords).fill('none').attr({
                         width: config.arrowStroke,
@@ -625,7 +628,6 @@ var SVGFlow = (function () {
                     ah.x(endX - config.arrowHeadHeight);
                     ah.y(endY - (config.arrowHeadHeight / 2));
                     ah.rotate(90);
-                    */
                 } // end loop back
             }
         }
@@ -725,12 +727,9 @@ var SVGFlow = (function () {
 
             shapes.forEach(processConnectors);
 
-            // The show/hide function
-            arrowEvents();
-
-            if (interactive === false) {
-                console.log('not implemented yet');
-                //unhide();
+            // The show/hide function. Only apply if we are in interactive mode
+            if (interactive === true) {
+                arrowEvents();
             }
         };
 
