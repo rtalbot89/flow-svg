@@ -674,6 +674,10 @@ var SVGFlow = (function () {
                     currentElement.cx(),
                     targetElement.y()
                 ).stroke({ width: 1 });
+                
+                 //ah = arrowHead();
+                 //ah.move(currentElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
+                 //lbl = lineLabel('No');
             }
 
             if (element.yesid && element.orient.yes === 'r') {
@@ -704,6 +708,13 @@ var SVGFlow = (function () {
                     targetElement.x(),
                     targetElement.y() + (targetElement.get(0).height() / 2)
                 ).stroke({ width: 1 });
+                
+                ah = arrowHead();
+              
+                ah.move(targetElement.x() - config.arrowHeadHeight, targetElement.y() + (targetElement.get(0).height() / 2) - config.arrowHeadHeight / 2);
+                ah.rotate(270);
+                lbl = lineLabel('No');
+                lbl.move(currentElement.x() + currentElement.get(0).width() + 20, currentElement.y() + (currentElement.get(0).height() / 2) - 20);
             }
 
             if (element.nextid && element.orient.next === 'b') {
