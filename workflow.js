@@ -1,7 +1,7 @@
 /*global SVG, jQuery, $,  console*/
 var SVGFlow = (function () {
         "use strict";
-        var draw, lowerConnector, shapeFuncs, lookup, intY, intX, i, config, userOpts = {}, arrowSet, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId;
+        var draw, lowerConnector, shapeFuncs, lookup, i, config, userOpts = {}, arrowSet, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId;
 
         function setParams(u) {
             userOpts = u;
@@ -107,6 +107,35 @@ var SVGFlow = (function () {
             return group;
         }
 
+        function lineLabel(t) {
+            var text, labelGroup = draw.group(),
+                label = labelGroup
+                .rect(
+                    config.labelWidth,
+                    config.labelHeight
+                ).radius(config.labelRadius)
+                .stroke({
+                    width: config.labelStroke
+                })
+                .attr({
+                    opacity: config.labelOpacity,
+                    fill: config.labelFill
+                });
+
+            label.move(
+                -(config.labelWidth / 2),
+                config.labelHeight / 2
+            );
+
+            text = labelGroup.text(t).attr({
+                fill: config.arrowTextColour,
+                'text-anchor': 'middle',
+                'font-size' : config.arrowFontSize
+            });
+            text.cy(label.cy());
+            return labelGroup;
+        }
+
         function arrowConnector(options, txt) {
             var text,
                 arrowGroup = arrowLine(options),
@@ -165,7 +194,7 @@ var SVGFlow = (function () {
         }
 
         function decision(options) {
-            var shape, text, shapeBbox, arrowYes, arrowNo,
+            var shape, text,
                 group = draw.group(),
                 coords =
                 "0," +
@@ -196,49 +225,7 @@ var SVGFlow = (function () {
 
             text.cx(shape.cx() + text.bbox().width + text.bbox().x);
             text.cy(shape.cy());
-            shapeBbox = shape.bbox();
-
-            if (options.yes) {
-                /*
-                arrowYes = arrowConnector(options, 'Yes');
-                group.add(arrowYes);
-                if (options.orient.yes === 'r') {
-                    arrowYes.cy(config.decisionHeight / 2);
-                    arrowYes.x(shapeBbox.width + (config.connectorLength / 2));
-                }
-                if (options.orient.yes === 'b') {
-                    arrowYes.x(shapeBbox.width / 2);
-                    arrowYes.y(shapeBbox.height);
-                }
-                */
-            }
-
-            if (options.no) {
-                
-                /*
-                arrowNo = arrowConnector(options, 'No');
-                group.add(arrowNo);
-                arrowNo.cy(config.decisionHeight / 2);
-                arrowNo.x(shapeBbox.width + (config.connectorLength / 2));
-                if (options.orient.no === 'r') {
-
-                    if (options.noline && interactive !== true) {
-                        arrowNo.get(0).attr('y2', options.noline);
-                        arrowNo.get(1).y(options.noline - config.arrowHeadHeight);
-                    }
-                    if (options.noline && interactive === true) {
-                        arrowNo.get(0).attr('y2', config.connectorLength);
-                        arrowNo.get(1).y(config.connectorLength - config.arrowHeadHeight);
-                    }
-                }
-                if (options.orient.no === 'b') {
-                    arrowNo.x(shapeBbox.width / 2);
-                    arrowNo.y(shapeBbox.height);
-                }
-                */
-            }
             return group;
-          
         }
 
         function finish(options) {
@@ -286,18 +273,18 @@ var SVGFlow = (function () {
 
         // The process shape that has an outlet, but no choice
         function process(options) {
-            var text, shapeBbox, arrowYes,
+            var text,
                 group = draw.group()
-                .attr({
-                    "class": "process-group"
-                }),
+                    .attr({
+                        "class": "process-group"
+                    }),
                 rect = group
-                .rect(config.processWidth, config.processHeight)
-                .attr({
-                    fill: config.processFill,
-                    stroke: config.processStrokeColour,
-                    "class": "fc-process"
-                });
+                    .rect(config.processWidth, config.processHeight)
+                    .attr({
+                        fill: config.processFill,
+                        stroke: config.processStrokeColour,
+                        "class": "fc-process"
+                    });
 
             text = group.text(function (add) {
                 options.text.forEach(function (l) {
@@ -309,15 +296,6 @@ var SVGFlow = (function () {
             text.cy(rect.bbox().cy);
             text.move(config.finishLeftMargin);
             text.font({size: config.processFontSize});
-
-            // Add a bottom arrow that can be removed later
-            //shapeBbox = rect.bbox();
-            //arrowYes = arrowConnector(options, 'Yes');
-            //group.add(arrowYes);
-            //arrowYes.x(shapeBbox.width / 2);
-            //arrowYes.y(shapeBbox.height);
-            // Remove the label
-            //arrowYes.get(2).remove();
             return group;
         }
 
@@ -541,41 +519,28 @@ var SVGFlow = (function () {
                 }
             }
         }
-        
-        // Check that something has not already been positioned
-        var positionLogger = [];
+
 
         function positionShapes(element, index) {
             console.log(index);
-            var ce = SVG.get(element.id), te, cHeight, tHeight, diff;
+            var ce = SVG.get(element.id), te, cHeight, tHeight, diff, rightMargin;
             // Check if orient is set. If not, set to defaults
             if (!element.orient) {
                 element.orient = {yes: 'b', no: 'r', next: 'b'};
             }
             if (index === 0) {
-              //  console.log(index);
-               SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
+                SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
                 element.previd = startId;
-                //return false;
             }
-            
-            if (positionLogger.indexOf(element.id) > -1) {
-                console.log('already laid out');
-                return;
-            }
-            
-            positionLogger.push(element.id);
-            
-            var rightMargin = element.noline !== undefined ? element.noline : config.connectorLength;
 
-            
+            rightMargin = element.extendNo !== undefined ? element.extendNo : config.connectorLength;
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
                 SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height + config.connectorLength);
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
-                SVG.get(element.noid).move(ce.x() , ce.y() + ce.bbox().height + config.connectorLength);
+                SVG.get(element.noid).move(ce.x(), ce.y() + ce.bbox().height + config.connectorLength);
             }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
@@ -595,67 +560,13 @@ var SVGFlow = (function () {
             }
 
             if (element.next && element.orient.next === 'b' && element.nextid !== element.previd) {
-                  SVG.get(element.nextid).move(ce.x(), ce.y() + ce.bbox().height + rightMargin);
+                SVG.get(element.nextid).move(ce.x(), ce.y() + ce.bbox().height + rightMargin);
             }
-            
+
             if (element.next && element.orient.next === 'r'  && element.nextid !== element.previd) {
-                  SVG.get(element.nextid).move(ce.x() + ce.get(0).width() + rightMargin, ce.y());
-            }
-            
-            if (index === 0) {
-               // SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
-               // element.previd = startId;
+                SVG.get(element.nextid).move(ce.x() + ce.get(0).width() + rightMargin, ce.y());
             }
         }
-
-        /* Process shapes have a next line which needs adding after
-        because the line is outside the groups */
-        function processConnectors(element) {
-            if (element.next) {
-                var el = SVG.get(element.id),
-                    target = SVG.get(element.previd),
-                    coords = [],
-                    startX,
-                    startY,
-                    endX,
-                    endY,
-                    startPoint,
-                    endPoint,
-                    ah;
-
-                 // It's a loop back to the yes option of the referring element
-                if (target !== undefined && element.nextid === element.previd) {
-                        // Remove the arrow
-                    el.get(2).remove();
-                    startX = el.rbox().x + (el.rbox().width / 2);
-                    startY = el.y() + el.rbox().height;
-
-                    endX = target.get(2).rbox().x + target.get(2).rbox().width + config.arrowHeadHeight;
-                    endY = target.get(2).rbox().y + ((config.connectorLength - config.arrowHeadHeight) / 2);
-                    startPoint = [startX, startY];
-                    coords.push(startPoint);
-                    if (endY > startY) {
-                        intY = startY + (endY - startY);
-                        intX = startX;
-                        coords.push([intX, intY]);
-                    }
-
-                    endPoint = [endX, endY];
-                    coords.push(endPoint);
-
-                    draw.polyline(coords).fill('none').attr({
-                        width: config.arrowStroke,
-                        stroke: config.arrowLineColour
-                    });
-                    ah = arrowHead();
-
-                    ah.x(endX - config.arrowHeadHeight);
-                    ah.y(endY - (config.arrowHeadHeight / 2));
-                    ah.rotate(90);
-                } // end loop back
-            }
-        }
-
 
         function arrowEvents() {
             var tracker = [], toHide = [];
@@ -721,89 +632,106 @@ var SVGFlow = (function () {
                 });
             });
         }
-        
+
         // If there are indirect connections between any shapes look for them here
- 
-        function adjustConnectors (element, index, array) {
-            var currentElement = SVG.get(element.id);
-         
+        function adjustConnectors(element) {
+            var currentElement = SVG.get(element.id),
+                currentY = currentElement.x(),
+                targetElement,
+                ah,
+                lbl,
+                currentRightMid,
+                p1,
+                p2,
+                p3,
+                p4,
+                p5,
+                yLevel;
+
             if (element.yesid && element.orient.yes === 'b') {
-                var yesElement = SVG.get(element.yesid);
-               
-                var line = draw.line(
-                    currentElement.cx(), 
-                    currentElement.y() + currentElement.get(0).height(), 
-                    currentElement.cx(), 
-                    yesElement.y()
+                targetElement = SVG.get(element.yesid);
+
+                draw.line(
+                    currentElement.cx(),
+                    currentElement.y() + currentElement.get(0).height(),
+                    currentElement.cx(),
+                    targetElement.y()
                 ).stroke({ width: 1 });
+
+                ah = arrowHead();
+                ah.move(currentElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
+
+                lbl = lineLabel('Yes');
+                lbl.move(currentElement.cx(),  targetElement.y() - 70);
             }
-            
+
             if (element.noid && element.orient.no === 'b') {
-                var noElement = SVG.get(element.noid);
-               
-                var line = draw.line(
-                    currentElement.cx(), 
-                    currentElement.y() + currentElement.get(0).height(), 
-                    currentElement.cx(), 
-                    noElement.y()
+                targetElement = SVG.get(element.noid);
+
+                draw.line(
+                    currentElement.cx(),
+                    currentElement.y() + currentElement.get(0).height(),
+                    currentElement.cx(),
+                    targetElement.y()
                 ).stroke({ width: 1 });
             }
-            
-            
+
             if (element.yesid && element.orient.yes === 'r') {
-                var yesElement = SVG.get(element.yesid);
-                var line = draw.line(
-                    currentElement.get(0).width() + currentElement.x(), 
-                    currentElement.y() + (currentElement.get(0).height() / 2),
-                    yesElement.x(), 
-                    yesElement.y() + (yesElement.get(0).height() / 2)
-                ).stroke({ width: 1 });
+                targetElement = SVG.get(element.yesid);
+                currentRightMid =  [(currentElement.get(0).width() + currentElement.x()), (currentElement.y() + (currentElement.get(0).height() / 2))];
+
+                p1 = currentRightMid;
+
+                if (currentY < targetElement.y()) {
+                    p2 = [currentElement.get(0).width() + currentElement.x() + 10, (currentElement.y() + (currentElement.get(0).height() / 2))];
+                    p3 = [currentElement.get(0).width() + currentElement.x() + 10, targetElement.y() -  (config.arrowHeadHeight + 10)];
+                    p4 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y() -  (config.arrowHeadHeight + 10)];
+                    p5 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y()];
+                }
+
+                draw.polyline(
+                    [
+                        p1, p2, p3, p4, p5
+                    ]
+                ).stroke({ width: 1 }).fill('none');
             }
-               
+
             if (element.noid && element.orient.no === 'r') {
-                var noElement = SVG.get(element.noid);
-                var line = draw.line(
-                    currentElement.get(0).width() + currentElement.x(), 
+                targetElement = SVG.get(element.noid);
+                draw.line(
+                    currentElement.get(0).width() + currentElement.x(),
                     currentElement.y() + (currentElement.get(0).height() / 2),
-                    noElement.x(), 
-                    noElement.y() + (noElement.get(0).height() / 2)
+                    targetElement.x(),
+                    targetElement.y() + (targetElement.get(0).height() / 2)
                 ).stroke({ width: 1 });
             }
-            
+
             if (element.nextid && element.orient.next === 'b') {
-                var nextElement = SVG.get(element.nextid);
-                
-                var yLevel;
-                
-                if (currentElement.y() < nextElement.y()) {
-                  yLevel = nextElement.y();
+                targetElement = SVG.get(element.nextid);
+
+                if (currentElement.y() < targetElement.y()) {
+                    yLevel = targetElement.y();
                 }
-                if (currentElement.y() >= nextElement.y()) {
-                  yLevel = nextElement.y() + nextElement.get(0).height();
+                if (currentElement.y() >= targetElement.y()) {
+                    yLevel = targetElement.y() + targetElement.get(0).height() + config.arrowHeadHeight + 10;
                 }
-                
-                var line = draw.line(
-                    (currentElement.get(0).width() / 2) + currentElement.x(), 
-                    currentElement.y() + currentElement.get(0).height(), 
-                  
-                    nextElement.x() + (nextElement.get(0).width() / 2), 
-                  yLevel
-                ).stroke({ width: 1 });
+
+                p1 = [(currentElement.get(0).width() / 2) + currentElement.x(), currentElement.y() + currentElement.get(0).height()];
+                p2 =  [(currentElement.get(0).width() / 2) + currentElement.x(), currentElement.y() + currentElement.get(0).height() + config.arrowHeadHeight + 10];
+                p3 = [(targetElement.get(0).width() / 2 + targetElement.x()), yLevel];
+                draw.polyline([p1, p2, p3]).stroke({ width: 1 }).fill('none');
             }
-            
+
             if (element.nextid && element.orient.next === 'r') {
-                var nextElement = SVG.get(element.nextid);
-                
-                var line = draw.line(
-                    currentElement.get(0).width() + currentElement.x(), 
-                    currentElement.y() + (currentElement.get(0).height() / 2), 
-                  
-                  nextElement.x(), 
-                    nextElement.y() + (nextElement.get(0).height() / 2)
+                targetElement = SVG.get(element.nextid);
+
+                draw.line(
+                    currentElement.get(0).width() + currentElement.x(),
+                    currentElement.y() + (currentElement.get(0).height() / 2),
+                    targetElement.x(),
+                    targetElement.y() + (targetElement.get(0).height() / 2)
                 ).stroke({ width: 1 });
             }
-           
-            //console.log(element);
         }
 
         layoutShapes = function (s) {
@@ -833,10 +761,7 @@ var SVGFlow = (function () {
             // Layout the shapes
             shapes.forEach(positionShapes);
 
-            //shapes.forEach(processConnectors);
-            
             shapes.forEach(adjustConnectors);
-            
 
             // The show/hide function. Only apply if we are in interactive mode
             if (interactive === true) {
