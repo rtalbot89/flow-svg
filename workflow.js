@@ -520,14 +520,22 @@ var SVGFlow = (function () {
             }
         }
 
-
+        var isPositioned = [];
         function positionShapes(element, index) {
-            console.log(index);
+            //console.log(index);
             var ce = SVG.get(element.id), te, cHeight, tHeight, diff, rightMargin;
             // Check if orient is set. If not, set to defaults
             
             if (!element.orient) {
                 element.orient = {yes: 'b', no: 'r', next: 'b'};
+            }
+            
+            if (!element.yesIn) {
+              element.yesIn = 't';
+            }
+            
+            if (!element.noIn) {
+              element.noIn = 'l';
             }
             if (index === 0) {
                 SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
@@ -537,12 +545,37 @@ var SVGFlow = (function () {
             rightMargin = element.extendNo !== undefined ? element.extendNo : config.connectorLength;
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
+              SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height + config.connectorLength);
+              element.yesOut = [ce.cx() + ce.x(), ce.y() + ce.get(0).height()];
               
-                SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height + config.connectorLength);
+              if (isPositioned.indexOf(element.yesid) === -1) {
+                if (element.yesid.yesIn === 't') {
+                  te = SVG.get(element.yesid);
+                  element.yesid.yesIn = [te.x() + te.cx(), te.y()];
+                }
+                if (element.yesid.yesIn === 'l') {
+                  te = SVG.get(element.yesid);
+                  element.yesid.yesIn = [te.x(), te.y() + te.cy()];
+                }
+                isPositioned.push(element.yesid);
+              }
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
                 SVG.get(element.noid).move(ce.x(), ce.y() + ce.bbox().height + config.connectorLength);
+                element.noOut = [ce.cx() + ce.x(), ce.y() + ce.get(0).height()];
+                
+                if (isPositioned.indexOf(element.noid) === -1) {
+                  if (element.noid.noIn === 't') {
+                    te = SVG.get(element.noid);
+                    element.noid.noIn = [te.x() + te.cx(), te.y()];
+                  }
+                  if (element.noid.noIn === 'l') {
+                    te = SVG.get(element.noid);
+                    element.noid.noIn = [te.x(), te.y() + te.cy()];
+                  }
+                   isPositioned.push(element.yesid);
+                }
             }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
@@ -551,6 +584,20 @@ var SVGFlow = (function () {
                 tHeight = te.first().height();
                 diff = (cHeight / 2) - (tHeight / 2);
                 te.move(ce.x() + ce.bbox().width + rightMargin, ce.y() + diff);
+                element.yesOut = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
+                
+                if (isPositioned.indexOf(element.yesid) === -1) {
+                  
+                  if (element.yesid.yesIn === 't') {
+                    te = SVG.get(element.yesid);
+                    element.yesid.yesIn = [te.x() + te.cx(), te.y()];
+                  }
+                  if (element.yesid.yesIn === 'l') {
+                    te = SVG.get(element.yesid);
+                    element.yesid.yesIn = [te.x(), te.y() + te.cy()];
+                  }
+                  isPositioned.push(element.yesid);
+                }
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'r') {
@@ -559,6 +606,19 @@ var SVGFlow = (function () {
                 tHeight = te.first().height();
                 diff = (cHeight / 2) - (tHeight / 2);
                 te.move(ce.x() + ce.bbox().width + rightMargin, ce.y() + diff);
+                element.noOut = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
+                
+              if (isPositioned.indexOf(element.noid) === -1) {
+                if (element.noid.noIn === 't') {
+                  te = SVG.get(element.noid);
+                  element.noid.noIn = [te.x() + te.cx(), te.y()];
+                }
+                if (element.noid.noIn === 'l') {
+                  te = SVG.get(element.noid);
+                  element.noid.noIn = [te.x(), te.y() + te.cy()];
+                }
+                isPositioned.push(element.noid);
+              }
             }
 
             if (element.next && element.orient.next === 'b' && element.nextid !== element.previd) {
@@ -652,34 +712,51 @@ var SVGFlow = (function () {
 
             if (element.yesid && element.orient.yes === 'b') {
                 targetElement = SVG.get(element.yesid);
-
-                draw.line(
-                    currentElement.cx(),
-                    currentElement.y() + currentElement.get(0).height(),
-                    currentElement.cx(),
-                    targetElement.y()
-                ).stroke({ width: 1 });
-
+                var currentBottomMid = [currentElement.get(0).cx() + currentElement.x(), (currentElement.y() + currentElement.get(0).height())];
+                
+                //p1 = currentBottomMid;
+                p1 = element.yesOut;
+                p2 = [currentElement.get(0).cx() + currentElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
+                p3 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
+                p4 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y()];
+                //p4 = targetElement.yesIn;
+                draw.polyline(
+                    [
+                      p1, 
+                      //p2, 
+                      //p3, 
+                      p4
+                    ]
+                ).stroke({ width: 1 }).fill('none');
                 ah = arrowHead();
-                ah.move(currentElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
+                ah.move(targetElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
 
                 lbl = lineLabel('Yes');
-                lbl.move(currentElement.cx(),  targetElement.y() - 70);
+                lbl.move(currentElement.cx(),  currentElement.get(0).height() + currentElement.y());
+                
+                
             }
 
             if (element.noid && element.orient.no === 'b') {
                 targetElement = SVG.get(element.noid);
-
-                draw.line(
-                    currentElement.cx(),
-                    currentElement.y() + currentElement.get(0).height(),
-                    currentElement.cx(),
-                    targetElement.y()
-                ).stroke({ width: 1 });
                 
-                 //ah = arrowHead();
-                 //ah.move(currentElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
-                 //lbl = lineLabel('No');
+                var currentBottomMid = [currentElement.get(0).cx() + currentElement.x(), (currentElement.y() + currentElement.get(0).height())];
+                
+                p1 = currentBottomMid;
+                p2 = [currentElement.get(0).cx() + currentElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
+                p3 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
+                p4 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y()];
+                
+                draw.polyline(
+                    [
+                        p1, p2, p3, p4
+                    ]
+                ).stroke({ width: 1 }).fill('none');
+                ah = arrowHead();
+                ah.move(targetElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
+
+                lbl = lineLabel('No');
+                lbl.move(currentElement.cx(),  currentElement.get(0).height() + currentElement.y());
             }
 
             if (element.yesid && element.orient.yes === 'r') {
@@ -688,35 +765,52 @@ var SVGFlow = (function () {
 
                 p1 = currentRightMid;
 
-                if (currentY < targetElement.y()) {
+               // if (currentY < targetElement.y()) {
                     p2 = [currentElement.get(0).width() + currentElement.x() + 10, (currentElement.y() + (currentElement.get(0).height() / 2))];
                     p3 = [currentElement.get(0).width() + currentElement.x() + 10, targetElement.y() -  (config.arrowHeadHeight + 10)];
-                    p4 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y() -  (config.arrowHeadHeight + 10)];
-                    p5 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y()];
-                }
+                    p4 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y() + targetElement.get(0).cy()];
+                    //p5 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y()];
+               // }
 
                 draw.polyline(
                     [
-                        p1, p2, p3, p4, p5
+                        p1, p2, p3, p4
                     ]
                 ).stroke({ width: 1 }).fill('none');
             }
 
             if (element.noid && element.orient.no === 'r') {
                 targetElement = SVG.get(element.noid);
+                currentRightMid =  [(currentElement.get(0).width() + currentElement.x()), (currentElement.y() + (currentElement.get(0).height() / 2))];
+
+                p1 = currentRightMid;
+                p2 = [currentElement.get(0).width() + currentElement.x() + 10, (currentElement.y() + (currentElement.get(0).height() / 2))];
+                p3 = [currentElement.get(0).width() + currentElement.x() + 10, targetElement.y()  + targetElement.get(0).cy()];
+                p4 = [targetElement.x(), targetElement.y() + targetElement.get(0).cy()];
+                draw.polyline(
+                    [
+                      p1, 
+                      p2, 
+                      p3, 
+                      p4
+                    ]
+                ).stroke({ width: 1 }).fill('none');
+                /*
                 draw.line(
                     currentElement.get(0).width() + currentElement.x(),
                     currentElement.y() + (currentElement.get(0).height() / 2),
                     targetElement.x(),
                     targetElement.y() + (targetElement.get(0).height() / 2)
                 ).stroke({ width: 1 });
-                
+                */
+                /*
                 ah = arrowHead();
               
                 ah.move(targetElement.x() - config.arrowHeadHeight, targetElement.y() + (targetElement.get(0).height() / 2) - config.arrowHeadHeight / 2);
                 ah.rotate(270);
                 lbl = lineLabel('No');
                 lbl.move(currentElement.x() + currentElement.get(0).width() + 20, currentElement.y() + (currentElement.get(0).height() / 2) - 20);
+                */
             }
 
             if (element.nextid && element.orient.next === 'b') {
