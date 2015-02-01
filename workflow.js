@@ -525,6 +525,7 @@ var SVGFlow = (function () {
             console.log(index);
             var ce = SVG.get(element.id), te, cHeight, tHeight, diff, rightMargin;
             // Check if orient is set. If not, set to defaults
+            
             if (!element.orient) {
                 element.orient = {yes: 'b', no: 'r', next: 'b'};
             }
@@ -536,6 +537,7 @@ var SVGFlow = (function () {
             rightMargin = element.extendNo !== undefined ? element.extendNo : config.connectorLength;
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
+              
                 SVG.get(element.yesid).move(ce.x(), ce.y() + ce.bbox().height + config.connectorLength);
             }
 
