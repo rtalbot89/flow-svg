@@ -593,7 +593,7 @@ var SVGFlow = (function () {
         }
 
         function nodePoints(element) {
-            var ce = SVG.get(element.id), te, cHeight, tHeight, diff, rightMargin, targetShape;
+            var ce = SVG.get(element.id), te, cHeight, tHeight, diff, targetShape;
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
                 element.yesOutPos = [ce.cx() + ce.x(), ce.y() + ce.get(0).height()];
@@ -689,6 +689,7 @@ var SVGFlow = (function () {
                 targetShape.nextIn = targetShape.nextIn !== undefined ? targetShape.nextIn : 't';
 
                 if (targetShape.nextInPos === undefined && targetShape.yesOutPos === undefined) {
+                //console.log(targetShape.label);
                     if (targetShape.nextIn === 't') {
                         te = SVG.get(element.nextid);
                         targetShape.nextInPos = [te.x() + te.cx(), te.y()];
@@ -703,23 +704,22 @@ var SVGFlow = (function () {
 
             if (element.next && element.orient.next === 'r') {
 
-                  element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
-                  var targetShape = shapes[lookup[element.next]];
-                  targetShape.nextIn = targetShape.nextIn !== undefined ? targetShape.nextIn : 'l';
+                element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
+                targetShape = shapes[lookup[element.next]];
+                targetShape.nextIn = targetShape.nextIn !== undefined ? targetShape.nextIn : 'l';
 
-                  if (targetShape.nextInPos === undefined && targetShape.yesOutPos === undefined) {
+                if (targetShape.nextInPos === undefined && targetShape.yesOutPos === undefined) {
                     if (targetShape.nextIn === 't') {
-                      te = SVG.get(element.nextid);
-                      targetShape.nextInPos = [te.x() + te.cx(), te.y()];
+                        te = SVG.get(element.nextid);
+                        targetShape.nextInPos = [te.x() + te.cx(), te.y()];
                     }
                     if (targetShape.nextIn === 'l') {
-                      te = SVG.get(element.nextid);
-                      targetShape.nextInPos = [te.x(), te.y() + te.cy()];
+                        te = SVG.get(element.nextid);
+                        targetShape.nextInPos = [te.x(), te.y() + te.cy()];
                     }
                     isPositioned.push(element.nextid);
-                  }
-              }
-            
+                }
+            }
         }
 
         function arrowEvents() {
@@ -787,173 +787,52 @@ var SVGFlow = (function () {
             });
         }
 
-        // If there are indirect connections between any shapes look for them here
         function adjustConnectors(element) {
-            var currentElement = SVG.get(element.id),
-                currentY = currentElement.x(),
-                targetElement,
-                ah,
-                lbl,
-                currentRightMid,
+            var targetElement,
                 p1,
-                p2,
-                p3,
                 p4,
-                p5,
-                yLevel;
+                lineColour;
 
             if (element.yesid) {
                 targetElement = SVG.get(element.yesid);
-                var currentBottomMid = [currentElement.get(0).cx() + currentElement.x(), (currentElement.y() + currentElement.get(0).height())];
-
-                //p1 = currentBottomMid;
                 p1 = element.yesOutPos;
-                p2 = [currentElement.get(0).cx() + currentElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
-                p3 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
-                p4 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y()];
                 p4 = shapes[lookup[element.yes]].yesInPos;
-                //console.log(p4);
+                lineColour = 'green';
+                draw.polyline(
+                    [
+                        p1,
+                        p4
+                    ]
+                ).stroke({ width: 1, colour: lineColour }).fill('none');
+            }
+
+            if (element.noid) {
+                targetElement = SVG.get(element.noid);
+                p1 = element.noOutPos;
+                p4 = shapes[lookup[element.no]].noInPos;
+                lineColour = 'red';
+                draw.polyline(
+                    [
+                        p1,
+                        p4
+                    ]
+                ).stroke({ width: 1, colour: lineColour }).fill('none');
+            }
+
+            if (element.nextid) {
+                targetElement = SVG.get(element.nextid);
+                p1 = element.nextOutPos;
+                p4 = shapes[lookup[element.next]].nextInPos;
+                lineColour = 'blue';
                 if (p4 === undefined) {
-                    console.log(shapes[lookup[element.yes]]);
+                    p4 = shapes[lookup[element.next]].yesOutPos;
                 }
-                var nextEl = lookup[element.yes];
-                //console.log(shapes[lookup[element.yes]]);
-                //p4 = targetElement.yesIn;
                 draw.polyline(
                     [
-                      p1, 
-                      //p2, 
-                      //p3, 
-                      p4
-                    ]
-                ).stroke({ width: 1 }).fill('none');
-                /*
-                ah = arrowHead();
-                ah.move(targetElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
-
-                lbl = lineLabel('Yes');
-                lbl.move(currentElement.cx(),  currentElement.get(0).height() + currentElement.y());
-                */
-            }
-
-            if (element.noid && element.orient.no === 'b') {
-                targetElement = SVG.get(element.noid);
-                
-                var currentBottomMid = [currentElement.get(0).cx() + currentElement.x(), (currentElement.y() + currentElement.get(0).height())];
-                
-                //p1 = currentBottomMid;
-                p1 = element.noOutPos;
-                p2 = [currentElement.get(0).cx() + currentElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
-                p3 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y() - (config.arrowHeadHeight + 10)];
-                p4 = [targetElement.get(0).cx() + targetElement.x(), targetElement.y()];
-                
-                p4 = shapes[lookup[element.no]].noInPos;
-                
-                draw.polyline(
-                    [
-                        p1, 
-                        //p2, 
-                        //p3, 
+                        p1,
                         p4
                     ]
-                ).stroke({ width: 1 }).fill('none');
-                /*
-                ah = arrowHead();
-                ah.move(targetElement.cx() - (config.arrowHeadHeight / 2),  targetElement.y() - config.arrowHeadHeight);
-
-                lbl = lineLabel('No');
-                lbl.move(currentElement.cx(),  currentElement.get(0).height() + currentElement.y());
-                */
-            }
-
-            if (element.yesid && element.orient.yes === 'r') {
-                targetElement = SVG.get(element.yesid);
-                currentRightMid =  [(currentElement.get(0).width() + currentElement.x()), (currentElement.y() + (currentElement.get(0).height() / 2))];
-
-                //p1 = currentRightMid;
-                p1 = element.yesOutPos;
-
-               // if (currentY < targetElement.y()) {
-                    p2 = [currentElement.get(0).width() + currentElement.x() + 10, (currentElement.y() + (currentElement.get(0).height() / 2))];
-                    p3 = [currentElement.get(0).width() + currentElement.x() + 10, targetElement.y() -  (config.arrowHeadHeight + 10)];
-                  //  p4 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y() + targetElement.get(0).cy()];
-                    //p5 = [targetElement.x() + (targetElement.get(0).width() / 2), targetElement.y()];
-               // }
-                p4 = shapes[lookup[element.yes]].yesInPos;
-
-                draw.polyline(
-                    [
-                        p1, 
-                        //p2, 
-                        //p3, 
-                        p4
-                    ]
-                ).stroke({ width: 1 }).fill('none');
-            }
-
-            if (element.noid && element.orient.no === 'r') {
-                targetElement = SVG.get(element.noid);
-                currentRightMid =  [(currentElement.get(0).width() + currentElement.x()), (currentElement.y() + (currentElement.get(0).height() / 2))];
-
-                //p1 = currentRightMid;
-                p1 = element.noOutPos;
-                p2 = [currentElement.get(0).width() + currentElement.x() + 10, (currentElement.y() + (currentElement.get(0).height() / 2))];
-                p3 = [currentElement.get(0).width() + currentElement.x() + 10, targetElement.y()  + targetElement.get(0).cy()];
-               // p4 = [targetElement.x(), targetElement.y() + targetElement.get(0).cy()];
-               
-                p4 = shapes[lookup[element.no]].noInPos;
-                console.log(p4);
-                draw.polyline(
-                    [
-                      p1, 
-                     // p2, 
-                     // p3, 
-                      p4
-                    ]
-                ).stroke({ width: 1, color: 'red' }).fill('none');
-                /*
-                draw.line(
-                    currentElement.get(0).width() + currentElement.x(),
-                    currentElement.y() + (currentElement.get(0).height() / 2),
-                    targetElement.x(),
-                    targetElement.y() + (targetElement.get(0).height() / 2)
-                ).stroke({ width: 1 });
-                */
-                /*
-                ah = arrowHead();
-              
-                ah.move(targetElement.x() - config.arrowHeadHeight, targetElement.y() + (targetElement.get(0).height() / 2) - config.arrowHeadHeight / 2);
-                ah.rotate(270);
-                lbl = lineLabel('No');
-                lbl.move(currentElement.x() + currentElement.get(0).width() + 20, currentElement.y() + (currentElement.get(0).height() / 2) - 20);
-                */
-            }
-
-            if (element.nextid && element.orient.next === 'b') {
-                targetElement = SVG.get(element.nextid);
-
-                if (currentElement.y() < targetElement.y()) {
-                    yLevel = targetElement.y();
-                }
-                if (currentElement.y() >= targetElement.y()) {
-                    yLevel = targetElement.y() + targetElement.get(0).height() + config.arrowHeadHeight + 10;
-                }
-
-                p1 = [(currentElement.get(0).width() / 2) + currentElement.x(), currentElement.y() + currentElement.get(0).height()];
-                p2 =  [(currentElement.get(0).width() / 2) + currentElement.x(), currentElement.y() + currentElement.get(0).height() + config.arrowHeadHeight + 10];
-                p3 = [(targetElement.get(0).width() / 2 + targetElement.x()), yLevel];
-                draw.polyline([p1, p2, p3]).stroke({ width: 1 }).fill('none');
-            }
-
-            if (element.nextid && element.orient.next === 'r') {
-                targetElement = SVG.get(element.nextid);
-
-                draw.line(
-                    currentElement.get(0).width() + currentElement.x(),
-                    currentElement.y() + (currentElement.get(0).height() / 2),
-                    targetElement.x(),
-                    targetElement.y() + (targetElement.get(0).height() / 2)
-                ).stroke({ width: 1 });
+                ).stroke({ width: 1, colour: lineColour }).fill('none');
             }
         }
 
@@ -977,12 +856,12 @@ var SVGFlow = (function () {
             // Generate a lookup that gives Array IDs from SVG ids
             // lookup = {};
             generateLookups(shapes);
-           
+
             // Add the ids of previous (referring) elements to the array
             shapes.forEach(referringIds);
             // Layout the shapes
             shapes.forEach(positionShapes);
-            
+
             shapes.forEach(nodePoints);
 
             shapes.forEach(adjustConnectors);
