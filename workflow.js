@@ -70,6 +70,7 @@ var SVGFlow = (function () {
                     arrowTextColour: userOpts.arrowTextColour || '#fff',
                     arrowFontSize: userOpts.arrowFontSize || 12,
                     arrowHeadOpacity: userOpts.arrowHeadOpacity || 1.0
+                    //extendLeft: userOpts.extendLeft || 0
                 };
             return defaults;
         }
@@ -517,11 +518,11 @@ var SVGFlow = (function () {
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
                     if (element.orient.yes === 'b') {
-                        shapes[next].below = element.id;
+                        shapes[next].isBelow = element.id;
                     }
 
                     if (element.orient.yes === 'r') {
-                        shapes[next].rightOf = element.id;
+                        shapes[next].isRightOf = element.id;
                     }
                 }
             }
@@ -530,11 +531,11 @@ var SVGFlow = (function () {
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
                     if (element.orient.no === 'b') {
-                        shapes[next].below = element.id;
+                        shapes[next].isBelow = element.id;
                     }
 
                     if (element.orient.no === 'r') {
-                        shapes[next].rightOf = element.id;
+                        shapes[next].isRightOf = element.id;
                     }
                 }
             }
@@ -543,118 +544,102 @@ var SVGFlow = (function () {
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
                     if (element.orient.next === 'b') {
-                        shapes[next].below = element.id;
+                        shapes[next].isBelow = element.id;
                     }
 
                     if (element.orient.next === 'r') {
-                        shapes[next].rightOf = element.id;
+                        shapes[next].isRightOf = element.id;
                     }
                 }
             }
         }
 
-        function inPosition(t) {
-            var te = SVG.get(t);
-            return [te.x(), te.y() + te.cy()];
-        }
-
         function positionShapes(element, index) {
             var ce = SVG.get(element.id), rightMargin, eb;
-            if (!element.yesIn) {
-                element.yesIn = 't';
+            if (!element.inNode && element.isBelow) {
+                element.inNode = 't';
             }
 
-            if (!element.noIn) {
-                element.noIn = 'l';
+            if (!element.inNode && element.isRightOf) {
+                element.inNode = 'l';
             }
 
-            if (!element.nextIn) {
-                element.nextIn = 't';
-            }
             if (index === 0) {
-                //console.log(startEl.bbox());
-                SVG.get(element.id).y(startEl.bbox().height + startEl.bbox().y);
                 element.previd = startId;
             }
 
-            rightMargin = element.extendNo !== undefined ? element.extendNo : config.connectorLength;
-
-            // Try positioning relative to the previous elements
-
-            if (element.below) {
-                eb = SVG.get(element.below);
-                ce.move(eb.x(), eb.y() + eb.bbox().height + config.connectorLength);
+            if (element.isBelow) {
+                eb = SVG.get(element.isBelow);
+                if (index === 0) {
+                    ce.move(eb.x(), eb.y() + eb.bbox().height + config.arrowHeadHeight);
+                } else {
+                    ce.move(eb.x(), eb.y() + eb.bbox().height + config.connectorLength);
+                }
             }
 
-            if (element.rightOf) {
-                eb = SVG.get(element.rightOf);
+            if (element.isRightOf) {
+                rightMargin = element.moveRight !== undefined ? element.moveRight : config.connectorLength;
+                eb = SVG.get(element.isRightOf);
                 ce.move(eb.x() + eb.bbox().width + rightMargin, eb.y());
             }
         }
 
         function nodePoints(element) {
-            var ce = SVG.get(element.id), te, cHeight, tHeight, diff, targetShape;
+            var ce = SVG.get(element.id), te, targetShape;
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
-                element.yesOutPos = [ce.cx() + ce.x(), ce.y() + ce.get(0).height()];
+                element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
 
                 targetShape = shapes[lookup[element.yes]];
-                targetShape.yesIn = targetShape.yesIn !== undefined ? targetShape.yesIn : 't';
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                if (targetShape.yesInPos === undefined) {
-                    if (targetShape.yesIn === 't') {
+                if (targetShape.inNodePos === undefined) {
+                    if (targetShape.inNode === 't') {
                         te = SVG.get(element.yesid);
-                        targetShape.yesInPos = [te.x() + te.cx(), te.y()];
+                        targetShape.inNodePos = [te.cx(), te.y()];
                     }
-                    if (targetShape.yesIn === 'l') {
+                    if (targetShape.inNode === 'l') {
                         te = SVG.get(element.yesid);
-                        targetShape.yesInPos = [te.x(), te.y() + te.cy()];
+                        targetShape.inNodePos = [te.x(), te.cy()];
                     }
                     isPositioned.push(element.yesid);
                 }
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
-                element.noOutPos = [ce.cx() + ce.x(), ce.y() + ce.get(0).height()];
+                element.noOutPos = [ce.cx(), ce.cy()];
 
                 targetShape = shapes[lookup[element.no]];
-                targetShape.noIn = targetShape.noIn !== undefined ? targetShape.noIn : 't';
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                if (targetShape.noInPos === undefined) {
-                    if (targetShape.noIn === 't') {
+                if (targetShape.inNodePos === undefined) {
+                    if (targetShape.inNode === 't') {
                         te = SVG.get(element.noid);
-                      //targetShape.noInPos = [te.x() + te.cx(), te.y()];
-                        targetShape.noInPos = inPosition(element.noid);
+                        targetShape.inNodePos = [te.cx(), te.y()];
                     }
-                    if (targetShape.noIn === 'l') {
+                    if (targetShape.inNode === 'l') {
                         te = SVG.get(element.noid);
-                      //targetShape.noInPos = [te.x(), te.y() + te.cy()];
-                        targetShape.noInPos = inPosition(element.noid);
+                        targetShape.inNodePos = [te.x(), te.cy()];
                     }
                     isPositioned.push(element.yesid);
                 }
             }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
-                  // below
                 te = SVG.get(element.yesid);
-                cHeight = ce.first().height();
-                tHeight = te.first().height();
-                diff = (cHeight / 2) - (tHeight / 2);
 
-                element.yesOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
+                element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
                 targetShape = shapes[lookup[element.yes]];
-                targetShape.yesIn = targetShape.yesIn !== undefined ? targetShape.yesIn : 'l';
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
-                if (targetShape.yesInPos === undefined) {
-                    if (targetShape.yesIn === 't') {
+                if (targetShape.inNodePos === undefined) {
+                    if (targetShape.inNode === 't') {
                         te = SVG.get(element.yesid);
-                        targetShape.yesInPos = [te.x() + te.cx(), te.y()];
+                        targetShape.inNodePos = [te.cx(), te.y()];
                     }
-                    if (targetShape.yesIn === 'l') {
+                    if (targetShape.inNode === 'l') {
                         te = SVG.get(element.yesid);
-                      //targetShape.yesInPos = [te.x(), te.y() + te.cy()];
-                        targetShape.yesInPos = inPosition(element.yesid);
+                        targetShape.inNodePos = [te.x(), te.cy()];
                     }
                     isPositioned.push(element.yesid);
                 }
@@ -662,41 +647,37 @@ var SVGFlow = (function () {
 
             if (element.no && element.noid !== undefined && element.orient.no === 'r') {
                 te = SVG.get(element.noid);
-                cHeight = ce.first().height();
-                tHeight = te.first().height();
-                diff = (cHeight / 2) - (tHeight / 2);
-                element.noOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
+                element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
 
                 targetShape = shapes[lookup[element.no]];
-                targetShape.noIn = targetShape.noIn !== undefined ? targetShape.noIn : 'l';
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
-                if (targetShape.noInPos === undefined) {
-                    if (targetShape.noIn === 't') {
+                if (targetShape.inNodePos === undefined) {
+                    if (targetShape.inNode === 't') {
                         te = SVG.get(element.noid);
-                        targetShape.noInPos = inPosition(element.noid);
+                        targetShape.inNodePos = [te.cx(), te.y()];
                     }
-                    if (targetShape.noIn === 'l') {
+                    if (targetShape.inNode === 'l') {
                         te = SVG.get(element.noid);
-                        targetShape.noInPos = inPosition(element.noid);
+                        targetShape.inNodePos = [te.x(), te.cy()];
                     }
                     isPositioned.push(element.noid);
                 }
             }
 
             if (element.next && element.orient.next === 'b') {
-                element.nextOutPos = [ce.cx() + ce.x(), ce.y() + ce.get(0).height()];
+                element.nextOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                 targetShape = shapes[lookup[element.next]];
-                targetShape.nextIn = targetShape.nextIn !== undefined ? targetShape.nextIn : 't';
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                if (targetShape.nextInPos === undefined && targetShape.yesOutPos === undefined) {
-                //console.log(targetShape.label);
-                    if (targetShape.nextIn === 't') {
+                if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                    if (targetShape.inNode === 't') {
                         te = SVG.get(element.nextid);
-                        targetShape.nextInPos = [te.x() + te.cx(), te.y()];
+                        targetShape.inNodePos = [te.cx(), te.y()];
                     }
-                    if (targetShape.nextIn === 'l') {
+                    if (targetShape.inNode === 'l') {
                         te = SVG.get(element.noid);
-                        targetShape.nextInPos = [te.x(), te.y() + te.cy()];
+                        targetShape.inNodePos = [te.x(), te.cy()];
                     }
                     isPositioned.push(element.nextid);
                 }
@@ -706,16 +687,16 @@ var SVGFlow = (function () {
 
                 element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
                 targetShape = shapes[lookup[element.next]];
-                targetShape.nextIn = targetShape.nextIn !== undefined ? targetShape.nextIn : 'l';
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
-                if (targetShape.nextInPos === undefined && targetShape.yesOutPos === undefined) {
-                    if (targetShape.nextIn === 't') {
+                if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                    if (targetShape.inNode === 't') {
                         te = SVG.get(element.nextid);
-                        targetShape.nextInPos = [te.x() + te.cx(), te.y()];
+                        targetShape.inNodePos = [te.cx(), te.y()];
                     }
-                    if (targetShape.nextIn === 'l') {
+                    if (targetShape.inNode === 'l') {
                         te = SVG.get(element.nextid);
-                        targetShape.nextInPos = [te.x(), te.y() + te.cy()];
+                        targetShape.inNodePos = [te.x(), te.cy()];
                     }
                     isPositioned.push(element.nextid);
                 }
@@ -787,51 +768,62 @@ var SVGFlow = (function () {
             });
         }
 
+        function angleLine(start, end, element) {
+            var e = SVG.get(element.id), p1, p2, p3;
+                // See if it's at the bottom
+            if (start[1] === e.y() + e.get(0).height()) {
+                console.log('bottom');
+                p1 = start;
+                p2 = [start[0], start[1] + 20 ];
+
+                if (end[1] > start[1]) {
+                    p2 = [start[0], end[1] - 20];
+                    p3 = [end[0], end[1] - 20];
+                }
+
+                if (end[0] < start[0]) {
+                    p3 = [end[0], end[1] - 20];
+                }
+
+                if (end[1] <= start[1]) {
+                    p3 = [end[0], end[1] + 20];
+                }
+                return [p1, p2, p3, end];
+            }
+
+            return [start, end];
+        }
+
         function adjustConnectors(element) {
-            var targetElement,
-                p1,
+            var p1,
                 p4,
                 lineColour;
 
             if (element.yesid) {
-                targetElement = SVG.get(element.yesid);
                 p1 = element.yesOutPos;
-                p4 = shapes[lookup[element.yes]].yesInPos;
+                p4 = shapes[lookup[element.yes]].inNodePos;
                 lineColour = 'green';
-                draw.polyline(
-                    [
-                        p1,
-                        p4
-                    ]
-                ).stroke({ width: 1, colour: lineColour }).fill('none');
+                draw.polyline(angleLine(p1, p4, element)).stroke({ width: 1, colour: lineColour }).fill('none');
             }
 
             if (element.noid) {
-                targetElement = SVG.get(element.noid);
                 p1 = element.noOutPos;
-                p4 = shapes[lookup[element.no]].noInPos;
+                p4 = shapes[lookup[element.no]].inNodePos;
                 lineColour = 'red';
                 draw.polyline(
-                    [
-                        p1,
-                        p4
-                    ]
+                    angleLine(p1, p4, element)
                 ).stroke({ width: 1, colour: lineColour }).fill('none');
             }
 
             if (element.nextid) {
-                targetElement = SVG.get(element.nextid);
                 p1 = element.nextOutPos;
-                p4 = shapes[lookup[element.next]].nextInPos;
+                p4 = shapes[lookup[element.next]].inNodePos;
                 lineColour = 'blue';
                 if (p4 === undefined) {
                     p4 = shapes[lookup[element.next]].yesOutPos;
                 }
                 draw.polyline(
-                    [
-                        p1,
-                        p4
-                    ]
+                    angleLine(p1, p4, element)
                 ).stroke({ width: 1, colour: lineColour }).fill('none');
             }
         }
