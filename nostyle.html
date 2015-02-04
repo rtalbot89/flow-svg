@@ -52,11 +52,11 @@
 				'Does it have Open','Access paid option or is it an',' Open Access journal?'
 			],
 			yes: 'd1-y-y',
-			no: 'd1-y-n',
-			orient: {
+			no: 'd1-y-n'
+			/*orient: {
 				yes: 'b',
 				no: 'r'
-			}
+			}*/
 		}, 
 		{
 			label: 'd1-y-y',
@@ -65,8 +65,8 @@
             yes: 'd1-y-y-y',
             no:'d1-y-y-p',
 			orient: {
-				yes: 'b',
-				no: 'r'
+				yes: 'r',
+				no: 'b'
 			}
 		},
         {
@@ -79,9 +79,9 @@
 			label: 'd1-y-n',
 			type: 'decision',
 			text: ['Can you archive in ','WRAP and/or Subject','repository?'],
-              moveRight: 300,
+            moveRight: 180,
 			//yes: 'd1-y-n-y',
-      yes: 'd1-y-y-n-p',
+            yes: 'd1-y-y-n-p',
 			no: 'd1-y-n-n',
 			orient: {
 				yes: 'b',
@@ -99,7 +99,7 @@
 			type: 'process',
 			text: ['Check the journal\'s policy','on the green route'],
 			next: 'd1-y-y-n',
-            orient: {next: 'r'}
+            //orient: {next: 'r'}
 		}, 
         {
             label: 'd1-y-y-n',
@@ -157,10 +157,10 @@
 			text: [
 				'Check journal website','or go to ',' SHERPA FACT/ROMEO ','(link)'
 			],
-			next: 'd1-y',
-            orient: {
-                next: 'b'
-            }
+			next: 'd1'
+            //orient: {
+            //    next: 'b'
+                //}
         }
     ]);
 </script>

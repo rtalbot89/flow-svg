@@ -556,6 +556,11 @@ var SVGFlow = (function () {
 
         function positionShapes(element, index) {
             var ce = SVG.get(element.id), rightMargin, eb;
+
+            if (index === 0) {
+                element.isBelow = startId;
+            }
+
             if (!element.inNode && element.isBelow) {
                 element.inNode = 't';
             }
@@ -564,15 +569,13 @@ var SVGFlow = (function () {
                 element.inNode = 'l';
             }
 
-            if (index === 0) {
-                element.previd = startId;
-            }
-
             if (element.isBelow) {
-                eb = SVG.get(element.isBelow);
                 if (index === 0) {
-                    ce.move(eb.x(), eb.y() + eb.bbox().height + config.arrowHeadHeight);
+                    console.log(index);
+                    eb = SVG.get(element.isBelow);
+                    ce.move(eb.x(), eb.y() + eb.bbox().height);
                 } else {
+                    eb = SVG.get(element.isBelow);
                     ce.move(eb.x(), eb.y() + eb.bbox().height + config.connectorLength);
                 }
             }
@@ -607,7 +610,7 @@ var SVGFlow = (function () {
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
-                element.noOutPos = [ce.cx(), ce.cy()];
+                element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
 
                 targetShape = shapes[lookup[element.no]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
@@ -685,7 +688,7 @@ var SVGFlow = (function () {
 
             if (element.next && element.orient.next === 'r') {
 
-                element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.cy()];
+                element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
                 targetShape = shapes[lookup[element.next]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
@@ -769,7 +772,7 @@ var SVGFlow = (function () {
         }
 
         function angleLine(start, end, element) {
-            var e = SVG.get(element.id), p1, p2, p3;
+            var e = SVG.get(element.id), p1, p2, p3, p4, p5;
                 // See if it's at the bottom
             if (start[1] === e.y() + e.get(0).height()) {
                 console.log('bottom');
@@ -789,6 +792,27 @@ var SVGFlow = (function () {
                     p3 = [end[0], end[1] + 20];
                 }
                 return [p1, p2, p3, end];
+            }
+
+            // see if out is on the right and in is at the top
+            if ((start[0] < end[0]) && (start[1] > end[1])) {
+                console.log('start is to the left and below end');
+                p1 = start;
+                p2 = [start[0] + 20, start[1]];
+                p3 = [start[0] + 20, end[1] - 20];
+                p4 = [end[0], end[1] - 20];
+                return [p1, p2, p3, p4, end];
+            }
+
+            // see if it starts on the right and finishes on the left below
+            if ((start[0] > end[0]) && (start[1] < end[1])) {
+                p1 = start;
+                p2 = [start[0] + 20, start[1]];
+                p3 = [start[0] + 20, end[1] - (config.shapeHeight / 2) - 20];
+                p4 = [end[0] - 20, end[1] - (config.shapeHeight / 2) - 20];
+                p5 = [end[0] - 20, end[1]];
+
+                return [p1, p2, p3, p4, p5, end];
             }
 
             return [start, end];
@@ -852,6 +876,7 @@ var SVGFlow = (function () {
             // Add the ids of previous (referring) elements to the array
             shapes.forEach(referringIds);
             // Layout the shapes
+            //console.log(shapes);
             shapes.forEach(positionShapes);
 
             shapes.forEach(nodePoints);
