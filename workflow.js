@@ -27,7 +27,7 @@ var SVGFlow = (function () {
                     gridCol: userOpts.gridCol || 80,
                     rowHeight: userOpts.rowHeight || 20,
                     leftMargin: userOpts.leftMargin || 0,
-                    connectorLength: userOpts.connectorLength || 60,
+                    connectorLength: userOpts.connectorLength || 80,
                     startWidth: userOpts.startWidth || userOpts.w || w,
                     startHeight: userOpts.startHeight || 40,
                     startCornerRadius: userOpts.startCornerRadius || 20,
@@ -94,6 +94,8 @@ var SVGFlow = (function () {
                     color: config.arrowHeadColor,
                     opacity: config.arrowHeadOpacity
                 });
+                ah.cx(config.arrowHeadHeight / 2);
+                ah.cy(config.arrowHeadHeight / 2);
             return ah;
         }
 
@@ -588,10 +590,13 @@ var SVGFlow = (function () {
         }
 
         function nodePoints(element) {
-            var ce = SVG.get(element.id), te, targetShape;
+            var ce = SVG.get(element.id), te, targetShape, arrowhead, label;
+            
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
                 element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+                label = lineLabel('Yes');
+                label.move(element.yesOutPos[0], element.yesOutPos[1]);
 
                 targetShape = shapes[lookup[element.yes]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
@@ -600,10 +605,16 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 't') {
                         te = SVG.get(element.yesid);
                         targetShape.inNodePos = [te.cx(), te.y()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+                        
+                        
                     }
                     if (targetShape.inNode === 'l') {
                         te = SVG.get(element.yesid);
-                        targetShape.inNodePos = [te.x(), te.cy()];
+                        targetShape.inNodePos = [te.x() - arrowhead.width(), te.cy()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     isPositioned.push(element.yesid);
                 }
@@ -611,6 +622,8 @@ var SVGFlow = (function () {
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
                 element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+                label = lineLabel('No');
+                label.move(element.noOutPos[0], element.noOutPos[1]);
 
                 targetShape = shapes[lookup[element.no]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
@@ -619,10 +632,14 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 't') {
                         te = SVG.get(element.noid);
                         targetShape.inNodePos = [te.cx(), te.y()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
                         te = SVG.get(element.noid);
                         targetShape.inNodePos = [te.x(), te.cy()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);                
                     }
                     isPositioned.push(element.yesid);
                 }
@@ -632,6 +649,9 @@ var SVGFlow = (function () {
                 te = SVG.get(element.yesid);
 
                 element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
+                label = lineLabel('Yes');
+                label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
+                
                 targetShape = shapes[lookup[element.yes]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
@@ -639,10 +659,14 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 't') {
                         te = SVG.get(element.yesid);
                         targetShape.inNodePos = [te.cx(), te.y()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
                         te = SVG.get(element.yesid);
                         targetShape.inNodePos = [te.x(), te.cy()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     isPositioned.push(element.yesid);
                 }
@@ -651,6 +675,8 @@ var SVGFlow = (function () {
             if (element.no && element.noid !== undefined && element.orient.no === 'r') {
                 te = SVG.get(element.noid);
                 element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
+                label = lineLabel('No');
+                label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
 
                 targetShape = shapes[lookup[element.no]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
@@ -659,10 +685,16 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 't') {
                         te = SVG.get(element.noid);
                         targetShape.inNodePos = [te.cx(), te.y()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
                         te = SVG.get(element.noid);
                         targetShape.inNodePos = [te.x(), te.cy()];
+                        arrowhead = arrowHead();
+                     
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight, targetShape.inNodePos[1] - (config.arrowHeadHeight / 2));
+                        arrowhead.rotate(270);
                     }
                     isPositioned.push(element.noid);
                 }
@@ -677,10 +709,14 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 't') {
                         te = SVG.get(element.nextid);
                         targetShape.inNodePos = [te.cx(), te.y()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
                         te = SVG.get(element.noid);
                         targetShape.inNodePos = [te.x(), te.cy()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     isPositioned.push(element.nextid);
                 }
@@ -696,10 +732,14 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 't') {
                         te = SVG.get(element.nextid);
                         targetShape.inNodePos = [te.cx(), te.y()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
                         te = SVG.get(element.nextid);
                         targetShape.inNodePos = [te.x(), te.cy()];
+                        arrowhead = arrowHead();
+                        arrowhead.move( targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     isPositioned.push(element.nextid);
                 }
@@ -772,24 +812,24 @@ var SVGFlow = (function () {
         }
 
         function angleLine(start, end, element) {
-            var e = SVG.get(element.id), p1, p2, p3, p4, p5;
+            var e = SVG.get(element.id), p1, p2, p3, p4, p5, spacer = config.arrowHeadHeight * 2;
                 // See if it's at the bottom
             if (start[1] === e.y() + e.get(0).height()) {
                 console.log('bottom');
                 p1 = start;
-                p2 = [start[0], start[1] + 20 ];
+                p2 = [start[0], start[1] + spacer ];
 
                 if (end[1] > start[1]) {
-                    p2 = [start[0], end[1] - 20];
-                    p3 = [end[0], end[1] - 20];
+                    p2 = [start[0], end[1] - spacer];
+                    p3 = [end[0], end[1] - spacer];
                 }
 
                 if (end[0] < start[0]) {
-                    p3 = [end[0], end[1] - 20];
+                    p3 = [end[0], end[1] - spacer];
                 }
 
                 if (end[1] <= start[1]) {
-                    p3 = [end[0], end[1] + 20];
+                    p3 = [end[0], end[1] + spacer];
                 }
                 return [p1, p2, p3, end];
             }
@@ -798,19 +838,19 @@ var SVGFlow = (function () {
             if ((start[0] < end[0]) && (start[1] > end[1])) {
                 console.log('start is to the left and below end');
                 p1 = start;
-                p2 = [start[0] + 20, start[1]];
-                p3 = [start[0] + 20, end[1] - 20];
-                p4 = [end[0], end[1] - 20];
+                p2 = [start[0] + spacer, start[1]];
+                p3 = [start[0] + spacer, end[1] - spacer];
+                p4 = [end[0], end[1] - spacer];
                 return [p1, p2, p3, p4, end];
             }
 
             // see if it starts on the right and finishes on the left below
             if ((start[0] > end[0]) && (start[1] < end[1])) {
                 p1 = start;
-                p2 = [start[0] + 20, start[1]];
-                p3 = [start[0] + 20, end[1] - (config.shapeHeight / 2) - 20];
-                p4 = [end[0] - 20, end[1] - (config.shapeHeight / 2) - 20];
-                p5 = [end[0] - 20, end[1]];
+                p2 = [start[0] + spacer, start[1]];
+                p3 = [start[0] + spacer, end[1] - (config.shapeHeight / 2) - spacer];
+                p4 = [end[0] - spacer, end[1] - (config.shapeHeight / 2) - spacer];
+                p5 = [end[0] - spacer, end[1]];
 
                 return [p1, p2, p3, p4, p5, end];
             }
@@ -826,29 +866,27 @@ var SVGFlow = (function () {
             if (element.yesid) {
                 p1 = element.yesOutPos;
                 p4 = shapes[lookup[element.yes]].inNodePos;
-                lineColour = 'green';
-                draw.polyline(angleLine(p1, p4, element)).stroke({ width: 1, colour: lineColour }).fill('none');
+                draw.polyline(angleLine(p1, p4, element)).stroke({ width: 1, colour: lineColour }).fill('none').back();
             }
 
             if (element.noid) {
                 p1 = element.noOutPos;
                 p4 = shapes[lookup[element.no]].inNodePos;
-                lineColour = 'red';
                 draw.polyline(
                     angleLine(p1, p4, element)
-                ).stroke({ width: 1, colour: lineColour }).fill('none');
+                ).stroke({ width: 1, colour: lineColour }).fill('none').back();
             }
 
             if (element.nextid) {
                 p1 = element.nextOutPos;
                 p4 = shapes[lookup[element.next]].inNodePos;
-                lineColour = 'blue';
+                
                 if (p4 === undefined) {
                     p4 = shapes[lookup[element.next]].yesOutPos;
                 }
                 draw.polyline(
                     angleLine(p1, p4, element)
-                ).stroke({ width: 1, colour: lineColour }).fill('none');
+                ).stroke({ width: 1, colour: lineColour }).fill('none').back();
             }
         }
 
@@ -869,14 +907,13 @@ var SVGFlow = (function () {
             shapes.forEach(makeShapes);
             shapes.forEach(yesNoIds);
 
-            // Generate a lookup that gives Array IDs from SVG ids
-            // lookup = {};
+            // Generate a lookup that provides Array IDs from SVG ids
             generateLookups(shapes);
 
             // Add the ids of previous (referring) elements to the array
             shapes.forEach(referringIds);
-            // Layout the shapes
-            //console.log(shapes);
+            
+            // Lay out the shapes
             shapes.forEach(positionShapes);
 
             shapes.forEach(nodePoints);
