@@ -416,6 +416,7 @@ var SVGFlow = (function () {
                 var shape = shapeFuncs[element.type](element);
                 chartGroup.add(shape);
                 element.id = shape.attr('id');
+                element.svgid = shape;
                 itemIds[element.label] = element.id;
                 indexFromId[element.id] = index;
                 //console.log(interactive);
@@ -433,12 +434,15 @@ var SVGFlow = (function () {
         function yesNoIds(element) {
             if (element.yes) {
                 element.yesid = itemIds[element.yes];
+                element.svgyesid = SVG.get(itemIds[element.yes]);
             }
             if (element.no) {
                 element.noid = itemIds[element.no];
+                element.svgnoid = SVG.get(itemIds[element.no]);
             }
             if (element.next) {
                 element.nextid = itemIds[element.next];
+                element.svgnextid = SVG.get(itemIds[element.next]);
             }
         }
 
@@ -453,12 +457,15 @@ var SVGFlow = (function () {
                 next = lookup[element.yes];
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
+                    shapes[next].svgprevid = SVG.get(element.id);
                     if (element.orient.yes === 'b') {
                         shapes[next].isBelow = element.id;
+                        shapes[next].svgisBelow = SVG.get(element.id);
                     }
 
                     if (element.orient.yes === 'r') {
                         shapes[next].isRightOf = element.id;
+                        shapes[next].svgisRightOf = SVG.get(element.id);
                     }
                 }
             }
@@ -466,12 +473,15 @@ var SVGFlow = (function () {
                 next = lookup[element.no];
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
+                    shapes[next].svgprevid = SVG.get(element.id);
                     if (element.orient.no === 'b') {
                         shapes[next].isBelow = element.id;
+                        shapes[next].svgisBelow = SVG.get(element.id);
                     }
 
                     if (element.orient.no === 'r') {
                         shapes[next].isRightOf = element.id;
+                        shapes[next].svgisRightOf = SVG.get(element.id);
                     }
                 }
             }
@@ -479,19 +489,22 @@ var SVGFlow = (function () {
                 next = lookup[element.next];
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
+                    shapes[next].svgprevid = SVG.get(element.id);
                     if (element.orient.next === 'b') {
                         shapes[next].isBelow = element.id;
+                        shapes[next].svgisBelow= SVG.get(element.id);
                     }
 
                     if (element.orient.next === 'r') {
                         shapes[next].isRightOf = element.id;
+                        shapes[next].svgisRightOf = SVG.get(element.id);
                     }
                 }
             }
         }
 
         function positionShapes(element, index) {
-            var ce = SVG.get(element.id), rightMargin, eb;
+            var ce = element.svgid, rightMargin, eb;
 
             if (index === 0) {
                 element.isBelow = startId;
@@ -508,75 +521,111 @@ var SVGFlow = (function () {
             if (element.isBelow) {
                 if (index === 0) {
                     //console.log(index);
-                    eb = SVG.get(element.isBelow);
+                    eb = element.svgisBelow;
                     ce.move(eb.x(), eb.y() + eb.bbox().height);
                 } else {
-                    eb = SVG.get(element.isBelow);
+                    eb = element.svgisBelow;
                     ce.move(eb.x(), eb.y() + eb.bbox().height + config.connectorLength);
                 }
             }
 
             if (element.isRightOf) {
                 rightMargin = element.moveRight !== undefined ? element.moveRight : config.connectorLength;
-                eb = SVG.get(element.isRightOf);
+                eb = element.svgisRightOf;
                 ce.move(eb.x() + eb.bbox().width + rightMargin, eb.y());
             }
         }
         
         var clikShow = [];
         var clikHide = [];
+        var clikHistory = [];
 
         toggleNext = function (e, choice) {
             //console.log('clicked');
-            console.log(e);
-            clikShow.push(e.id);
-            var nxt, shapelookup, inverse, invlookup;
+            //console.log(e);
+            //clikShow.push(e.id);
+            var nxt, shapelookup, inverse, invlookup, pushid;
             if (choice === 'yes') {
-                nxt = SVG.get(e.yesid);
-                inverse = SVG.get(e.noid);
+                nxt = e.svgyesid;
+                inverse = e.svgnoid;
                 shapelookup = e.yes;
                 invlookup = e.no;
-            } else {
-                nxt = SVG.get(e.noid);
-                inverse = SVG.get(e.yesid);
-                shapelookup = e.no;
-                invlookup = e.yes;
-            }
-            if (nxt.visible()) {
-                nxt.hide();
-                console.log(clikShow.indexOf(nxt.attr('id')));
-                shapes[lookup[shapelookup]].conngroup.hide();
-                // Clean up anything showing
-                shapes.forEach(function (s,i) {
-                    //console.log(SVG.get(s.previd).visible());
-                    if (SVG.get(s.previd).visible() === false) {
-                        if (s.id !== e.id && s.id !== e.previd && i !== 0) {
-                            //SVG.get(s.id).hide();
-                            //s.conngroup.hide(); 
-                        }
-                 
-                    }
+                pushid = e.yesid;
+                SVG.get(e.svgnoid).hide();
+                
+                shapes.forEach(function (s) {
+                  var svg = s.svgprevid;
+                  //console.log(svg.visible());
+                  if (svg.visible() === false && s.id !== e.id) {
+                     SVG.get(s.id).hide();
+                  }
                 });
+                
+                
             } else {
-                nxt.show();
-                inverse.hide();
-                shapes[lookup[invlookup]].conngroup.hide();
-                shapes[lookup[shapelookup]].conngroup.show();
+                nxt = e.svgnoid;
+                inverse = e.svgyesid;
+                shapelookup = e.no;
+                pushid = e.noid;
+                invlookup = e.yes;
+                e.svgyesid.hide();
+                
+                shapes.forEach(function (s) {
+                  var svg = SVG.get(s.previd);
+                  //console.log(svg.visible());
+                  if (svg.visible() === false && s.id !== e.id) {
+                     //SVG.get(s.id).hide();
+                  }
+                });
             }
             
+            if (!nxt.visible()) {
+             
+              console.log('sum 2');
+              clikHistory.push(pushid);
+              //inverse.hide();
+              shapes[lookup[invlookup]].conngroup.hide();
+              shapes[lookup[shapelookup]].conngroup.show();
+              clikHistory.forEach(function (c) {
+                //SVG.get(c).hide();
+                
+              });
+              clikHistory = [];
+               nxt.show();
+              
+            } else {
+              // this is the key part probably to clearing the screen
+                nxt.hide();
+                console.log('sum 3');
+                clikHistory.forEach(function (c) {
+                  //SVG.get(c).hide();
+                  
+                });
+                clikHistory = [];
+                shapes.forEach(function (s) {
+                  var svg = SVG.get(s.previd);
+                  //console.log(svg.visible());
+                  if (svg.visible() === false) {
+                     //SVG.get(s.id).hide();
+                  }
+                });
+            }
+             
            
             
         };
         
         function nodePoints(element) {
-            var ce = SVG.get(element.id), te, targetShape, arrowhead, label,
+            var ce = element.svgid, te, targetShape, arrowhead, label,
                 group = draw.group();
-                //group.hide();
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
+                te = element.svgyesid;
                 element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                 label = lineLabel('Yes');
                 group.add(label);
+                arrowhead = arrowHead();
+                group.add(arrowhead);
                 label.move(element.yesOutPos[0], element.yesOutPos[1]);
                 label.on('click', function () {
                     toggleNext(element, 'yes');
@@ -587,19 +636,12 @@ var SVGFlow = (function () {
 
                 if (targetShape.inNodePos === undefined) {
                     if (targetShape.inNode === 't') {
-                        te = SVG.get(element.yesid);
                         targetShape.inNodePos = [te.cx(), te.y()];
-                        arrowhead = arrowHead();
-                        group.add(arrowhead);
-                        arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
-                        te = SVG.get(element.yesid);
                         targetShape.inNodePos = [te.x() - arrowhead.width(), te.cy()];
-                        arrowhead = arrowHead();
-                        group.add(arrowhead);
-                        arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
+                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     isPositioned.push(element.yesid);
                 }
             }
@@ -607,34 +649,26 @@ var SVGFlow = (function () {
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
                 element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                 label = lineLabel('No');
-                 group.add(label);
+                group.add(label);
+                arrowhead = arrowHead();
+                group.add(arrowhead);
                 label.move(element.noOutPos[0], element.noOutPos[1]);
                 label.on('click', function () {toggleNext(element, 'no'); });
 
                 targetShape = shapes[lookup[element.no]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+                
+                te = element.svgnoid;
 
                 if (targetShape.inNodePos === undefined) {
-                    if (targetShape.inNode === 't') {
-                        te = SVG.get(element.noid);
-                        targetShape.inNodePos = [te.cx(), te.y()];
-                        arrowhead = arrowHead();
-                        group.add(arrowhead);
-                        arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
-                    }
-                    if (targetShape.inNode === 'l') {
-                        te = SVG.get(element.noid);
-                        targetShape.inNodePos = [te.x(), te.cy()];
-                        arrowhead = arrowHead();
-                        group.add(arrowhead);
-                        arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
-                    }
-                    isPositioned.push(element.yesid);
+                  targetShape.inNodePos = [te.x(), te.cy()];
+                  arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+                  isPositioned.push(element.yesid);
                 }
             }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
-                te = SVG.get(element.yesid);
+                te = element.svgyesid;
 
                 element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
                 label = lineLabel('Yes');
@@ -646,14 +680,14 @@ var SVGFlow = (function () {
 
                 if (targetShape.inNodePos === undefined) {
                     if (targetShape.inNode === 't') {
-                        te = SVG.get(element.yesid);
+                        te = element.svgyesid;
                         targetShape.inNodePos = [te.cx(), te.y()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
                         arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
-                        te = SVG.get(element.yesid);
+                        te = element.svgyesid;
                         targetShape.inNodePos = [te.x(), te.cy()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
@@ -664,7 +698,7 @@ var SVGFlow = (function () {
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'r') {
-                te = SVG.get(element.noid);
+                te = element.svgnoid;
                 element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
                 label = lineLabel('No');
                 group.add(label);
@@ -676,14 +710,14 @@ var SVGFlow = (function () {
 
                 if (targetShape.inNodePos === undefined) {
                     if (targetShape.inNode === 't') {
-                        te = SVG.get(element.noid);
+                        te = element.svgnoid;
                         targetShape.inNodePos = [te.cx(), te.y()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
                         arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
-                        te = SVG.get(element.noid);
+                        te = element.svgnoid;
                         targetShape.inNodePos = [te.x(), te.cy()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
@@ -701,14 +735,14 @@ var SVGFlow = (function () {
 
                 if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                     if (targetShape.inNode === 't') {
-                        te = SVG.get(element.nextid);
+                        te = element.svgnextid;
                         targetShape.inNodePos = [te.cx(), te.y()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
                         arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
-                        te = SVG.get(element.noid);
+                        te = element.svgnoid;
                         targetShape.inNodePos = [te.x(), te.cy()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
@@ -726,14 +760,14 @@ var SVGFlow = (function () {
 
                 if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                     if (targetShape.inNode === 't') {
-                        te = SVG.get(element.nextid);
+                        te = element.svgnextid;
                         targetShape.inNodePos = [te.cx(), te.y()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
                         arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
-                        te = SVG.get(element.nextid);
+                        te = element.svgnextid;
                         targetShape.inNodePos = [te.x(), te.cy()];
                         arrowhead = arrowHead();
                         group.add(arrowhead);
