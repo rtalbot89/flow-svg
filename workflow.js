@@ -543,14 +543,6 @@ var SVGFlow = (function () {
                 shapelookup = e.yes;
                 invlookup = e.no;
                 SVG.get(e.svgnoid).hide();
-
-                shapes.forEach(function (s) {
-                    var svg = s.svgprevid;
-                    if (svg.visible() === false && s.id !== e.id) {
-                        SVG.get(s.id).hide();
-                    }
-                });
-
             } else {
                 nxt = e.svgnoid;
                 shapelookup = e.no;
@@ -560,21 +552,28 @@ var SVGFlow = (function () {
 
             if (!nxt.visible()) {
                 console.log('sum 2');
-
                 shapes[lookup[invlookup]].conngroup.hide();
+                shapes.forEach(function(sh, index){
+                        if (!sh.svgprevid.visible()  && index !== 0) {
+                            sh.svgid.hide();
+                            sh.conngroup.hide();
+                        }
+                    
+                });
                 shapes[lookup[shapelookup]].conngroup.show();
                 nxt.show();
 
             } else {
-              // this is the key part probably to clearing the screen
                 nxt.hide();
-                console.log('sum 3');
             }
         };
 
         function nodePoints(element) {
             var ce = element.svgid, te, targetShape, arrowhead, label,
                 group = draw.group();
+                if (interactive === true) {
+                    group.hide();
+                }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
                 te = element.svgyesid;
@@ -831,15 +830,6 @@ var SVGFlow = (function () {
             shapes.forEach(nodePoints);
 
             shapes.forEach(adjustConnectors);
-
-            // The show/hide function. Only apply if we are in interactive mode
-            if (interactive === true) {
-                //console.log('interactive');
-                shapes.forEach(function (element) {
-                    //console.log(element.conngroup);
-                    element.conngroup.hide();
-                });
-            }
         };
 
 
