@@ -292,12 +292,12 @@ var SVGFlow = (function () {
                 group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = SVG.get(shapes[0].id);
-                    if (!firstShape.visible()) {
-                        firstShape.show();
-                        shapes[0].conngroup.show();
+                    if (firstShape.opacity() === 0) {
+                        firstShape.animate().opacity(1);
+                        shapes[0].conngroup.animate().opacity(1);
                     } else {
-                        firstShape.hide();
-                        shapes[0].conngroup.hide();
+                        firstShape.animate().opacity(0);
+                        shapes[0].conngroup.animate().opacity(0);
                     }
                 });
             }
@@ -411,7 +411,6 @@ var SVGFlow = (function () {
         }
 
         function makeShapes(element, index) {
-            // There might be a SOC issue with this
             if (element.type && (typeof shapeFuncs[element.type] === 'function')) {
                 var shape = shapeFuncs[element.type](element);
                 chartGroup.add(shape);
@@ -419,11 +418,10 @@ var SVGFlow = (function () {
                 element.svgid = shape;
                 itemIds[element.label] = element.id;
                 indexFromId[element.id] = index;
-                //console.log(interactive);
                 if (interactive === false) {
-                    shape.show();
+                    shape.opacity(1);
                 } else {
-                    shape.hide();
+                    shape.opacity(0);
                 }
             } else {
                 console.log(element.type + ' is not a valid shape.');
@@ -530,7 +528,12 @@ var SVGFlow = (function () {
             }
 
             if (element.isRightOf) {
-                rightMargin = element.moveRight !== undefined ? element.moveRight : config.connectorLength;
+                if (interactive === false) {
+                    rightMargin = element.moveRight !== undefined ? element.moveRight : config.connectorLength;
+                } else {
+                    rightMargin = config.connectorLength;
+                }
+
                 eb = element.svgisRightOf;
                 ce.move(eb.x() + eb.bbox().width + rightMargin, eb.y());
             }
@@ -539,41 +542,60 @@ var SVGFlow = (function () {
         toggleNext = function (e, choice) {
             var nxt, shapelookup, invlookup;
             if (choice === 'yes') {
+                console.log('one');
                 nxt = e.svgyesid;
                 shapelookup = e.yes;
                 invlookup = e.no;
-                SVG.get(e.svgnoid).hide();
+                e.svgnoid.animate().opacity(0);
+
+                shapes.forEach(function (sh, index) {
+                    if (sh.svgprevid.opacity() === 0  && index !== 0) {
+                        sh.svgid.opacity(0);
+                        sh.conngroup.opacity(0);
+                    }
+                });
+
+                shapes[lookup[invlookup]].conngroup.opacity(0);
+
             } else {
+                console.log('two');
                 nxt = e.svgnoid;
                 shapelookup = e.no;
                 invlookup = e.yes;
-                e.svgyesid.hide();
+                e.svgyesid.opacity(0);
             }
 
-            if (!nxt.visible()) {
-                console.log('sum 2');
-                shapes[lookup[invlookup]].conngroup.hide();
-                shapes.forEach(function(sh, index){
-                        if (!sh.svgprevid.visible()  && index !== 0) {
-                            sh.svgid.hide();
-                            sh.conngroup.hide();
-                        }
-                    
+            if (nxt.opacity() === 0) {
+                console.log('three');
+                shapes[lookup[invlookup]].conngroup.opacity(0);
+                shapes.forEach(function (sh, index) {
+                    if (sh.svgprevid.opacity() === 0  && index !== 0) {
+                        sh.svgid.opacity(0);
+                        sh.conngroup.opacity(0);
+                    }
                 });
-                shapes[lookup[shapelookup]].conngroup.show();
-                nxt.show();
+                shapes[lookup[shapelookup]].conngroup.animate().opacity(1);
+                nxt.animate().opacity(1);
 
             } else {
-                nxt.hide();
+                console.log('four');
+                nxt.opacity(0);
+                shapes[lookup[shapelookup]].conngroup.opacity(0);
+                shapes.forEach(function (sh, index) {
+                    if (sh.svgprevid.opacity() === 0  && index !== 0) {
+                        sh.svgid.opacity(0);
+                        sh.conngroup.opacity(0);
+                    }
+                });
             }
         };
 
         function nodePoints(element) {
             var ce = element.svgid, te, targetShape, arrowhead, label,
                 group = draw.group();
-                if (interactive === true) {
-                    group.hide();
-                }
+            if (interactive === true) {
+                group.opacity(0);
+            }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
                 te = element.svgyesid;
@@ -720,10 +742,12 @@ var SVGFlow = (function () {
         }
 
         function angleLine(start, end, element) {
+
             var e = element.svgid, p1, p2, p3, p4, p5, spacer = config.arrowHeadHeight * 2;
+
                 // See if it's at the bottom
             if (start[1] === e.y() + e.get(0).height()) {
-                //console.log('bottom');
+
                 p1 = start;
                 p2 = [start[0], start[1] + spacer ];
 
