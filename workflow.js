@@ -82,7 +82,7 @@ var SVGFlow = (function () {
             }
         }
 
-        function arrowHead() {
+        function arrowHead(g) {
             var coords =
                     "0,0 " +
                     config.arrowHeadHeight
@@ -90,7 +90,7 @@ var SVGFlow = (function () {
                     + config.arrowHeadHeight / 2
                     + "," + config.arrowHeadHeight,
 
-                ah = draw.polygon(coords).fill({
+                ah = g.polygon(coords).fill({
                     color: config.arrowHeadColor,
                     opacity: config.arrowHeadOpacity
                 });
@@ -101,7 +101,7 @@ var SVGFlow = (function () {
 
         function arrowLine() {
             var group = draw.group(),
-                ah = arrowHead()
+                ah = arrowHead(group)
                     .move(
                         -(config.arrowHeadHeight / 2),
                         config.connectorLength - config.arrowHeadHeight
@@ -117,8 +117,8 @@ var SVGFlow = (function () {
             return group;
         }
 
-        function lineLabel(t) {
-            var text, labelGroup = draw.group(),
+        function lineLabel(t, g) {
+            var text, labelGroup = g.group(),
                 label = labelGroup
                 .rect(
                     config.labelWidth,
@@ -600,10 +600,8 @@ var SVGFlow = (function () {
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
                 te = element.svgyesid;
                 element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
-                label = lineLabel('Yes');
-                group.add(label);
-                arrowhead = arrowHead();
-                group.add(arrowhead);
+                label = lineLabel('Yes',group);
+                arrowhead = arrowHead(group);
                 label.move(element.yesOutPos[0], element.yesOutPos[1]);
                 label.on('click', function () {
                     toggleNext(element, 'yes');
@@ -626,10 +624,8 @@ var SVGFlow = (function () {
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
                 element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
-                label = lineLabel('No');
-                group.add(label);
-                arrowhead = arrowHead();
-                group.add(arrowhead);
+                label = lineLabel('No', group);
+                arrowhead = arrowHead(group);
                 label.move(element.noOutPos[0], element.noOutPos[1]);
                 label.on('click', function () {toggleNext(element, 'no'); });
 
@@ -648,10 +644,8 @@ var SVGFlow = (function () {
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
                 te = element.svgyesid;
                 element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
-                label = lineLabel('Yes');
-                group.add(label);
-                arrowhead = arrowHead();
-                group.add(arrowhead);
+                label = lineLabel('Yes', group);
+                arrowhead = arrowHead(group);
                 label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
                 label.on('click', function () {toggleNext(element, 'yes'); });
                 targetShape = shapes[lookup[element.yes]];
@@ -672,10 +666,8 @@ var SVGFlow = (function () {
             if (element.no && element.noid !== undefined && element.orient.no === 'r') {
                 te = element.svgnoid;
                 element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
-                label = lineLabel('No');
-                group.add(label);
-                arrowhead = arrowHead();
-                group.add(arrowhead);
+                label = lineLabel('No', group);
+                arrowhead = arrowHead(group);
                 label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
                 label.on('click', function () {toggleNext(element, 'no'); });
 
@@ -700,9 +692,7 @@ var SVGFlow = (function () {
                 element.nextOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                 targetShape = shapes[lookup[element.next]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-
-                arrowhead = arrowHead();
-                group.add(arrowhead);
+                arrowhead = arrowHead(group);
 
                 if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                     if (targetShape.inNode === 't') {
@@ -723,8 +713,7 @@ var SVGFlow = (function () {
                 element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
                 targetShape = shapes[lookup[element.next]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                arrowhead = arrowHead();
-                group.add(arrowhead);
+                arrowhead = arrowHead(group);
                 te = element.svgnextid;
 
                 if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
@@ -791,24 +780,20 @@ var SVGFlow = (function () {
         }
 
         function adjustConnectors(element) {
-            var p1,
-                p4,
-                conn;
+            var p1, p4;
 
             if (element.yesid) {
                 p1 = element.yesOutPos;
                 p4 = shapes[lookup[element.yes]].inNodePos;
-                conn = draw.polyline(angleLine(p1, p4, element)).stroke({ width: 1}).fill('none').back();
-                element.conngroup.add(conn);
+                element.conngroup.polyline(angleLine(p1, p4, element)).stroke({ width: 1}).fill('none').back();
             }
 
             if (element.noid) {
                 p1 = element.noOutPos;
                 p4 = shapes[lookup[element.no]].inNodePos;
-                conn = draw.polyline(
+                element.conngroup.polyline(
                     angleLine(p1, p4, element)
                 ).stroke({ width: 1}).fill('none').back();
-                element.conngroup.add(conn);
             }
 
             if (element.nextid) {
@@ -818,10 +803,9 @@ var SVGFlow = (function () {
                 if (p4 === undefined) {
                     p4 = shapes[lookup[element.next]].yesOutPos;
                 }
-                conn = draw.polyline(
+                element.conngroup.polyline(
                     angleLine(p1, p4, element)
                 ).stroke({ width: 1}).fill('none').back();
-                element.conngroup.add(conn);
             }
         }
 
