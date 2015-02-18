@@ -692,21 +692,30 @@ var SVGFlow = (function () {
             element.conngroup = group;
         }
 
-        function labelsAndArrows(element) {
-            var targetShape, arrowhead, label,
+        function addArrows(element) {
+            var arrowhead,
                 group = element.conngroup;
-            if (interactive === true) {
-                group.opacity(0);
-            }
 
+            if (element.inNodePos) {
+                arrowhead = arrowHead(group);
+
+                if (element.inNode === 't') {
+                    arrowhead.move(element.inNodePos[0] - config.arrowHeadHeight / 2, element.inNodePos[1] - config.arrowHeadHeight);
+                }
+                if (element.inNode === 'l') {
+                    arrowhead.move(element.inNodePos[0] - config.arrowHeadHeight, element.inNodePos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.rotate(270);
+                }
+            }
+        }
+
+        function addLabels(element) {
+            var group = element.conngroup, label;
             if (element.yes && element.yesid !== undefined) {
                 label = lineLabel('Yes', group);
                 label.on('click', function () {
                     toggleNext(element, 'yes');
                 });
-                arrowhead = arrowHead(group);
-                targetShape = shapes[lookup[element.yes]];
-                arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
 
                 if (element.orient.yes === 'b') {
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
@@ -718,11 +727,8 @@ var SVGFlow = (function () {
             }
 
             if (element.no && element.noid !== undefined) {
-                arrowhead = arrowHead(group);
                 label = lineLabel('No', group);
                 label.on('click', function () {toggleNext(element, 'no'); });
-                targetShape = shapes[lookup[element.no]];
-                arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
 
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
@@ -730,31 +736,8 @@ var SVGFlow = (function () {
 
                 if (element.orient.no === 'r') {
                     label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
-
-                    if (targetShape.inNode === 'l') {
-                        arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight, targetShape.inNodePos[1] - (config.arrowHeadHeight / 2));
-                        arrowhead.rotate(270);
-                    }
                 }
             }
-
-            if (element.next) {
-                targetShape = shapes[lookup[element.next]];
-                arrowhead = arrowHead(group);
-
-                if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
-                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
-                }
-
-                if (element.orient.next === 'b') {
-                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                }
-
-                if (element.orient.next === 'r') {
-                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                }
-            }
-            element.conngroup = group;
         }
 
         function angleLine(start, end, element) {
@@ -806,33 +789,29 @@ var SVGFlow = (function () {
             return [start, end];
         }
 
-        function adjustConnectors(element) {
-            var p1, p4;
+        function addConnectors(element) {
+            var startln, endln;
 
             if (element.yesid) {
-                p1 = element.yesOutPos;
-                p4 = shapes[lookup[element.yes]].inNodePos;
-                element.conngroup.polyline(angleLine(p1, p4, element)).stroke({ width: 1}).fill('none').back();
+                startln = element.yesOutPos;
+                endln = shapes[lookup[element.yes]].inNodePos;
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none').back();
             }
 
             if (element.noid) {
-                p1 = element.noOutPos;
-                p4 = shapes[lookup[element.no]].inNodePos;
-                element.conngroup.polyline(
-                    angleLine(p1, p4, element)
-                ).stroke({ width: 1}).fill('none').back();
+                startln = element.noOutPos;
+                endln = shapes[lookup[element.no]].inNodePos;
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
             }
 
             if (element.nextid) {
-                p1 = element.nextOutPos;
-                p4 = shapes[lookup[element.next]].inNodePos;
+                startln = element.nextOutPos;
+                endln = shapes[lookup[element.next]].inNodePos;
 
-                if (p4 === undefined) {
-                    p4 = shapes[lookup[element.next]].yesOutPos;
+                if (endln === undefined) {
+                    endln = shapes[lookup[element.next]].yesOutPos;
                 }
-                element.conngroup.polyline(
-                    angleLine(p1, p4, element)
-                ).stroke({ width: 1}).fill('none').back();
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
             }
         }
 
@@ -852,49 +831,14 @@ var SVGFlow = (function () {
 
             shapes.forEach(makeShapes);
             shapes.forEach(yesNoIds);
-
-            // Generate a lookup that provides Array IDs from SVG ids
             generateLookups(shapes);
-
-            // Add the ids of previous (referring) elements to the array
             shapes.forEach(referringIds);
-
-            // Lay out the shapes
             shapes.forEach(positionShapes);
-
             shapes.forEach(nodePoints);
-
-            shapes.forEach(labelsAndArrows);
-
-            shapes.forEach(adjustConnectors);
+            shapes.forEach(addConnectors);
+            shapes.forEach(addArrows);
+            shapes.forEach(addLabels);
         };
-
-
-        /*
-        function drawGrid(draw) {
-            var startPoint = 0,
-                numCols = Math.round(draw.width() / config.gridCol),
-                colHeight = draw.height(),
-                pageWidth = draw.width(),
-                numRows = Math.round(colHeight / config.rowHeight),
-                startRow = 0,
-                j;
-
-            for (i = 0; i < numCols + 1; i += 1) {
-                draw.line(startPoint, 0, startPoint, colHeight).stroke({
-                    width: 0.15
-                });
-                startPoint += config.gridCol;
-            }
-
-            for (j = 0; j < numRows + 1; j += 1) {
-                draw.line(0, startRow, pageWidth, startRow).stroke({
-                    width: 0.15
-                });
-                startRow += config.rowHeight;
-            }
-        }
-        */
 
         return {
             config: setParams,
@@ -905,5 +849,3 @@ var SVGFlow = (function () {
         };
 
     }());
-//drawGrid(draw);
-//unhide();
