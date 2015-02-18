@@ -729,6 +729,82 @@ var SVGFlow = (function () {
             }
             element.conngroup = group;
         }
+        
+        function labelsAndArrows (element) {
+            var ce = element.svgid, te, targetShape, arrowhead, label,
+            group = element.conngroup;
+            if (interactive === true) {
+                group.opacity(0);
+            }
+
+            if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
+                label = lineLabel('Yes',group);
+                arrowhead = arrowHead(group);
+                label.move(element.yesOutPos[0], element.yesOutPos[1]);
+                label.on('click', function () {
+                    toggleNext(element, 'yes');
+                });
+
+                targetShape = shapes[lookup[element.yes]];
+                arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+            }
+
+            if (element.no && element.noid !== undefined && element.orient.no === 'b') {
+                label = lineLabel('No', group);
+                arrowhead = arrowHead(group);
+                label.move(element.noOutPos[0], element.noOutPos[1]);
+                label.on('click', function () {toggleNext(element, 'no'); });
+                targetShape = shapes[lookup[element.no]];
+                arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+            }
+
+            if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
+                label = lineLabel('Yes', group);
+                arrowhead = arrowHead(group);
+                label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
+                label.on('click', function () {toggleNext(element, 'yes'); });
+                targetShape = shapes[lookup[element.yes]];
+                arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+            }
+
+            if (element.no && element.noid !== undefined && element.orient.no === 'r') {
+                label = lineLabel('No', group);
+                arrowhead = arrowHead(group);
+                label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
+                label.on('click', function () {toggleNext(element, 'no'); });
+
+                targetShape = shapes[lookup[element.no]];
+              
+                if (targetShape.inNode === 't') {
+                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+                }
+                if (targetShape.inNode === 'l') {
+                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight, targetShape.inNodePos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.rotate(270);
+                }
+            }
+
+            if (element.next && element.orient.next === 'b') {
+                targetShape = shapes[lookup[element.next]];
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+                arrowhead = arrowHead(group);
+
+                if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+                }
+            }
+
+            if (element.next && element.orient.next === 'r') {
+                targetShape = shapes[lookup[element.next]];
+                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+                arrowhead = arrowHead(group);
+                
+                if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
+                }
+            }
+            element.conngroup = group;
+        }
 
         function angleLine(start, end, element) {
 
@@ -836,6 +912,8 @@ var SVGFlow = (function () {
             shapes.forEach(positionShapes);
 
             shapes.forEach(nodePoints);
+            
+             shapes.forEach(labelsAndArrows);
 
             shapes.forEach(adjustConnectors);
         };
