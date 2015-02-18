@@ -591,124 +591,116 @@ var SVGFlow = (function () {
         };
 
         function nodePoints(element) {
-            var ce = element.svgid, te, targetShape, arrowhead, label,
+            var ce = element.svgid, te, targetShape,
                 group = draw.group();
             if (interactive === true) {
                 group.opacity(0);
             }
-
-            if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
+            if (element.yes && element.yesid !== undefined) {
                 te = element.svgyesid;
-                element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
-
                 targetShape = shapes[lookup[element.yes]];
-                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                if (targetShape.inNodePos === undefined) {
-                    if (targetShape.inNode === 't') {
-                        targetShape.inNodePos = [te.cx(), te.y()];
-                    }
-                    if (targetShape.inNode === 'l') {
-                        targetShape.inNodePos = [te.x() - arrowhead.width(), te.cy()];
-                    }
-                    isPositioned.push(element.yesid);
-                }
-            }
-
-            if (element.no && element.noid !== undefined && element.orient.no === 'b') {
-                element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
-                targetShape = shapes[lookup[element.no]];
-                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-
-                te = element.svgnoid;
-
-                if (targetShape.inNodePos === undefined) {
+                if (targetShape.inNodePos === undefined && targetShape.inNode === 't') {
                     targetShape.inNodePos = [te.cx(), te.y()];
-                    isPositioned.push(element.yesid);
                 }
+
+                if (element.orient.yes === 'b') {
+                    element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+                    if (targetShape.inNodePos === undefined) {
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
+                        }
+                    }
+                }
+
+                if (element.orient.yes === 'r') {
+                    element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+                    if (targetShape.inNodePos === undefined) {
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
+                    }
+                }
+                isPositioned.push(element.yesid);
             }
 
-            if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
-                te = element.svgyesid;
-                element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
-                targetShape = shapes[lookup[element.yes]];
-                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-
-                if (targetShape.inNodePos === undefined) {
-                    if (targetShape.inNode === 't') {
-                        targetShape.inNodePos = [te.cx(), te.y()];
-                    }
-                    if (targetShape.inNode === 'l') {
-                        targetShape.inNodePos = [te.x(), te.cy()];
-                    }
-                    isPositioned.push(element.yesid);
-                }
-            }
-
-            if (element.no && element.noid !== undefined && element.orient.no === 'r') {
-                te = element.svgnoid;
-                element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
+            if (element.no && element.noid !== undefined) {
                 targetShape = shapes[lookup[element.no]];
-                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+                te = element.svgnoid;
 
-                if (targetShape.inNodePos === undefined) {
-                    if (targetShape.inNode === 't') {
+                if (element.orient.no === 'b') {
+                    element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+
+                    if (targetShape.inNodePos === undefined) {
                         targetShape.inNodePos = [te.cx(), te.y()];
                     }
-                    if (targetShape.inNode === 'l') {
-                        targetShape.inNodePos = [te.x(), te.cy()];
-                    }
-                    isPositioned.push(element.noid);
                 }
+
+                if (element.orient.no === 'r') {
+                    element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+
+                    if (targetShape.inNodePos === undefined) {
+                        if (targetShape.inNode === 't') {
+                            targetShape.inNodePos = [te.cx(), te.y()];
+                        }
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
+                    }
+                }
+                isPositioned.push(element.noid);
             }
 
-            if (element.next && element.orient.next === 'b') {
-                element.nextOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+            if (element.next) {
                 targetShape = shapes[lookup[element.next]];
-                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+                if (element.orient.next === 'b') {
+                    element.nextOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
 
-                if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
-                    if (targetShape.inNode === 't') {
-                        te = element.svgnextid;
-                        targetShape.inNodePos = [te.cx(), te.y()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+
+                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                        if (targetShape.inNode === 't') {
+                            te = element.svgnextid;
+                            targetShape.inNodePos = [te.cx(), te.y()];
+                        }
+                        if (targetShape.inNode === 'l') {
+                            te = element.svgnoid;
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
                     }
-                    if (targetShape.inNode === 'l') {
-                        te = element.svgnoid;
-                        targetShape.inNodePos = [te.x(), te.cy()];
-                    }
-                    isPositioned.push(element.nextid);
                 }
-            }
+                if (element.orient.next === 'r') {
+                    element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+                    te = element.svgnextid;
 
-            if (element.next && element.orient.next === 'r') {
-
-                element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
-                targetShape = shapes[lookup[element.next]];
-                targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                te = element.svgnextid;
-
-                if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
-                    if (targetShape.inNode === 't') {
-                        targetShape.inNodePos = [te.cx(), te.y()];
+                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                        if (targetShape.inNode === 't') {
+                            targetShape.inNodePos = [te.cx(), te.y()];
+                        }
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
                     }
-                    if (targetShape.inNode === 'l') {
-                        targetShape.inNodePos = [te.x(), te.cy()];
-                    }
-                    isPositioned.push(element.nextid);
                 }
+                isPositioned.push(element.nextid);
             }
             element.conngroup = group;
         }
-        
-        function labelsAndArrows (element) {
-            var ce = element.svgid, te, targetShape, arrowhead, label,
-            group = element.conngroup;
+
+        function labelsAndArrows(element) {
+            var targetShape, arrowhead, label,
+                group = element.conngroup;
             if (interactive === true) {
                 group.opacity(0);
             }
 
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
-                label = lineLabel('Yes',group);
+                label = lineLabel('Yes', group);
                 arrowhead = arrowHead(group);
                 label.move(element.yesOutPos[0], element.yesOutPos[1]);
                 label.on('click', function () {
@@ -744,7 +736,7 @@ var SVGFlow = (function () {
                 label.on('click', function () {toggleNext(element, 'no'); });
 
                 targetShape = shapes[lookup[element.no]];
-              
+
                 if (targetShape.inNode === 't') {
                     arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                 }
@@ -768,7 +760,7 @@ var SVGFlow = (function () {
                 targetShape = shapes[lookup[element.next]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
                 arrowhead = arrowHead(group);
-                
+
                 if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                     arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                 }
@@ -882,8 +874,8 @@ var SVGFlow = (function () {
             shapes.forEach(positionShapes);
 
             shapes.forEach(nodePoints);
-            
-             shapes.forEach(labelsAndArrows);
+
+            shapes.forEach(labelsAndArrows);
 
             shapes.forEach(adjustConnectors);
         };
