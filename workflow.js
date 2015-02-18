@@ -519,8 +519,8 @@ var SVGFlow = (function () {
             if (element.isBelow) {
                 if (index === 0) {
                     //console.log(index);
-                    eb = element.svgisBelow;
-                    ce.move(eb.x(), eb.y() + eb.bbox().height);
+                    //eb = element.svgisBelow;
+                    //ce.move(eb.x(), eb.y() + eb.bbox().height);
                 } else {
                     eb = element.svgisBelow;
                     ce.move(eb.x(), eb.y() + eb.bbox().height + config.connectorLength);
