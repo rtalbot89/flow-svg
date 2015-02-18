@@ -143,7 +143,6 @@ var SVGFlow = (function () {
                 'font-size' : config.arrowFontSize
             });
             text.cy(label.cy());
-            labelGroup.style('cursor', 'pointer');
             return labelGroup;
         }
 
@@ -542,23 +541,23 @@ var SVGFlow = (function () {
         toggleNext = function (e, choice) {
             var nxt, shapelookup, invlookup;
             if (choice === 'yes') {
-                console.log('one');
+                console.log('yes 1');
                 nxt = e.svgyesid;
                 shapelookup = e.yes;
                 invlookup = e.no;
                 e.svgnoid.animate().opacity(0);
 
                 shapes.forEach(function (sh, index) {
-                    if (sh.svgprevid.opacity() === 0  && index !== 0) {
-                        sh.svgid.opacity(0);
-                        sh.conngroup.opacity(0);
+                    if (sh.svgprevid && sh.svgprevid.opacity() === 0  && index !== 0) {
+                        //sh.svgid.opacity(0);
+                        //sh.conngroup.opacity(0);
                     }
                 });
-
+               
                 shapes[lookup[invlookup]].conngroup.opacity(0);
 
             } else {
-                console.log('two');
+                console.log('no 2');
                 nxt = e.svgnoid;
                 shapelookup = e.no;
                 invlookup = e.yes;
@@ -566,23 +565,23 @@ var SVGFlow = (function () {
             }
 
             if (nxt.opacity() === 0) {
-                console.log('three');
+                console.log('nxt hidden 3');
                 shapes[lookup[invlookup]].conngroup.opacity(0);
                 shapes.forEach(function (sh, index) {
-                    if (sh.svgprevid.opacity() === 0  && index !== 0) {
-                        sh.svgid.opacity(0);
-                        sh.conngroup.opacity(0);
+                    if (sh.svgprevid && sh.svgprevid.opacity() === 0  && index !== 0) {
+                        //sh.svgid.opacity(0);
+                        //sh.conngroup.opacity(0);
                     }
                 });
                 shapes[lookup[shapelookup]].conngroup.animate().opacity(1);
                 nxt.animate().opacity(1);
 
             } else {
-                console.log('four');
+                console.log('nxt visible 4');
                 nxt.opacity(0);
                 shapes[lookup[shapelookup]].conngroup.opacity(0);
                 shapes.forEach(function (sh, index) {
-                    if (sh.svgprevid.opacity() === 0  && index !== 0) {
+                    if (sh.svgprevid && sh.svgprevid.opacity() === 0  && index !== 0) {
                         sh.svgid.opacity(0);
                         sh.conngroup.opacity(0);
                     }
@@ -713,10 +712,12 @@ var SVGFlow = (function () {
             var group = element.conngroup, label;
             if (element.yes && element.yesid !== undefined) {
                 label = lineLabel('Yes', group);
-                label.on('click', function () {
-                    toggleNext(element, 'yes');
-                });
-
+                
+                if (interactive === true) {
+                  label.on('click', function () {toggleNext(element, 'yes'); });
+                  label.style('cursor', 'pointer');
+                }
+                
                 if (element.orient.yes === 'b') {
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
                 }
@@ -728,8 +729,12 @@ var SVGFlow = (function () {
 
             if (element.no && element.noid !== undefined) {
                 label = lineLabel('No', group);
-                label.on('click', function () {toggleNext(element, 'no'); });
-
+                
+                 if (interactive === true) {
+                    label.on('click', function () {toggleNext(element, 'no'); });
+                    label.style('cursor', 'pointer');
+                 }
+                
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
                 }
@@ -816,20 +821,19 @@ var SVGFlow = (function () {
         }
 
         layoutShapes = function (s) {
-            shapes = s;
-            console.log(shapes);
+          shapes = s;
+          var btnBar;
             config = init();
-            startEl = start(shapes);
-            //chartGroup.x(config.leftMargin);
-            chartGroup.y(180);
-            //chartGroup.add(startEl);
-
             config.showButtons = true;
             if (config.showButtons === true) {
-                //chartGroup.add(buttonBar());
-                startEl.move(0, config.btnBarHeight + 20);
+                btnBar = buttonBar();
             }
-
+            startEl = start(shapes);
+            if (btnBar !== undefined) {
+              startEl.y(btnBar.bbox().height + 10);
+            }
+           
+            chartGroup.y(startEl.y() + startEl.bbox().height);
             shapes.forEach(makeShapes);
             shapes.forEach(yesNoIds);
             generateLookups(shapes);
