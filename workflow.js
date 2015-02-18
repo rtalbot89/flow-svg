@@ -600,12 +600,6 @@ var SVGFlow = (function () {
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'b') {
                 te = element.svgyesid;
                 element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
-                label = lineLabel('Yes',group);
-                arrowhead = arrowHead(group);
-                label.move(element.yesOutPos[0], element.yesOutPos[1]);
-                label.on('click', function () {
-                    toggleNext(element, 'yes');
-                });
 
                 targetShape = shapes[lookup[element.yes]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
@@ -617,18 +611,12 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 'l') {
                         targetShape.inNodePos = [te.x() - arrowhead.width(), te.cy()];
                     }
-                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     isPositioned.push(element.yesid);
                 }
             }
 
             if (element.no && element.noid !== undefined && element.orient.no === 'b') {
                 element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
-                label = lineLabel('No', group);
-                arrowhead = arrowHead(group);
-                label.move(element.noOutPos[0], element.noOutPos[1]);
-                label.on('click', function () {toggleNext(element, 'no'); });
-
                 targetShape = shapes[lookup[element.no]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
@@ -636,7 +624,6 @@ var SVGFlow = (function () {
 
                 if (targetShape.inNodePos === undefined) {
                     targetShape.inNodePos = [te.cx(), te.y()];
-                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     isPositioned.push(element.yesid);
                 }
             }
@@ -644,10 +631,6 @@ var SVGFlow = (function () {
             if (element.yes && element.yesid !== undefined && element.orient.yes === 'r') {
                 te = element.svgyesid;
                 element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
-                label = lineLabel('Yes', group);
-                arrowhead = arrowHead(group);
-                label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
-                label.on('click', function () {toggleNext(element, 'yes'); });
                 targetShape = shapes[lookup[element.yes]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
@@ -658,7 +641,6 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 'l') {
                         targetShape.inNodePos = [te.x(), te.cy()];
                     }
-                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     isPositioned.push(element.yesid);
                 }
             }
@@ -666,23 +648,15 @@ var SVGFlow = (function () {
             if (element.no && element.noid !== undefined && element.orient.no === 'r') {
                 te = element.svgnoid;
                 element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
-                label = lineLabel('No', group);
-                arrowhead = arrowHead(group);
-                label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
-                label.on('click', function () {toggleNext(element, 'no'); });
-
                 targetShape = shapes[lookup[element.no]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
                 if (targetShape.inNodePos === undefined) {
                     if (targetShape.inNode === 't') {
                         targetShape.inNodePos = [te.cx(), te.y()];
-                        arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     }
                     if (targetShape.inNode === 'l') {
                         targetShape.inNodePos = [te.x(), te.cy()];
-                        arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight, targetShape.inNodePos[1] - (config.arrowHeadHeight / 2));
-                        arrowhead.rotate(270);
                     }
                     isPositioned.push(element.noid);
                 }
@@ -692,7 +666,6 @@ var SVGFlow = (function () {
                 element.nextOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                 targetShape = shapes[lookup[element.next]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                arrowhead = arrowHead(group);
 
                 if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                     if (targetShape.inNode === 't') {
@@ -703,7 +676,6 @@ var SVGFlow = (function () {
                         te = element.svgnoid;
                         targetShape.inNodePos = [te.x(), te.cy()];
                     }
-                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     isPositioned.push(element.nextid);
                 }
             }
@@ -713,7 +685,6 @@ var SVGFlow = (function () {
                 element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
                 targetShape = shapes[lookup[element.next]];
                 targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                arrowhead = arrowHead(group);
                 te = element.svgnextid;
 
                 if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
@@ -723,7 +694,6 @@ var SVGFlow = (function () {
                     if (targetShape.inNode === 'l') {
                         targetShape.inNodePos = [te.x(), te.cy()];
                     }
-                    arrowhead.move(targetShape.inNodePos[0] - config.arrowHeadHeight / 2, targetShape.inNodePos[1] - config.arrowHeadHeight);
                     isPositioned.push(element.nextid);
                 }
             }
