@@ -149,7 +149,7 @@ var SVGFlow = (function () {
 
         function decision(options) {
             var shape, text,
-                group = draw.group(),
+                group = chartGroup.group(),
                 coords =
                 "0," +
                 config.decisionHeight / 2 +
@@ -184,8 +184,8 @@ var SVGFlow = (function () {
 
         function finish(options) {
             var text,
-                group = draw.group(),
-                content = draw.group();
+                group = chartGroup.group(),
+                content = chartGroup.group();
 
             group.attr({
                 "class": "finish-group"
@@ -228,7 +228,7 @@ var SVGFlow = (function () {
         // The process shape that has an outlet, but no choice
         function process(options) {
             var text,
-                group = draw.group()
+                group = chartGroup.group()
                     .attr({
                         "class": "process-group"
                     }),
@@ -413,7 +413,7 @@ var SVGFlow = (function () {
         function makeShapes(element, index) {
             if (element.type && (typeof shapeFuncs[element.type] === 'function')) {
                 var shape = shapeFuncs[element.type](element);
-                chartGroup.add(shape);
+                //chartGroup.add(shape);
                 element.id = shape.attr('id');
                 element.svgid = shape;
                 itemIds[element.label] = element.id;
@@ -520,7 +520,7 @@ var SVGFlow = (function () {
                 if (index === 0) {
                     //console.log(index);
                     //eb = element.svgisBelow;
-                    //ce.move(eb.x(), eb.y() + eb.bbox().height);
+                    ce.move(0, 0);
                 } else {
                     eb = element.svgisBelow;
                     ce.move(eb.x(), eb.y() + eb.bbox().height + config.connectorLength);
@@ -592,7 +592,7 @@ var SVGFlow = (function () {
 
         function nodePoints(element) {
             var ce = element.svgid, te, targetShape,
-                group = draw.group();
+                group = chartGroup.group();
             if (interactive === true) {
                 group.opacity(0);
             }
@@ -820,12 +820,13 @@ var SVGFlow = (function () {
             console.log(shapes);
             config = init();
             startEl = start(shapes);
-            chartGroup.x(config.leftMargin);
-            chartGroup.add(startEl);
+            //chartGroup.x(config.leftMargin);
+            chartGroup.y(180);
+            //chartGroup.add(startEl);
 
             config.showButtons = true;
             if (config.showButtons === true) {
-                chartGroup.add(buttonBar());
+                //chartGroup.add(buttonBar());
                 startEl.move(0, config.btnBarHeight + 20);
             }
 
