@@ -90,13 +90,12 @@ var SVGFlow = (function () {
                     + config.arrowHeadHeight / 2
                     + "," + config.arrowHeadHeight,
 
-                ah = g.polygon(coords).fill({
-                    color: config.arrowHeadColor,
-                    opacity: config.arrowHeadOpacity
-                });
-            ah.cx(config.arrowHeadHeight / 2);
-            ah.cy(config.arrowHeadHeight / 2);
-            return ah;
+                //ah = g.polygon(coords).fill('red');
+            ag = g.group(),
+                ah = ag.polygon(coords).fill({color: config.arrowHeadColor,opacity: config.arrowHeadOpacity})
+                .cx(config.arrowHeadHeight / 2)
+                .cy(config.arrowHeadHeight / 2);
+            return ag;
         }
 
         function arrowLine() {
@@ -165,7 +164,7 @@ var SVGFlow = (function () {
                 });
             group.attr('class', 'fc-decision');
 
-            shape.clone();
+            //shape.clone();
 
             text = group.text(function (add) {
                 options.text.forEach(function (l) {
@@ -174,7 +173,7 @@ var SVGFlow = (function () {
             });
             text.fill(config.decisionTextColour).font({size: config.decisionFontSize});
 
-            text.clipWith(shape);
+            //text.clipWith(shape);
 
             text.cx(shape.cx() + text.bbox().width + text.bbox().x);
             text.cy(shape.cy());
@@ -291,16 +290,17 @@ var SVGFlow = (function () {
                 group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = SVG.get(shapes[0].id);
-                    if (firstShape.opacity() === 0) {
-                        firstShape.animate().opacity(1);
-                        shapes[0].conngroup.animate().opacity(1);
+                    if (firstShape.opacity() === 0.5) {
+                        firstShape.opacity(1);
+                        shapes[0].conngroup.opacity(1);
+                        shapes[0].conngroup.get(0).opacity(1);
+                        //shapes[0].conngroup
                     } else {
-                        firstShape.animate().opacity(0);
-                        shapes[0].conngroup.animate().opacity(0);
+                        //firstShape.animate().opacity(0);
+                        //shapes[0].conngroup.animate().opacity(0);
                     }
                 });
             }
-
             return group;
         }
 
@@ -542,27 +542,13 @@ var SVGFlow = (function () {
             var nxt, shapelookup, invlookup;
             if (choice === 'yes') {
                 console.log('yes 1');
-                nxt = e.svgyesid;
-                shapelookup = e.yes;
-                invlookup = e.no;
-                e.svgnoid.animate().opacity(0);
+                e.svgyesid.opacity(1);
+                e.conngroup.opacity(1);
+                
 
-                shapes.forEach(function (sh, index) {
-                    if (sh.svgprevid && sh.svgprevid.opacity() === 0  && index !== 0) {
-                        //sh.svgid.opacity(0);
-                        //sh.conngroup.opacity(0);
-                    }
-                });
-               
-                shapes[lookup[invlookup]].conngroup.opacity(0);
-
-            } else {
-                console.log('no 2');
-                nxt = e.svgnoid;
-                shapelookup = e.no;
-                invlookup = e.yes;
-                e.svgyesid.opacity(0);
-            }
+            } 
+            
+            /*
 
             if (nxt.opacity() === 0) {
                 console.log('nxt hidden 3');
@@ -587,14 +573,13 @@ var SVGFlow = (function () {
                     }
                 });
             }
+            */
         };
 
         function nodePoints(element) {
             var ce = element.svgid, te, targetShape,
                 group = chartGroup.group();
-            if (interactive === true) {
-                group.opacity(0);
-            }
+           
             if (element.yes && element.yesid !== undefined) {
                 te = element.svgyesid;
                 targetShape = shapes[lookup[element.yes]];
@@ -689,28 +674,40 @@ var SVGFlow = (function () {
                 isPositioned.push(element.nextid);
             }
             element.conngroup = group;
+            if (interactive === true) {
+                //group.opacity(0);
+            }
         }
 
         function addArrows(element) {
-            var arrowhead,
-                group = element.conngroup;
+            var arrowhead;
+            var group = element.conngroup;
+                //console.log(element.previd);
+                console.log(element);
+                var pe = shapes[lookup[element.previd]];
+                //console.log(pe);
+               // var group = pe.conngroup;
+                  arrowhead = arrowHead(group);
+                
 
             if (element.inNodePos) {
-                arrowhead = arrowHead(group);
+               // arrowhead = arrowHead(group);
 
                 if (element.inNode === 't') {
                     arrowhead.move(element.inNodePos[0] - config.arrowHeadHeight / 2, element.inNodePos[1] - config.arrowHeadHeight);
                 }
                 if (element.inNode === 'l') {
                     arrowhead.move(element.inNodePos[0] - config.arrowHeadHeight, element.inNodePos[1] - (config.arrowHeadHeight / 2));
-                    arrowhead.rotate(270);
+                    
                 }
             }
         }
 
         function addLabels(element) {
             var group = element.conngroup, label;
+            
             if (element.yes && element.yesid !== undefined) {
+                 var arrowhead = arrowHead(group);
                 label = lineLabel('Yes', group);
                 
                 if (interactive === true) {
@@ -720,14 +717,19 @@ var SVGFlow = (function () {
                 
                 if (element.orient.yes === 'b') {
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
+                    //arrowhead.move(element.inNodePos[0] - config.arrowHeadHeight / 2, element.inNodePos[1] - config.arrowHeadHeight);
+                    arrowhead.move(element.yesOutPos[0] - (config.arrowHeadHeight / 2), element.yesOutPos[1] + config.connectorLength - config.arrowHeadHeight);
                 }
 
                 if (element.orient.yes === 'r') {
                     label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
+                    
+                 
                 }
             }
 
             if (element.no && element.noid !== undefined) {
+                 var arrowhead = arrowHead(group);
                 label = lineLabel('No', group);
                 
                  if (interactive === true) {
@@ -741,6 +743,8 @@ var SVGFlow = (function () {
 
                 if (element.orient.no === 'r') {
                     label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
+                    arrowhead.move(element.noOutPos[0] + config.connectorLength - config.arrowHeadHeight, element.noOutPos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.rotate(270);
                 }
             }
         }
@@ -841,8 +845,19 @@ var SVGFlow = (function () {
             shapes.forEach(positionShapes);
             shapes.forEach(nodePoints);
             shapes.forEach(addConnectors);
-            shapes.forEach(addArrows);
+           // shapes.forEach(addArrows);
             shapes.forEach(addLabels);
+          
+            //hide all the connectors
+            if (interactive === true) {
+                   shapes.forEach(function(element){
+                       element.svgid.opacity(0.5);
+                       if (element.conngroup) {
+                           element.conngroup.opacity(0.5);
+                       }
+                   });
+            }
+          
         };
 
         return {
