@@ -529,69 +529,34 @@ var SVGFlow = (function () {
                 ce.move(eb.x() + eb.bbox().width + rightMargin, eb.y());
             }
         }
-      
+
         toggleNext = function (e, choice) {
+            var rev, selid;
+
             if (choice === 'yes') {
                 e.svgyesid.opacity(1);
                 shapes[lookup[e.yes]].conngroup.opacity(1);
-                if (e.svgnoid.opacity() === 1) {
-                    e.svgnoid.opacity(hiddenOpacity);
-                    shapes[lookup[e.no]].conngroup.opacity(hiddenOpacity);
-                    shapes.forEach(function(sh){
-                     if(sh.svgprevid !== undefined && sh.id !== e.id && sh.id !== e.yesid && sh.id !== e.previd && sh.svgprevid.opacity() === hiddenOpacity) {
-                            console.log(svg.opacity());
-                            console.log('changing opacity of:' + sh.label);
-                            sh.svgid.opacity(hiddenOpacity);
-                        }
-                    }); 
-                }
+                shapes[lookup[e.no]].conngroup.opacity(hiddenOpacity);
+                rev = e.svgnoid;
+                selid = e.yesid;
             }
 
             if (choice === 'no') {
                 e.svgnoid.opacity(1);
                 shapes[lookup[e.no]].conngroup.opacity(1);
-                if (e.svgyesid.opacity() === 1) {
-                    e.svgyesid.opacity(hiddenOpacity);
-                    shapes[lookup[e.yes]].conngroup.opacity(hiddenOpacity);
-                    shapes.forEach(function(sh){
-                        if(sh.svgprevid !== undefined && sh.id !== e.id && sh.id !== e.noid && sh.id !== e.previd && sh.svgprevid.opacity() === hiddenOpacity) {
-                            console.log(svg.opacity());
-                            console.log('changing opacity of:' + sh.label);
-                            sh.svgid.opacity(hiddenOpacity);
-                        }
-                    }); 
-                }
+                shapes[lookup[e.yes]].conngroup.opacity(hiddenOpacity);
+                rev = e.svgyesid;
+                selid = e.noid;
             }
-            
-            
-           
 
-            /*
-
-            if (nxt.opacity() === 0) {
-                console.log('nxt hidden 3');
-                shapes[lookup[invlookup]].conngroup.opacity(0);
-                shapes.forEach(function (sh, index) {
-                    if (sh.svgprevid && sh.svgprevid.opacity() === 0  && index !== 0) {
-                        //sh.svgid.opacity(0);
-                        //sh.conngroup.opacity(0);
-                    }
-                });
-                shapes[lookup[shapelookup]].conngroup.animate().opacity(1);
-                nxt.animate().opacity(1);
-
-            } else {
-                console.log('nxt visible 4');
-                nxt.opacity(0);
-                shapes[lookup[shapelookup]].conngroup.opacity(0);
-                shapes.forEach(function (sh, index) {
-                    if (sh.svgprevid && sh.svgprevid.opacity() === 0  && index !== 0) {
-                        sh.svgid.opacity(0);
-                        sh.conngroup.opacity(0);
+            if (rev.opacity() === 1) {
+                rev.opacity(hiddenOpacity);
+                shapes.forEach(function (sh) {
+                    if (sh.svgprevid !== undefined && sh.id !== e.id && sh.id !== selid && sh.id !== e.previd && sh.svgprevid.opacity() === hiddenOpacity) {
+                        sh.svgid.opacity(hiddenOpacity);
                     }
                 });
             }
-            */
         };
 
         function nodePoints(element) {
