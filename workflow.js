@@ -285,9 +285,10 @@ var SVGFlow = (function () {
                 group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = SVG.get(shapes[0].id);
-                    if (firstShape.opacity() === hiddenOpacity) {
-                        firstShape.opacity(1);
-                        shapes[0].conngroup.opacity(1);
+                    if (shapes[0].show  === false) {
+                        shapes[0].show = true;
+                        firstShape.animate().opacity(1);
+                        shapes[0].conngroup.animate().opacity(1);
                         //shapes[0].conngroup.get(0).opacity(1);
                         //shapes[0].conngroup
                     }
@@ -446,6 +447,7 @@ var SVGFlow = (function () {
                 next = lookup[element.yes];
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
+                    shapes[next].prev = element.label;
                     shapes[next].svgprevid = SVG.get(element.id);
                     if (element.orient.yes === 'b') {
                         shapes[next].isBelow = element.id;
@@ -462,6 +464,7 @@ var SVGFlow = (function () {
                 next = lookup[element.no];
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
+                    shapes[next].prev = element.label;
                     shapes[next].svgprevid = SVG.get(element.id);
                     if (element.orient.no === 'b') {
                         shapes[next].isBelow = element.id;
@@ -478,6 +481,7 @@ var SVGFlow = (function () {
                 next = lookup[element.next];
                 if (shapes[next]) {
                     shapes[next].previd = element.id;
+                    shapes[next].prev = element.label;
                     shapes[next].svgprevid = SVG.get(element.id);
                     if (element.orient.next === 'b') {
                         shapes[next].isBelow = element.id;
@@ -534,26 +538,39 @@ var SVGFlow = (function () {
             var rev, selid;
 
             if (choice === 'yes') {
-                e.svgyesid.opacity(1);
-                shapes[lookup[e.yes]].conngroup.opacity(1);
-                shapes[lookup[e.no]].conngroup.opacity(hiddenOpacity);
-                rev = e.svgnoid;
+                shapes[lookup[e.yes]].show = true;
+                e.svgyesid.animate().opacity(1);
+                shapes[lookup[e.yes]].conngroup.animate().opacity(1);
+                shapes[lookup[e.no]].conngroup.animate().opacity(hiddenOpacity);
+                rev =  shapes[lookup[e.no]];
                 selid = e.yesid;
             }
 
             if (choice === 'no') {
-                e.svgnoid.opacity(1);
-                shapes[lookup[e.no]].conngroup.opacity(1);
-                shapes[lookup[e.yes]].conngroup.opacity(hiddenOpacity);
-                rev = e.svgyesid;
+                shapes[lookup[e.no]].show = true;
+                e.svgnoid.animate().opacity(1);
+                shapes[lookup[e.no]].conngroup.animate().opacity(1);
+                shapes[lookup[e.yes]].conngroup.animate().opacity(hiddenOpacity);
+                //rev = e.svgyesid;
+                rev =  shapes[lookup[e.yes]];
                 selid = e.noid;
             }
 
-            if (rev.opacity() === 1) {
-                rev.opacity(hiddenOpacity);
+            if (rev.show === true) {
+                //rev.opacity(hiddenOpacity);
+                rev.show = false;
                 shapes.forEach(function (sh) {
-                    if (sh.svgprevid !== undefined && sh.id !== e.id && sh.id !== selid && sh.id !== e.previd && sh.svgprevid.opacity() === hiddenOpacity) {
-                        sh.svgid.opacity(hiddenOpacity);
+                    var prevlabel =  shapes[lookup[sh.prev]];
+                    if (sh.svgprevid !== undefined && sh.id !== e.id && sh.id !== selid && sh.id !== e.previd && prevlabel.show === false) {
+                        //sh.svgid.opacity(hiddenOpacity);
+                        sh.show = false;
+                    }
+                });
+
+                shapes.forEach(function (sp) {
+                    if (sp.show === false) {
+                        sp.svgid.animate().opacity(hiddenOpacity);
+                        sp.conngroup.animate().opacity(hiddenOpacity);
                     }
                 });
             }
@@ -806,6 +823,8 @@ var SVGFlow = (function () {
             //hide all the connectors
             if (interactive === true) {
                 shapes.forEach(function (element) {
+                  // New do it by property way
+                    element.show = false;
                     element.svgid.opacity(hiddenOpacity);
                     if (element.conngroup) {
                         element.conngroup.opacity(hiddenOpacity);
