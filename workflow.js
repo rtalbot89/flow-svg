@@ -535,13 +535,19 @@ var SVGFlow = (function () {
         }
 
         toggleNext = function (e, choice) {
-            var rev, selid;
+            var rev, selid, nextlabel, prevlabel;
 
             if (choice === 'yes') {
                 shapes[lookup[e.yes]].show = true;
                 e.svgyesid.animate().opacity(1);
                 shapes[lookup[e.yes]].conngroup.animate().opacity(1);
                 shapes[lookup[e.no]].conngroup.animate().opacity(hiddenOpacity);
+
+                if (shapes[lookup[e.yes]].next !== undefined) {
+                    nextlabel = shapes[lookup[e.yes]].next;
+                    shapes[lookup[nextlabel]].show = true;
+                    shapes[lookup[nextlabel]].svgid.animate().opacity(1);
+                }
                 rev =  shapes[lookup[e.no]];
                 selid = e.yesid;
             }
@@ -551,18 +557,21 @@ var SVGFlow = (function () {
                 e.svgnoid.animate().opacity(1);
                 shapes[lookup[e.no]].conngroup.animate().opacity(1);
                 shapes[lookup[e.yes]].conngroup.animate().opacity(hiddenOpacity);
-                //rev = e.svgyesid;
+
+                if (shapes[lookup[e.no]].next !== undefined) {
+                    nextlabel = shapes[lookup[e.no]].next;
+                    shapes[lookup[nextlabel]].show = true;
+                    shapes[lookup[nextlabel]].svgid.animate().opacity(1);
+                }
                 rev =  shapes[lookup[e.yes]];
                 selid = e.noid;
             }
 
             if (rev.show === true) {
-                //rev.opacity(hiddenOpacity);
                 rev.show = false;
                 shapes.forEach(function (sh) {
-                    var prevlabel =  shapes[lookup[sh.prev]];
+                    prevlabel =  shapes[lookup[sh.prev]];
                     if (sh.svgprevid !== undefined && sh.id !== e.id && sh.id !== selid && sh.id !== e.previd && prevlabel.show === false) {
-                        //sh.svgid.opacity(hiddenOpacity);
                         sh.show = false;
                     }
                 });
