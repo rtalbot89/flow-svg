@@ -710,14 +710,25 @@ var SVGFlow = (function () {
                 }
 
                 if (element.orient.yes === 'b') {
+                  
+                   //console.log(nxt);
 
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
                     arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                    if (nxt.inNode === 'l') {
+                      console.log(nxt);
+                       arrowhead.rotate(270);
+                    }
                 }
 
                 if (element.orient.yes === 'r') {
                     label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
                     arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                    if (nxt.inNode === 'l') {
+                      //console.log(nxt);
+                      arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                      arrowhead.rotate(270);
+                    }
                 }
             }
 
@@ -747,7 +758,11 @@ var SVGFlow = (function () {
                 nxt = shapes[lookup[element.next]];
 
                 if (element.orient.next === 'b') {
-                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                   arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                  if (nxt.inNode === 'l') {
+                     arrowhead.rotate(270);
+                  }
+                   
                 }
 
                 if (element.orient.next === 'r') {

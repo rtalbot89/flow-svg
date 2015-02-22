@@ -27,7 +27,7 @@
     var depositInWrap = ['Deposit in WRAP here or ','contact team'];
     SVGFlow.draw(SVG('drawing').size(1200, 1600));
     SVGFlow.config({
-      interactive: true
+      interactive: false
        // processHeight: 100
     });
     SVGFlow.shapes(
@@ -120,7 +120,7 @@
 			type: 'process',
 			text: timeLimits,
             next: 'd1-y-y-n-p-y',
-            orient: {next: 'b'}
+          orient: {next: 'b'}
             
         },
         {
