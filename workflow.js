@@ -686,7 +686,7 @@ var SVGFlow = (function () {
         }
 
         function addLabels(element) {
-            var group = element.conngroup, label, arrowhead;
+            var group = element.conngroup, label, arrowhead, nxt;
             if (interactive === true) {
                 group.attr({'cursor': 'pointer'});
             }
@@ -694,6 +694,8 @@ var SVGFlow = (function () {
             if (element.yes && element.yesid !== undefined) {
                 arrowhead = arrowHead(group);
                 label = lineLabel('Yes', group);
+                nxt = shapes[lookup[element.yes]];
+                //console.log(nxt);
 
                 if (interactive === true) {
                     label.on('click', function () {toggleNext(element, 'yes'); });
@@ -701,18 +703,21 @@ var SVGFlow = (function () {
                 }
 
                 if (element.orient.yes === 'b') {
+                  
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
-                    arrowhead.move(element.yesOutPos[0] - (config.arrowHeadHeight / 2), element.yesOutPos[1] + config.connectorLength - config.arrowHeadHeight);
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
                 }
 
                 if (element.orient.yes === 'r') {
                     label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
                 }
             }
 
             if (element.no && element.noid !== undefined) {
                 arrowhead = arrowHead(group);
                 label = lineLabel('No', group);
+                nxt = shapes[lookup[element.no]];
 
                 if (interactive === true) {
                     label.on('click', function () {toggleNext(element, 'no'); });
@@ -720,13 +725,32 @@ var SVGFlow = (function () {
 
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
+                      arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
                 }
 
                 if (element.orient.no === 'r') {
                     label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
-                    arrowhead.move(element.noOutPos[0] + config.connectorLength - config.arrowHeadHeight, element.noOutPos[1] - (config.arrowHeadHeight / 2));
-                    arrowhead.rotate(270);
+                    //arrowhead.move(element.noOutPos[0] + config.connectorLength - config.arrowHeadHeight, element.noOutPos[1] - (config.arrowHeadHeight / 2));
+                     arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                     arrowhead.rotate(270);
                 }
+            }
+            
+            if (element.next && element.nextid !== undefined) {
+               arrowhead = arrowHead(group);
+               nxt = shapes[lookup[element.next]];
+               
+               if (element.orient.next === 'b') {
+                 
+                     arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+               }
+
+               if (element.orient.next === 'r') {
+                 
+                   //arrowhead.move(element.noOutPos[0] + config.connectorLength - config.arrowHeadHeight, element.noOutPos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.rotate(270);
+               }
             }
         }
 
