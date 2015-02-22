@@ -2,7 +2,8 @@
 var SVGFlow = (function () {
         "use strict";
         var draw, lowerConnector, shapeFuncs, i, config, userOpts = {}, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId, lookup = {}, isPositioned = [], toggleNext,
-            hiddenOpacity = 0.05;
+            hiddenOpacity = 0.05, clicked = [];
+
         function setParams(u) {
             userOpts = u;
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
@@ -528,69 +529,64 @@ var SVGFlow = (function () {
                 ce.move(eb.x() + eb.bbox().width + rightMargin, eb.y());
             }
         }
-        
-        var clicked = [];
 
         toggleNext = function (e, choice) {
-            var rev, selid, nextlabel, prevlabel, clckindex, toRemove = [];
-            console.log(clckindex);
-            
+            var nextlabel, clckindex, j;
+
             if (choice === 'yes') {
-              clckindex = clicked.indexOf(e.no);
+                clckindex = clicked.indexOf(e.no);
               // if clckindex is more than -1 this element was clicked before
-              if (clckindex > -1) {
-                for (var i = clckindex; i < clicked.length; i++) {
-                  shapes[lookup[clicked[i]]].svgid.animate().opacity(0);
-                  if (shapes[lookup[clicked[i]]].conngroup !== undefined) {
-                    shapes[lookup[clicked[i]]].conngroup.animate().opacity(0);
-                  }
+                if (clckindex > -1) {
+                    for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].svgid.animate().opacity(0);
+                        if (shapes[lookup[clicked[j]]].conngroup !== undefined) {
+                            shapes[lookup[clicked[j]]].conngroup.animate().opacity(0);
+                        }
+                    }
+                    clicked.splice(clckindex, clicked.length - 1);
                 }
-                clicked.splice(clckindex, clicked.length -1);
-              }
                 clicked.push(e.yes);
                 e.svgyesid.animate().opacity(1);
                 shapes[lookup[e.yes]].conngroup.animate().opacity(1);
-                //shapes[lookup[e.no]].conngroup.animate().opacity(hiddenOpacity);
+
+                shapes[lookup[e.no]].svgid.animate().opacity(hiddenOpacity);
+                shapes[lookup[e.no]].conngroup.animate().opacity(hiddenOpacity);
 
                 if (shapes[lookup[e.yes]].next !== undefined) {
                     nextlabel = shapes[lookup[e.yes]].next;
                     clicked.push(nextlabel);
-                    shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(1);
                     if (shapes[lookup[nextlabel]].conngroup !== undefined) {
-                      shapes[lookup[nextlabel]].conngroup.opacity(1);
+                        shapes[lookup[nextlabel]].conngroup.opacity(1);
                     }
                 }
-                rev =  shapes[lookup[e.no]];
-                selid = e.yesid;
             }
 
             if (choice === 'no') {
-              var clckindex = clicked.indexOf(e.yes);
+                clckindex = clicked.indexOf(e.yes);
               // if clckindex is more thsn -1 this element was clicked before
-              if (clckindex > -1) {
-                for (var i = clckindex; i < clicked.length; i++) {
-                  shapes[lookup[clicked[i]]].svgid.opacity(0);
-                  if (shapes[lookup[clicked[i]]].conngroup !== undefined) {
-                    shapes[lookup[clicked[i]]].conngroup.animate().opacity(0);
-                  }
+                if (clckindex > -1) {
+                    for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].svgid.animate().opacity(0);
+
+                        if (shapes[lookup[clicked[j]]].conngroup !== undefined) {
+                            shapes[lookup[clicked[j]]].conngroup.animate().opacity(0);
+                        }
+                    }
+
+                    clicked.splice(clckindex, clicked.length - 1);
                 }
-                
-                clicked.splice(clckindex, clicked.length -1);
-              }
                 clicked.push(e.no);
-                //shapes[lookup[e.no]].show = true;
                 e.svgnoid.animate().opacity(1);
                 shapes[lookup[e.no]].conngroup.animate().opacity(1);
-                shapes[lookup[e.yes]].conngroup.animate().opacity(hiddenOpacity);
 
                 if (shapes[lookup[e.no]].next !== undefined) {
                     nextlabel = shapes[lookup[e.no]].next;
                     clicked.push(nextlabel);
-                    //shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(1);
+
                     if (shapes[lookup[nextlabel]].conngroup !== undefined) {
-                      shapes[lookup[nextlabel]].conngroup.opacity(1);
+                        shapes[lookup[nextlabel]].conngroup.animate().opacity(1);
                     }
                 }
             }
@@ -714,7 +710,7 @@ var SVGFlow = (function () {
                 }
 
                 if (element.orient.yes === 'b') {
-                  
+
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
                     arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
                 }
@@ -736,32 +732,28 @@ var SVGFlow = (function () {
 
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
-                      arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
                 }
 
                 if (element.orient.no === 'r') {
                     label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
-                    //arrowhead.move(element.noOutPos[0] + config.connectorLength - config.arrowHeadHeight, element.noOutPos[1] - (config.arrowHeadHeight / 2));
-                     arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
-                     arrowhead.rotate(270);
-                }
-            }
-            
-            if (element.next && element.nextid !== undefined) {
-               arrowhead = arrowHead(group);
-               nxt = shapes[lookup[element.next]];
-               
-               if (element.orient.next === 'b') {
-                 
-                     arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-               }
-
-               if (element.orient.next === 'r') {
-                 
-                   //arrowhead.move(element.noOutPos[0] + config.connectorLength - config.arrowHeadHeight, element.noOutPos[1] - (config.arrowHeadHeight / 2));
                     arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
                     arrowhead.rotate(270);
-               }
+                }
+            }
+
+            if (element.next && element.nextid !== undefined) {
+                arrowhead = arrowHead(group);
+                nxt = shapes[lookup[element.next]];
+
+                if (element.orient.next === 'b') {
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                }
+
+                if (element.orient.next === 'r') {
+                    arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.rotate(270);
+                }
             }
         }
 
