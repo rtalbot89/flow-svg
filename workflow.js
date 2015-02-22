@@ -284,13 +284,10 @@ var SVGFlow = (function () {
             if (interactive === true) {
                 group.attr({"cursor": "pointer"});
                 group.click(function () {
-                    var firstShape = SVG.get(shapes[0].id);
-                    if (shapes[0].show  === false) {
-                        shapes[0].show = true;
+                    var firstShape = shapes[0].svgid;
+                    if (firstShape.opacity() === hiddenOpacity) {
                         firstShape.animate().opacity(1);
                         shapes[0].conngroup.animate().opacity(1);
-                        //shapes[0].conngroup.get(0).opacity(1);
-                        //shapes[0].conngroup
                     }
                 });
             }
@@ -308,7 +305,7 @@ var SVGFlow = (function () {
             setRoot(draw);
             layoutShapes(shapes);
             draw.each(function () {
-                if (this.opacity() === 0) {
+                if (this.opacity() === hiddenOpacity) {
                     this.opacity(1);
                 }
             }, true);
@@ -413,7 +410,7 @@ var SVGFlow = (function () {
                 if (interactive === false) {
                     shape.opacity(1);
                 } else {
-                    shape.opacity(0);
+                    shape.opacity(hiddenOpacity);
                 }
             } else {
                 console.log(element.type + ' is not a valid shape.');
@@ -513,8 +510,6 @@ var SVGFlow = (function () {
 
             if (element.isBelow) {
                 if (index === 0) {
-                    //console.log(index);
-                    //eb = element.svgisBelow;
                     ce.move(0, 0);
                 } else {
                     eb = element.svgisBelow;
@@ -533,18 +528,33 @@ var SVGFlow = (function () {
                 ce.move(eb.x() + eb.bbox().width + rightMargin, eb.y());
             }
         }
+        
+        var clicked = [];
 
         toggleNext = function (e, choice) {
-            var rev, selid, nextlabel, prevlabel;
-
+            var rev, selid, nextlabel, prevlabel, clckindex, toRemove = [];
+            console.log(clckindex);
+            
             if (choice === 'yes') {
-                shapes[lookup[e.yes]].show = true;
+              clckindex = clicked.indexOf(e.no);
+              // if clckindex is more than -1 this element was clicked before
+              if (clckindex > -1) {
+                for (var i = clckindex; i < clicked.length; i++) {
+                  shapes[lookup[clicked[i]]].svgid.animate().opacity(0);
+                  if (shapes[lookup[clicked[i]]].conngroup !== undefined) {
+                    shapes[lookup[clicked[i]]].conngroup.animate().opacity(0);
+                  }
+                }
+                clicked.splice(clckindex, clicked.length -1);
+              }
+                clicked.push(e.yes);
                 e.svgyesid.animate().opacity(1);
                 shapes[lookup[e.yes]].conngroup.animate().opacity(1);
-                shapes[lookup[e.no]].conngroup.animate().opacity(hiddenOpacity);
+                //shapes[lookup[e.no]].conngroup.animate().opacity(hiddenOpacity);
 
                 if (shapes[lookup[e.yes]].next !== undefined) {
                     nextlabel = shapes[lookup[e.yes]].next;
+                    clicked.push(nextlabel);
                     shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(1);
                     if (shapes[lookup[nextlabel]].conngroup !== undefined) {
@@ -556,38 +566,33 @@ var SVGFlow = (function () {
             }
 
             if (choice === 'no') {
-                shapes[lookup[e.no]].show = true;
+              var clckindex = clicked.indexOf(e.yes);
+              // if clckindex is more thsn -1 this element was clicked before
+              if (clckindex > -1) {
+                for (var i = clckindex; i < clicked.length; i++) {
+                  shapes[lookup[clicked[i]]].svgid.opacity(0);
+                  if (shapes[lookup[clicked[i]]].conngroup !== undefined) {
+                    shapes[lookup[clicked[i]]].conngroup.animate().opacity(0);
+                  }
+                }
+                
+                clicked.splice(clckindex, clicked.length -1);
+              }
+                clicked.push(e.no);
+                //shapes[lookup[e.no]].show = true;
                 e.svgnoid.animate().opacity(1);
                 shapes[lookup[e.no]].conngroup.animate().opacity(1);
                 shapes[lookup[e.yes]].conngroup.animate().opacity(hiddenOpacity);
 
                 if (shapes[lookup[e.no]].next !== undefined) {
                     nextlabel = shapes[lookup[e.no]].next;
-                    shapes[lookup[nextlabel]].show = true;
+                    clicked.push(nextlabel);
+                    //shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(1);
                     if (shapes[lookup[nextlabel]].conngroup !== undefined) {
                       shapes[lookup[nextlabel]].conngroup.opacity(1);
                     }
                 }
-                rev =  shapes[lookup[e.yes]];
-                selid = e.noid;
-            }
-
-            if (rev.show === true) {
-                rev.show = false;
-                shapes.forEach(function (sh) {
-                    prevlabel =  shapes[lookup[sh.prev]];
-                    if (sh.svgprevid !== undefined && sh.id !== e.id && sh.id !== selid && sh.id !== e.previd && prevlabel.show === false) {
-                        sh.show = false;
-                    }
-                });
-
-                shapes.forEach(function (sp) {
-                    if (sp.show === false) {
-                        sp.svgid.animate().opacity(hiddenOpacity);
-                        sp.conngroup.animate().opacity(hiddenOpacity);
-                    }
-                });
             }
         };
 
@@ -863,7 +868,7 @@ var SVGFlow = (function () {
             if (interactive === true) {
                 shapes.forEach(function (element) {
                   // New do it by property way
-                    element.show = false;
+                    //element.show = false;
                     element.svgid.opacity(hiddenOpacity);
                     if (element.conngroup) {
                         element.conngroup.opacity(hiddenOpacity);
