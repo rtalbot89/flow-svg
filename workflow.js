@@ -547,6 +547,9 @@ var SVGFlow = (function () {
                     nextlabel = shapes[lookup[e.yes]].next;
                     shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(1);
+                    if (shapes[lookup[nextlabel]].conngroup !== undefined) {
+                      shapes[lookup[nextlabel]].conngroup.opacity(1);
+                    }
                 }
                 rev =  shapes[lookup[e.no]];
                 selid = e.yesid;
@@ -562,6 +565,9 @@ var SVGFlow = (function () {
                     nextlabel = shapes[lookup[e.no]].next;
                     shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(1);
+                    if (shapes[lookup[nextlabel]].conngroup !== undefined) {
+                      shapes[lookup[nextlabel]].conngroup.opacity(1);
+                    }
                 }
                 rev =  shapes[lookup[e.yes]];
                 selid = e.noid;
