@@ -1,8 +1,7 @@
 /*global SVG, jQuery, $,  console*/
 var SVGFlow = (function () {
         "use strict";
-        var draw, lowerConnector, shapeFuncs, i, config, userOpts = {}, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId, lookup = {}, isPositioned = [], toggleNext,
-            hiddenOpacity = 0.05, clicked = [];
+        var draw, lowerConnector, shapeFuncs, i, config, userOpts = {}, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId, lookup = {}, isPositioned = [], toggleNext, clicked = [];
 
         function setParams(u) {
             userOpts = u;
@@ -20,6 +19,8 @@ var SVGFlow = (function () {
                 lightText = '#fff',
                 darkText = 'rgb(51, 51, 51)',
                 defaults = {
+                    minOpacity: userOpts.minOpacity || 0,
+                    maxOpacity: userOpts.maxOpacity || 1,
                     btnBarHeight: userOpts.btnBarHeight || 40,
                     btnBarWidth: userOpts.btnBarWidth || 87,
                     shapeWidth: userOpts.shapeWidth || userOpts.w || w,
@@ -286,9 +287,9 @@ var SVGFlow = (function () {
                 group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = shapes[0].svgid;
-                    if (firstShape.opacity() === hiddenOpacity) {
-                        firstShape.animate().opacity(1);
-                        shapes[0].conngroup.animate().opacity(1);
+                    if (firstShape.opacity() === config.minOpacity) {
+                        firstShape.animate().opacity(config.maxOpacity);
+                        shapes[0].conngroup.animate().opacity(config.maxOpacity);
                     }
                 });
             }
@@ -306,8 +307,8 @@ var SVGFlow = (function () {
             setRoot(draw);
             layoutShapes(shapes);
             draw.each(function () {
-                if (this.opacity() === hiddenOpacity) {
-                    this.opacity(1);
+                if (this.opacity() === config.minOpacity) {
+                    this.opacity(config.maxOpacity);
                 }
             }, true);
         }
@@ -409,9 +410,9 @@ var SVGFlow = (function () {
                 itemIds[element.label] = element.id;
                 indexFromId[element.id] = index;
                 if (interactive === false) {
-                    shape.opacity(1);
+                    shape.opacity(config.maxOpacity);
                 } else {
-                    shape.opacity(hiddenOpacity);
+                    shape.opacity(config.minOpacity);
                 }
             } else {
                 console.log(element.type + ' is not a valid shape.');
@@ -546,18 +547,18 @@ var SVGFlow = (function () {
                     clicked.splice(clckindex, clicked.length - 1);
                 }
                 clicked.push(e.yes);
-                e.svgyesid.animate().opacity(1);
-                shapes[lookup[e.yes]].conngroup.animate().opacity(1);
+                e.svgyesid.animate().opacity(config.maxOpacity);
+                shapes[lookup[e.yes]].conngroup.animate().opacity(config.maxOpacity);
 
-                shapes[lookup[e.no]].svgid.animate().opacity(hiddenOpacity);
-                shapes[lookup[e.no]].conngroup.animate().opacity(hiddenOpacity);
+                shapes[lookup[e.no]].svgid.animate().opacity(config.minOpacity);
+                shapes[lookup[e.no]].conngroup.animate().opacity(config.minOpacity);
 
                 if (shapes[lookup[e.yes]].next !== undefined) {
                     nextlabel = shapes[lookup[e.yes]].next;
                     clicked.push(nextlabel);
-                    shapes[lookup[nextlabel]].svgid.animate().opacity(1);
+                    shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
                     if (shapes[lookup[nextlabel]].conngroup !== undefined) {
-                        shapes[lookup[nextlabel]].conngroup.opacity(1);
+                        shapes[lookup[nextlabel]].conngroup.opacity(config.maxOpacity);
                     }
                 }
             }
@@ -577,16 +578,16 @@ var SVGFlow = (function () {
                     clicked.splice(clckindex, clicked.length - 1);
                 }
                 clicked.push(e.no);
-                e.svgnoid.animate().opacity(1);
-                shapes[lookup[e.no]].conngroup.animate().opacity(1);
+                e.svgnoid.animate().opacity(config.maxOpacity);
+                shapes[lookup[e.no]].conngroup.animate().opacity(config.maxOpacity);
 
                 if (shapes[lookup[e.no]].next !== undefined) {
                     nextlabel = shapes[lookup[e.no]].next;
                     clicked.push(nextlabel);
-                    shapes[lookup[nextlabel]].svgid.animate().opacity(1);
+                    shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
 
                     if (shapes[lookup[nextlabel]].conngroup !== undefined) {
-                        shapes[lookup[nextlabel]].conngroup.animate().opacity(1);
+                        shapes[lookup[nextlabel]].conngroup.animate().opacity(config.maxOpacity);
                     }
                 }
             }
@@ -876,9 +877,9 @@ var SVGFlow = (function () {
                 shapes.forEach(function (element) {
                   // New do it by property way
                     //element.show = false;
-                    element.svgid.opacity(hiddenOpacity);
+                    element.svgid.opacity(config.minOpacity);
                     if (element.conngroup) {
-                        element.conngroup.opacity(hiddenOpacity);
+                        element.conngroup.opacity(config.minOpacity);
                     }
                 });
             }
