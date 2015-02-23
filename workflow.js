@@ -539,15 +539,21 @@ var SVGFlow = (function () {
               // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
                     for (j = clckindex; j < clicked.length; j += 1) {
-                        shapes[lookup[clicked[j]]].svgid.animate().opacity(0);
+                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
                         if (shapes[lookup[clicked[j]]].conngroup !== undefined) {
-                            shapes[lookup[clicked[j]]].conngroup.animate().opacity(0);
+                            shapes[lookup[clicked[j]]].conngroup.animate().opacity(config.minOpacity);
                         }
                     }
                     clicked.splice(clckindex, clicked.length - 1);
                 }
                 clicked.push(e.yes);
+                console.log(e);
+                console.log(shapes[lookup[e.yes]]);
+                if (e.orient.yes === 'b') {
+                    e.svgyesid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height + config.connectorLength);
+                }
                 e.svgyesid.animate().opacity(config.maxOpacity);
+                
                 shapes[lookup[e.yes]].conngroup.animate().opacity(config.maxOpacity);
 
                 shapes[lookup[e.no]].svgid.animate().opacity(config.minOpacity);
@@ -568,10 +574,10 @@ var SVGFlow = (function () {
               // if clckindex is more thsn -1 this element was clicked before
                 if (clckindex > -1) {
                     for (j = clckindex; j < clicked.length; j += 1) {
-                        shapes[lookup[clicked[j]]].svgid.animate().opacity(0);
+                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
 
                         if (shapes[lookup[clicked[j]]].conngroup !== undefined) {
-                            shapes[lookup[clicked[j]]].conngroup.animate().opacity(0);
+                            shapes[lookup[clicked[j]]].conngroup.animate().opacity(config.minOpacity);
                         }
                     }
 
@@ -827,7 +833,26 @@ var SVGFlow = (function () {
 
             if (element.yesid) {
                 startln = element.yesOutPos;
-                endln = shapes[lookup[element.yes]].inNodePos;
+                
+                if (interactive === true) {
+                    if (element.orient.yes === 'b') {
+                        //console.log(startln);
+                        endln = [startln[0], startln[1] + config.connectorLength];
+                        //console.log(endln);
+                    }
+                    
+                    if (element.orient.yes === 'r') {
+                        //console.log(startln);
+                        endln = [startln[0] + config.connectorLength, startln[1]];
+                        //console.log(endln);
+                    }
+                    
+                    
+                }
+                if (interactive === false) {
+                     endln = shapes[lookup[element.yes]].inNodePos;
+                }
+                 //endln = shapes[lookup[element.yes]].inNodePos;
                 element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none').back();
             }
 
