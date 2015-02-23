@@ -547,10 +547,19 @@ var SVGFlow = (function () {
                     clicked.splice(clckindex, clicked.length - 1);
                 }
                 clicked.push(e.yes);
-                console.log(e);
-                console.log(shapes[lookup[e.yes]]);
+                //console.log(e);
+                //console.log(shapes[lookup[e.yes]]);
                 if (e.orient.yes === 'b') {
                     e.svgyesid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height + config.connectorLength);
+                    if (shapes[lookup[e.yes]].svgnextid !== undefined) {
+                      shapes[lookup[e.yes]].svgnextid.move(e.svgid.x(), e.svgyesid.bbox().y + e.svgyesid.bbox().height + config.connectorLength);
+                    }
+                }
+                if (e.orient.yes === 'r') {
+                    e.svgyesid.move(e.svgid.x() + e.svgid.bbox().width + config.connectorLength, e.svgid.y());
+                    if (shapes[lookup[e.yes]].svgnextid !== undefined) {
+                      shapes[lookup[e.yes]].svgnextid.move(e.svgid.x(), e.svgyesid.bbox().y + e.svgyesid.bbox().height + config.connectorLength);
+                    }
                 }
                 e.svgyesid.animate().opacity(config.maxOpacity);
                 
