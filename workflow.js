@@ -289,9 +289,11 @@ var SVGFlow = (function () {
                 group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = shapes[0].svgid;
-                    console.log(firstShape.opacity());
-                    if (firstShape.opacity() < config.maxOpacity) {
+                    //console.log(firstShape.opacity());
+                    console.log(shapes[0].show);
+                    if (shapes[0].show === false) {
                         console.log('min');
+                        shapes[0].show = true;
                         firstShape.animate().opacity(config.maxOpacity);
 
                         if (shapes[0].yesBtn) {
@@ -301,10 +303,10 @@ var SVGFlow = (function () {
                         if (shapes[0].noBtn) {
                             shapes[0].noBtn.show();
                         }
-                    }
-                    if (firstShape.opacity() === config.maxOpacity) {
+                    } else {
                         console.log('max');
                         firstShape.animate().opacity(config.minOpacity);
+                        shapes[0].show = false;
                         if (shapes[0].yesBtn) {
                             shapes[0].yesBtn.hide();
                         }
@@ -314,6 +316,7 @@ var SVGFlow = (function () {
                         }
                         for (k = 0; k < clicked.length; k += 1) {
                             shapes[lookup[clicked[k]]].svgid.animate().opacity(config.minOpacity);
+                            shapes[lookup[clicked[k]]].show = false;
                         }
                         clicked.splice(0, clicked.length - 1);
                     }
@@ -332,11 +335,6 @@ var SVGFlow = (function () {
             interactive = false;
             setRoot(draw);
             layoutShapes(shapes);
-            draw.each(function () {
-                if (this.opacity() === config.minOpacity) {
-                    this.opacity(config.maxOpacity);
-                }
-            }, true);
         }
 
         function hide() {
@@ -437,8 +435,10 @@ var SVGFlow = (function () {
                 itemIds[element.label] = element.id;
                 indexFromId[element.id] = index;
                 if (interactive === false) {
+                    element.show = true;
                     shape.opacity(config.maxOpacity);
                 } else {
+                    element.show = false;
                     shape.opacity(config.minOpacity);
                 }
             } else {
@@ -565,11 +565,13 @@ var SVGFlow = (function () {
                 console.log(e);
                 // This toggles the visiblity if this is the second click
                 // on the button, i.e. it was already visible
-                if (e.svgyesid.opacity() === config.maxOpacity && e.svgnoid.opacity() !== config.maxOpacity) {
+
+                if (shapes[lookup[e.yes]].show === true && shapes[lookup[e.no]].show === false) {
                     console.log('toggling');
                     clckindex = clicked.indexOf(e.yes);
 
                     for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].show = false;
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
                         if (shapes[lookup[clicked[j]]].noBtn) {
                             shapes[lookup[clicked[j]]].noBtn.hide();
@@ -586,6 +588,7 @@ var SVGFlow = (function () {
               // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
                     for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].show = false;
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
                         if (shapes[lookup[clicked[j]]].noBtn) {
                             shapes[lookup[clicked[j]]].noBtn.hide();
@@ -622,15 +625,18 @@ var SVGFlow = (function () {
 
 
                 e.svgyesid.animate().opacity(config.maxOpacity);
+                shapes[lookup[e.yes]].show = true;
 
                // shapes[lookup[e.yes]].conngroup.animate().opacity(config.maxOpacity);
 
                 shapes[lookup[e.no]].svgid.animate().opacity(config.minOpacity);
+                shapes[lookup[e.no]].show = false;
 
                 if (shapes[lookup[e.yes]].next !== undefined) {
                     nextlabel = shapes[lookup[e.yes]].next;
                     clicked.push(nextlabel);
                     shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
+                    shapes[lookup[nextlabel]].show = true;
                     if (shapes[lookup[nextlabel]].noBtn) {
                         shapes[lookup[nextlabel]].noBtn.show();
                     }
@@ -641,11 +647,12 @@ var SVGFlow = (function () {
             }
 
             if (choice === 'no') {
-                if (e.svgnoid.opacity() === config.maxOpacity && e.svgyesid.opacity() !== config.maxOpacity) {
+                if (shapes[lookup[e.no]].show === true && shapes[lookup[e.yes]].show === false) {
                     clckindex = clicked.indexOf(e.no);
                     console.log(clckindex);
 
                     for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].show = false;
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
                         if (shapes[lookup[clicked[j]]].noBtn) {
                             shapes[lookup[clicked[j]]].noBtn.hide();
@@ -662,6 +669,7 @@ var SVGFlow = (function () {
               // if clckindex is more thsn -1 this element was clicked before
                 if (clckindex > -1) {
                     for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].show = false;
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
                         if (shapes[lookup[clicked[j]]].noBtn) {
                             shapes[lookup[clicked[j]]].noBtn.hide();
@@ -697,6 +705,7 @@ var SVGFlow = (function () {
                 }
 
                 e.svgnoid.animate().opacity(config.maxOpacity);
+                shapes[lookup[e.no]].show = true;
 
                 if (shapes[lookup[e.no]].next !== undefined) {
                     nextlabel = shapes[lookup[e.no]].next;
@@ -707,6 +716,7 @@ var SVGFlow = (function () {
                     if (shapes[lookup[nextlabel]].yesBtn) {
                         shapes[lookup[nextlabel]].yesBtn.show();
                     }
+                    shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
                 }
             }
@@ -1101,9 +1111,7 @@ var SVGFlow = (function () {
                   // New do it by property way
                     //element.show = false;
                     element.svgid.opacity(config.minOpacity);
-                    if (element.conngroup) {
-                        element.conngroup.opacity(config.minOpacity);
-                    }
+                    element.show = false;
                 });
             }
         };
