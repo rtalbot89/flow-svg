@@ -63,6 +63,7 @@ var SVGFlow = (function () {
                     labelRadius: userOpts.labelRadius || 5,
                     labelStroke: userOpts.labelStroke || 0.1,
                     labelFill: userOpts.labelFill || arrowColour,
+                    labelClickedFill: userOpts.labelClickedFill || 'black',
                     labelOpacity: userOpts.labelOpacity || 1.0,
                     labelFontSize: userOpts.labelFontSize || 12,
                     arrowHeadHeight: userOpts.arrowHeadHeight || 20,
@@ -284,7 +285,7 @@ var SVGFlow = (function () {
             group.add(lowerConnector);
 
             if (interactive === true) {
-                group.attr({"cursor": "pointer"});
+                //group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = shapes[0].svgid;
                     if (firstShape.opacity() === config.minOpacity) {
@@ -536,6 +537,16 @@ var SVGFlow = (function () {
             var nextlabel, clckindex, j;
 
             if (choice === 'yes') {
+                if (e.svgyesid.opacity() === config.maxOpacity) {
+                    clckindex = clicked.indexOf(e.yes);
+
+                    for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
+                    }
+                    clicked.splice(clckindex, clicked.length - 1);
+                    return;
+                }
+
                 clckindex = clicked.indexOf(e.no);
               // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
@@ -574,6 +585,17 @@ var SVGFlow = (function () {
             }
 
             if (choice === 'no') {
+                if (e.svgnoid.opacity() === config.maxOpacity) {
+                    clckindex = clicked.indexOf(e.no);
+                    console.log(clckindex);
+
+                    for (j = clckindex; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
+                    }
+                    clicked.splice(clckindex, clicked.length - 1);
+                    return;
+                }
+
                 clckindex = clicked.indexOf(e.yes);
               // if clckindex is more thsn -1 this element was clicked before
                 if (clckindex > -1) {
@@ -584,6 +606,20 @@ var SVGFlow = (function () {
                     clicked.splice(clckindex, clicked.length - 1);
                 }
                 clicked.push(e.no);
+
+                if (e.orient.no === 'b') {
+                    e.svgnoid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height);
+
+                    if (shapes[lookup[e.no]].svgnextid !== undefined) {
+                        shapes[lookup[e.no]].svgnextid.move(e.svgnoid.x(), e.svgnoid.bbox().y + e.svgnoid.bbox().height);
+                    }
+                }
+                if (e.orient.no === 'r') {
+                    e.svgnoid.move(e.svgid.x() + e.svgid.bbox().width, e.svgid.y());
+                    if (shapes[lookup[e.no]].svgnextid !== undefined) {
+                        shapes[lookup[e.no]].svgnextid.move(e.svgnoid.x(), e.svgnoid.bbox().y + e.svgnoid.bbox().height);
+                    }
+                }
 
                 e.svgnoid.animate().opacity(config.maxOpacity);
 
@@ -698,12 +734,11 @@ var SVGFlow = (function () {
 
         function addLabels(element) {
             var group = element.svgid, label;
-            if (interactive === true) {
-                group.attr({'cursor': 'pointer'});
-            }
 
             if (element.yes && element.yesid !== undefined) {
                 label = lineLabel('Yes', group);
+                element.yesBtn = label;
+                label.attr('cursor', 'pointer');
 
                 if (interactive === true) {
                     label.on('click', function () {toggleNext(element, 'yes'); });
@@ -720,6 +755,8 @@ var SVGFlow = (function () {
 
             if (element.no && element.noid !== undefined) {
                 label = lineLabel('No', group);
+                element.noBtn = label;
+                label.attr('cursor', 'pointer');
 
                 if (interactive === true) {
                     label.on('click', function () {toggleNext(element, 'no'); });
