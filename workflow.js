@@ -144,7 +144,10 @@ var SVGFlow = (function () {
                 'font-size' : config.arrowFontSize
             });
             text.cy(label.cy());
-            labelGroup.hide();
+            if (interactive === true) {
+                 labelGroup.hide();
+            }
+           
             return labelGroup;
         }
 
@@ -602,7 +605,6 @@ var SVGFlow = (function () {
                 clicked.push(e.yes);
 
                 if (e.orient.yes === 'b') {
-                    //console.log(e.yes);
                     e.svgyesid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height);
 
                     if (shapes[lookup[e.yes]].svgnextid !== undefined) {
@@ -626,9 +628,6 @@ var SVGFlow = (function () {
 
                 e.svgyesid.animate().opacity(config.maxOpacity);
                 shapes[lookup[e.yes]].show = true;
-
-               // shapes[lookup[e.yes]].conngroup.animate().opacity(config.maxOpacity);
-
                 shapes[lookup[e.no]].svgid.animate().opacity(config.minOpacity);
                 shapes[lookup[e.no]].show = false;
 
@@ -793,7 +792,6 @@ var SVGFlow = (function () {
 
                     if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                         if (targetShape.inNode === 't') {
-                            //te = element.svgnextid;
                             te = shapes[lookup[element.next]].svgshape;
                             targetShape.inNodePos = [te.cx(), te.y()];
                         }
@@ -806,7 +804,6 @@ var SVGFlow = (function () {
                 if (element.orient.next === 'r') {
                     element.nextOutPos = [ce.x() + ce.bbox().width, ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                    //te = element.svgnextid;
                     te = shapes[lookup[element.next]].svgshape;
 
                     if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
@@ -820,7 +817,6 @@ var SVGFlow = (function () {
                 }
                 isPositioned.push(element.nextid);
             }
-            //element.conngroup = group;
         }
 
         function addLabels(element) {
@@ -967,10 +963,15 @@ var SVGFlow = (function () {
 
         function angleLine(start, end, element) {
 
-            var e = element.svgid, p1, p2, p3, p4, p5, spacer = config.arrowHeadHeight * 2;
+            var e = element.svgshape, p1, p2, p3, p4, p5, spacer = config.arrowHeadHeight * 2;
+            
+            //console.log(element);
 
                 // See if it's at the bottom
-            if (start[1] === e.y() + e.get(0).height()) {
+            if (start[1] === e.y() + e.height()) {
+                console.log(start[1]);
+                console.log(e.y());
+                console.log(e.height());
 
                 p1 = start;
                 p2 = [start[0], start[1] + spacer ];
