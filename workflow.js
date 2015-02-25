@@ -144,6 +144,7 @@ var SVGFlow = (function () {
                 'font-size' : config.arrowFontSize
             });
             text.cy(label.cy());
+            labelGroup.hide();
             return labelGroup;
         }
 
@@ -256,7 +257,7 @@ var SVGFlow = (function () {
         };
 
         function start(shapes) {
-            var text, shapeBox, rect,
+            var text, shapeBox, rect, k,
                 group = draw.group().attr({
                     "class": "fc-start"
                 });
@@ -285,12 +286,36 @@ var SVGFlow = (function () {
             group.add(lowerConnector);
 
             if (interactive === true) {
-                //group.attr({"cursor": "pointer"});
+                group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = shapes[0].svgid;
-                    if (firstShape.opacity() === config.minOpacity) {
+                    console.log(firstShape.opacity());
+                    if (firstShape.opacity() < config.maxOpacity) {
+                        console.log('min');
                         firstShape.animate().opacity(config.maxOpacity);
-                        //shapes[0].conngroup.animate().opacity(config.maxOpacity);
+
+                        if (shapes[0].yesBtn) {
+                            shapes[0].yesBtn.show();
+                        }
+
+                        if (shapes[0].noBtn) {
+                            shapes[0].noBtn.show();
+                        }
+                    }
+                    if (firstShape.opacity() === config.maxOpacity) {
+                        console.log('max');
+                        firstShape.animate().opacity(config.minOpacity);
+                        if (shapes[0].yesBtn) {
+                            shapes[0].yesBtn.hide();
+                        }
+
+                        if (shapes[0].noBtn) {
+                            shapes[0].noBtn.hide();
+                        }
+                        for (k = 0; k < clicked.length; k += 1) {
+                            shapes[lookup[clicked[k]]].svgid.animate().opacity(config.minOpacity);
+                        }
+                        clicked.splice(0, clicked.length - 1);
                     }
                 });
             }
@@ -537,11 +562,21 @@ var SVGFlow = (function () {
             var nextlabel, clckindex, j;
 
             if (choice === 'yes') {
-                if (e.svgyesid.opacity() === config.maxOpacity) {
+                console.log(e);
+                // This toggles the visiblity if this is the second click
+                // on the button, i.e. it was already visible
+                if (e.svgyesid.opacity() === config.maxOpacity && e.svgnoid.opacity() !== config.maxOpacity) {
+                    console.log('toggling');
                     clckindex = clicked.indexOf(e.yes);
 
                     for (j = clckindex; j < clicked.length; j += 1) {
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
+                        if (shapes[lookup[clicked[j]]].noBtn) {
+                            shapes[lookup[clicked[j]]].noBtn.hide();
+                        }
+                        if (shapes[lookup[clicked[j]]].yesBtn) {
+                            shapes[lookup[clicked[j]]].yesBtn.hide();
+                        }
                     }
                     clicked.splice(clckindex, clicked.length - 1);
                     return;
@@ -552,12 +587,19 @@ var SVGFlow = (function () {
                 if (clckindex > -1) {
                     for (j = clckindex; j < clicked.length; j += 1) {
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
+                        if (shapes[lookup[clicked[j]]].noBtn) {
+                            shapes[lookup[clicked[j]]].noBtn.hide();
+                        }
+                        if (shapes[lookup[clicked[j]]].yesBtn) {
+                            shapes[lookup[clicked[j]]].yesBtn.hide();
+                        }
                     }
                     clicked.splice(clckindex, clicked.length - 1);
                 }
                 clicked.push(e.yes);
 
                 if (e.orient.yes === 'b') {
+                    //console.log(e.yes);
                     e.svgyesid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height);
 
                     if (shapes[lookup[e.yes]].svgnextid !== undefined) {
@@ -571,6 +613,14 @@ var SVGFlow = (function () {
                     }
                 }
 
+                if (shapes[lookup[e.yes]].noBtn) {
+                    shapes[lookup[e.yes]].noBtn.show();
+                }
+                if (shapes[lookup[e.yes]].yesBtn) {
+                    shapes[lookup[e.yes]].yesBtn.show();
+                }
+
+
                 e.svgyesid.animate().opacity(config.maxOpacity);
 
                // shapes[lookup[e.yes]].conngroup.animate().opacity(config.maxOpacity);
@@ -581,16 +631,28 @@ var SVGFlow = (function () {
                     nextlabel = shapes[lookup[e.yes]].next;
                     clicked.push(nextlabel);
                     shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
+                    if (shapes[lookup[nextlabel]].noBtn) {
+                        shapes[lookup[nextlabel]].noBtn.show();
+                    }
+                    if (shapes[lookup[nextlabel]].yesBtn) {
+                        shapes[lookup[nextlabel]].yesBtn.show();
+                    }
                 }
             }
 
             if (choice === 'no') {
-                if (e.svgnoid.opacity() === config.maxOpacity) {
+                if (e.svgnoid.opacity() === config.maxOpacity && e.svgyesid.opacity() !== config.maxOpacity) {
                     clckindex = clicked.indexOf(e.no);
                     console.log(clckindex);
 
                     for (j = clckindex; j < clicked.length; j += 1) {
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
+                        if (shapes[lookup[clicked[j]]].noBtn) {
+                            shapes[lookup[clicked[j]]].noBtn.hide();
+                        }
+                        if (shapes[lookup[clicked[j]]].yesBtn) {
+                            shapes[lookup[clicked[j]]].yesBtn.hide();
+                        }
                     }
                     clicked.splice(clckindex, clicked.length - 1);
                     return;
@@ -601,6 +663,12 @@ var SVGFlow = (function () {
                 if (clckindex > -1) {
                     for (j = clckindex; j < clicked.length; j += 1) {
                         shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
+                        if (shapes[lookup[clicked[j]]].noBtn) {
+                            shapes[lookup[clicked[j]]].noBtn.hide();
+                        }
+                        if (shapes[lookup[clicked[j]]].yesBtn) {
+                            shapes[lookup[clicked[j]]].yesBtn.hide();
+                        }
                     }
 
                     clicked.splice(clckindex, clicked.length - 1);
@@ -621,11 +689,24 @@ var SVGFlow = (function () {
                     }
                 }
 
+                if (shapes[lookup[e.no]].noBtn) {
+                    shapes[lookup[e.no]].noBtn.show();
+                }
+                if (shapes[lookup[e.no]].yesBtn) {
+                    shapes[lookup[e.no]].yesBtn.show();
+                }
+
                 e.svgnoid.animate().opacity(config.maxOpacity);
 
                 if (shapes[lookup[e.no]].next !== undefined) {
                     nextlabel = shapes[lookup[e.no]].next;
                     clicked.push(nextlabel);
+                    if (shapes[lookup[nextlabel]].noBtn) {
+                        shapes[lookup[nextlabel]].noBtn.show();
+                    }
+                    if (shapes[lookup[nextlabel]].yesBtn) {
+                        shapes[lookup[nextlabel]].yesBtn.show();
+                    }
                     shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
                 }
             }
