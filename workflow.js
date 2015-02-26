@@ -6,7 +6,6 @@ var SVGFlow = (function () {
         function setParams(u) {
             userOpts = u;
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
-            //console.log(interactive);
             return userOpts;
         }
 
@@ -114,7 +113,6 @@ var SVGFlow = (function () {
                         'stroke': config.arrowLineColour
                     });
             group.add(line).add(ah);
-
             return group;
         }
 
@@ -145,9 +143,8 @@ var SVGFlow = (function () {
             });
             text.cy(label.cy());
             if (interactive === true) {
-                 labelGroup.hide();
+                labelGroup.hide();
             }
-           
             return labelGroup;
         }
 
@@ -219,7 +216,7 @@ var SVGFlow = (function () {
                     content.add(url);
                 });
             }
-            // check content y. might be a bit of a gap
+
             content.cy(config.finishHeight / 2);
             content.x(config.finishLeftMargin);
             return group;
@@ -292,10 +289,8 @@ var SVGFlow = (function () {
                 group.attr({"cursor": "pointer"});
                 group.click(function () {
                     var firstShape = shapes[0].svgid;
-                    //console.log(firstShape.opacity());
-                    console.log(shapes[0].show);
+
                     if (shapes[0].show === false) {
-                        console.log('min');
                         shapes[0].show = true;
                         firstShape.animate().opacity(config.maxOpacity);
 
@@ -307,13 +302,12 @@ var SVGFlow = (function () {
                             shapes[0].noBtn.show();
                         }
                     } else {
-                        console.log('max');
                         firstShape.animate().opacity(config.minOpacity);
                         shapes[0].show = false;
+
                         if (shapes[0].yesBtn) {
                             shapes[0].yesBtn.hide();
                         }
-
                         if (shapes[0].noBtn) {
                             shapes[0].noBtn.hide();
                         }
@@ -431,7 +425,7 @@ var SVGFlow = (function () {
         function makeShapes(element, index) {
             if (element.type && (typeof shapeFuncs[element.type] === 'function')) {
                 var shape = shapeFuncs[element.type](element);
-                //chartGroup.add(shape);
+
                 element.id = shape.attr('id');
                 element.svgid = shape;
                 element.svgshape = shape.get(0);
@@ -565,12 +559,11 @@ var SVGFlow = (function () {
             var nextlabel, clckindex, j;
 
             if (choice === 'yes') {
-                console.log(e);
-                // This toggles the visiblity if this is the second click
-                // on the button, i.e. it was already visible
+                /* This toggles the visiblity if this is the second click
+                    on the button, i.e. it was already visible */
 
                 if (shapes[lookup[e.yes]].show === true && shapes[lookup[e.no]].show === false) {
-                    console.log('toggling');
+
                     clckindex = clicked.indexOf(e.yes);
 
                     for (j = clckindex; j < clicked.length; j += 1) {
@@ -625,7 +618,6 @@ var SVGFlow = (function () {
                     shapes[lookup[e.yes]].yesBtn.show();
                 }
 
-
                 e.svgyesid.animate().opacity(config.maxOpacity);
                 shapes[lookup[e.yes]].show = true;
                 shapes[lookup[e.no]].svgid.animate().opacity(config.minOpacity);
@@ -648,7 +640,6 @@ var SVGFlow = (function () {
             if (choice === 'no') {
                 if (shapes[lookup[e.no]].show === true && shapes[lookup[e.yes]].show === false) {
                     clckindex = clicked.indexOf(e.no);
-                    console.log(clckindex);
 
                     for (j = clckindex; j < clicked.length; j += 1) {
                         shapes[lookup[clicked[j]]].show = false;
@@ -665,7 +656,7 @@ var SVGFlow = (function () {
                 }
 
                 clckindex = clicked.indexOf(e.yes);
-              // if clckindex is more thsn -1 this element was clicked before
+              // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
                     for (j = clckindex; j < clicked.length; j += 1) {
                         shapes[lookup[clicked[j]]].show = false;
@@ -720,7 +711,7 @@ var SVGFlow = (function () {
                 }
             }
         };
-        
+
         function staticNodePoints(element) {
             var ce = element.svgid, te, targetShape,
                 group = chartGroup.group();
@@ -926,10 +917,7 @@ var SVGFlow = (function () {
                 label = lineLabel('Yes', group);
                 element.yesBtn = label;
                 label.attr('cursor', 'pointer');
-
-                if (interactive === true) {
-                    label.on('click', function () {toggleNext(element, 'yes'); });
-                }
+                label.on('click', function () {toggleNext(element, 'yes'); });
 
                 if (element.orient.yes === 'b') {
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
@@ -944,10 +932,7 @@ var SVGFlow = (function () {
                 label = lineLabel('No', group);
                 element.noBtn = label;
                 label.attr('cursor', 'pointer');
-
-                if (interactive === true) {
-                    label.on('click', function () {toggleNext(element, 'no'); });
-                }
+                label.on('click', function () {toggleNext(element, 'no'); });
 
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
@@ -958,19 +943,12 @@ var SVGFlow = (function () {
                 }
             }
         }
-        
+
         function staticAddLabels(element) {
             var group = element.conngroup, label;
-            if (interactive === true) {
-                group.attr({'cursor': 'pointer'});
-            }
 
             if (element.yes && element.yesid !== undefined) {
                 label = lineLabel('Yes', group);
-
-                if (interactive === true) {
-                    label.on('click', function () {toggleNext(element, 'yes'); });
-                }
 
                 if (element.orient.yes === 'b') {
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
@@ -984,10 +962,6 @@ var SVGFlow = (function () {
             if (element.no && element.noid !== undefined) {
                 label = lineLabel('No', group);
 
-                if (interactive === true) {
-                    label.on('click', function () {toggleNext(element, 'no'); });
-                }
-
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
                 }
@@ -997,208 +971,106 @@ var SVGFlow = (function () {
                 }
             }
         }
-        
+
 
         function addArrows(element) {
-            var group = element.svgid, arrowhead, nxt, rightX, rightY, bottomX, bottomY;
-            if (interactive === true) {
-                rightX = element.svgshape.x() + element.svgshape.bbox().width + config.connectorLength - config.arrowHeadHeight;
-                rightY =  element.svgshape.cy() - (config.arrowHeadHeight / 2);
-                bottomX = element.svgshape.cx()  - (config.arrowHeadHeight / 2);
-                bottomY = element.svgshape.y() + element.svgshape.bbox().height + config.connectorLength - config.arrowHeadHeight;
+            var group = element.svgid, arrowhead, rightX, rightY, bottomX, bottomY;
+            rightX = element.svgshape.x() + element.svgshape.bbox().width + config.connectorLength - config.arrowHeadHeight;
+            rightY =  element.svgshape.cy() - (config.arrowHeadHeight / 2);
+            bottomX = element.svgshape.cx()  - (config.arrowHeadHeight / 2);
+            bottomY = element.svgshape.y() + element.svgshape.bbox().height + config.connectorLength - config.arrowHeadHeight;
 
-                if (element.svgyesid !== undefined) {
-                    if (element.orient.yes === 'r') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(rightX, rightY);
-                        arrowhead.rotate(270);
-                    }
-
-                    if (element.orient.yes === 'b') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(bottomX, bottomY);
-                    }
+            if (element.svgyesid !== undefined) {
+                if (element.orient.yes === 'r') {
+                    arrowhead = arrowHead(group);
+                    arrowhead.move(rightX, rightY);
+                    arrowhead.rotate(270);
                 }
 
-                if (element.svgnoid !== undefined) {
-                    if (element.orient.no === 'r') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(rightX, rightY);
-                        arrowhead.rotate(270);
-                    }
-
-                    if (element.orient.no === 'b') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(bottomX, bottomY);
-                    }
-                }
-
-                if (element.svgnextid !== undefined) {
-                    if (element.orient.next === 'r') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(rightX, rightY);
-                        arrowhead.rotate(270);
-                    }
-
-                    if (element.orient.next === 'b') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(bottomX, bottomY);
-                    }
+                if (element.orient.yes === 'b') {
+                    arrowhead = arrowHead(group);
+                    arrowhead.move(bottomX, bottomY);
                 }
             }
 
-            if (interactive === false) {
-                if (element.yes && element.yesid !== undefined) {
+            if (element.svgnoid !== undefined) {
+                if (element.orient.no === 'r') {
                     arrowhead = arrowHead(group);
-                    nxt = shapes[lookup[element.yes]];
-
-                    if (element.orient.yes === 'b') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                        if (nxt.inNode === 'l') {
-                            arrowhead.rotate(270);
-                        }
-                    }
-
-                    if (element.orient.yes === 'r') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                        if (nxt.inNode === 'l') {
-                            arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
-                            arrowhead.rotate(270);
-                        }
-                    }
+                    arrowhead.move(rightX, rightY);
+                    arrowhead.rotate(270);
                 }
 
-                if (element.no && element.noid !== undefined) {
+                if (element.orient.no === 'b') {
                     arrowhead = arrowHead(group);
-                    nxt = shapes[lookup[element.no]];
+                    arrowhead.move(bottomX, bottomY);
+                }
+            }
 
-                    if (element.orient.no === 'b') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                    }
-
-                    if (element.orient.no === 'r') {
-                        arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
-                        arrowhead.rotate(270);
-                    }
+            if (element.svgnextid !== undefined) {
+                if (element.orient.next === 'r') {
+                    arrowhead = arrowHead(group);
+                    arrowhead.move(rightX, rightY);
+                    arrowhead.rotate(270);
                 }
 
-                if (element.next && element.nextid !== undefined) {
+                if (element.orient.next === 'b') {
                     arrowhead = arrowHead(group);
-                    nxt = shapes[lookup[element.next]];
-
-                    if (element.orient.next === 'b') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                        if (nxt.inNode === 'l') {
-                            arrowhead.rotate(270);
-                        }
-                    }
-
-                    if (element.orient.next === 'r') {
-                        arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
-                        arrowhead.rotate(270);
-                    }
+                    arrowhead.move(bottomX, bottomY);
                 }
             }
         }
-        
+
         function staticAddArrows(element) {
-            var group = element.conngroup, arrowhead, nxt, rightX, rightY, bottomX, bottomY;
-            if (interactive === true) {
-                rightX = element.svgid.x() + element.svgid.bbox().width + config.connectorLength - config.arrowHeadHeight;
-                rightY =  element.svgid.y() + (element.svgid.bbox().height / 2) - (config.arrowHeadHeight / 2);
-                bottomX = element.svgid.x() + element.svgid.bbox().width / 2 - config.arrowHeadHeight / 2;
-                bottomY = element.svgid.y() + element.svgid.bbox().height + config.connectorLength - config.arrowHeadHeight;
+            var group = element.conngroup, arrowhead, nxt;
 
-                if (element.svgyesid !== undefined) {
-                    if (element.orient.yes === 'r') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(rightX, rightY);
+            if (element.yes && element.yesid !== undefined) {
+                arrowhead = arrowHead(group);
+                nxt = shapes[lookup[element.yes]];
+
+                if (element.orient.yes === 'b') {
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                    if (nxt.inNode === 'l') {
                         arrowhead.rotate(270);
-                    }
-
-                    if (element.orient.yes === 'b') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(bottomX, bottomY);
                     }
                 }
 
-                if (element.svgnoid !== undefined) {
-                    if (element.orient.no === 'r') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(rightX, rightY);
+                if (element.orient.yes === 'r') {
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                    if (nxt.inNode === 'l') {
+                        arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
                         arrowhead.rotate(270);
-                    }
-
-                    if (element.orient.no === 'b') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(bottomX, bottomY);
-                    }
-                }
-
-                if (element.svgnextid !== undefined) {
-                    if (element.orient.next === 'r') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(rightX, rightY);
-                        arrowhead.rotate(270);
-                    }
-
-                    if (element.orient.next === 'b') {
-                        arrowhead = arrowHead(group);
-                        arrowhead.move(bottomX, bottomY);
                     }
                 }
             }
 
-            if (interactive === false) {
-                if (element.yes && element.yesid !== undefined) {
-                    arrowhead = arrowHead(group);
-                    nxt = shapes[lookup[element.yes]];
+            if (element.no && element.noid !== undefined) {
+                arrowhead = arrowHead(group);
+                nxt = shapes[lookup[element.no]];
 
-                    if (element.orient.yes === 'b') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                        if (nxt.inNode === 'l') {
-                            arrowhead.rotate(270);
-                        }
-                    }
-
-                    if (element.orient.yes === 'r') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                        if (nxt.inNode === 'l') {
-                            arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
-                            arrowhead.rotate(270);
-                        }
-                    }
+                if (element.orient.no === 'b') {
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
                 }
 
-                if (element.no && element.noid !== undefined) {
-                    arrowhead = arrowHead(group);
-                    nxt = shapes[lookup[element.no]];
+                if (element.orient.no === 'r') {
+                    arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.rotate(270);
+                }
+            }
 
-                    if (element.orient.no === 'b') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                    }
+            if (element.next && element.nextid !== undefined) {
+                arrowhead = arrowHead(group);
+                nxt = shapes[lookup[element.next]];
 
-                    if (element.orient.no === 'r') {
-                        arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                if (element.orient.next === 'b') {
+                    arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                    if (nxt.inNode === 'l') {
                         arrowhead.rotate(270);
                     }
                 }
 
-                if (element.next && element.nextid !== undefined) {
-                    arrowhead = arrowHead(group);
-                    nxt = shapes[lookup[element.next]];
-
-                    if (element.orient.next === 'b') {
-                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
-                        if (nxt.inNode === 'l') {
-                            arrowhead.rotate(270);
-                        }
-                    }
-
-                    if (element.orient.next === 'r') {
-                        arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
-                        arrowhead.rotate(270);
-                    }
+                if (element.orient.next === 'r') {
+                    arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                    arrowhead.rotate(270);
                 }
             }
         }
@@ -1206,8 +1078,6 @@ var SVGFlow = (function () {
         function angleLine(start, end, element) {
 
             var e = element.svgshape, p1, p2, p3, p4, p5, spacer = config.arrowHeadHeight * 2;
-            
-            //console.log(element);
 
                 // See if it's at the bottom
             if (start[1] === e.y() + e.height()) {
@@ -1235,7 +1105,6 @@ var SVGFlow = (function () {
 
             // see if out is on the right and in is at the top
             if ((start[0] < end[0]) && (start[1] > end[1])) {
-                //console.log('start is to the left and below end');
                 p1 = start;
                 p2 = [start[0] + spacer, start[1]];
                 p3 = [start[0] + spacer, end[1] - spacer];
@@ -1253,7 +1122,6 @@ var SVGFlow = (function () {
 
                 return [p1, p2, p3, p4, p5, end];
             }
-
             return [start, end];
         }
 
@@ -1263,37 +1131,26 @@ var SVGFlow = (function () {
             if (element.yesid) {
                 startln = element.yesOutPos;
 
-                if (interactive === true) {
-                    if (element.orient.yes === 'b') {
-                        endln = [startln[0], startln[1] + config.connectorLength];
-                    }
-
-                    if (element.orient.yes === 'r') {
-                        endln = [startln[0] + config.connectorLength, startln[1]];
-                    }
+                if (element.orient.yes === 'b') {
+                    endln = [startln[0], startln[1] + config.connectorLength];
                 }
 
-                if (interactive === false) {
-                    endln = shapes[lookup[element.yes]].inNodePos;
+                if (element.orient.yes === 'r') {
+                    endln = [startln[0] + config.connectorLength, startln[1]];
                 }
+
                 element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none').back();
             }
 
             if (element.noid) {
                 startln = element.noOutPos;
 
-                if (interactive === true) {
-                    if (element.orient.no === 'b') {
-                        endln = [startln[0], startln[1] + config.connectorLength];
-                    }
-
-                    if (element.orient.no === 'r') {
-                        endln = [startln[0] + config.connectorLength, startln[1]];
-                    }
+                if (element.orient.no === 'b') {
+                    endln = [startln[0], startln[1] + config.connectorLength];
                 }
 
-                if (interactive === false) {
-                    endln = shapes[lookup[element.no]].inNodePos;
+                if (element.orient.no === 'r') {
+                    endln = [startln[0] + config.connectorLength, startln[1]];
                 }
 
                 element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
@@ -1302,18 +1159,12 @@ var SVGFlow = (function () {
             if (element.nextid) {
                 startln = element.nextOutPos;
 
-                if (interactive === true) {
-                    if (element.orient.next === 'b') {
-                        endln = [startln[0], startln[1] + config.connectorLength];
-                    }
-
-                    if (element.orient.next === 'r') {
-                        endln = [startln[0] + config.connectorLength, startln[1]];
-                    }
+                if (element.orient.next === 'b') {
+                    endln = [startln[0], startln[1] + config.connectorLength];
                 }
 
-                if (interactive === false) {
-                    endln = shapes[lookup[element.next]].inNodePos;
+                if (element.orient.next === 'r') {
+                    endln = [startln[0] + config.connectorLength, startln[1]];
                 }
 
                 if (endln === undefined) {
@@ -1322,26 +1173,13 @@ var SVGFlow = (function () {
                 element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
             }
         }
-        
+
         function staticAddConnectors(element) {
             var startln, endln;
 
             if (element.yesid) {
                 startln = element.yesOutPos;
-
-                if (interactive === true) {
-                    if (element.orient.yes === 'b') {
-                        endln = [startln[0], startln[1] + config.connectorLength];
-                    }
-
-                    if (element.orient.yes === 'r') {
-                        endln = [startln[0] + config.connectorLength, startln[1]];
-                    }
-                }
-
-                if (interactive === false) {
-                    endln = shapes[lookup[element.yes]].inNodePos;
-                }
+                endln = shapes[lookup[element.yes]].inNodePos;
                 element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none').back();
             }
 
@@ -1383,44 +1221,17 @@ var SVGFlow = (function () {
             shapes.forEach(referringIds);
             shapes.forEach(positionShapes);
             if (interactive === true) {
-                 shapes.forEach(nodePoints);
-            }
-            
-            if (interactive === false) {
-                 shapes.forEach(staticNodePoints);
-            }
-           
-            if (interactive === true) {
-                shapes.forEach(addConnectors); 
-            }
-            if (interactive === false) {
-                 shapes.forEach(staticAddConnectors); 
-            }
-            
-            if (interactive === true) {
-                 shapes.forEach(addLabels);
-            }
-            if (interactive === false) {
-                   shapes.forEach(staticAddLabels);
-            }
-            
-            if (interactive === true) {
+                shapes.forEach(nodePoints);
+                shapes.forEach(addConnectors);
+                shapes.forEach(addLabels);
                 shapes.forEach(addArrows);
             }
-            if (interactive === false) {
-                  shapes.forEach(staticAddArrows);
-            }
-            
-           
 
-            //hide all the connectors
-            if (interactive === true) {
-                shapes.forEach(function (element) {
-                  // New do it by property way
-                    //element.show = false;
-                    element.svgid.opacity(config.minOpacity);
-                    element.show = false;
-                });
+            if (interactive === false) {
+                shapes.forEach(staticNodePoints);
+                shapes.forEach(staticAddConnectors);
+                shapes.forEach(staticAddLabels);
+                shapes.forEach(staticAddArrows);
             }
         };
 
