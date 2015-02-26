@@ -720,6 +720,106 @@ var SVGFlow = (function () {
                 }
             }
         };
+        
+        function staticNodePoints(element) {
+            var ce = element.svgid, te, targetShape,
+                group = chartGroup.group();
+
+            if (element.yes && element.yesid !== undefined) {
+                te = element.svgyesid;
+                targetShape = shapes[lookup[element.yes]];
+
+                if (targetShape.inNodePos === undefined && targetShape.inNode === 't') {
+                    targetShape.inNodePos = [te.cx(), te.y()];
+                }
+
+                if (element.orient.yes === 'b') {
+                    element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+                    if (targetShape.inNodePos === undefined) {
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
+                        }
+                    }
+                }
+
+                if (element.orient.yes === 'r') {
+                    element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+                    if (targetShape.inNodePos === undefined) {
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
+                    }
+                }
+                isPositioned.push(element.yesid);
+            }
+
+            if (element.no && element.noid !== undefined) {
+                targetShape = shapes[lookup[element.no]];
+                te = element.svgnoid;
+
+                if (element.orient.no === 'b') {
+                    element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+
+                    if (targetShape.inNodePos === undefined) {
+                        targetShape.inNodePos = [te.cx(), te.y()];
+                    }
+                }
+
+                if (element.orient.no === 'r') {
+                    element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+
+                    if (targetShape.inNodePos === undefined) {
+                        if (targetShape.inNode === 't') {
+                            targetShape.inNodePos = [te.cx(), te.y()];
+                        }
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
+                    }
+                }
+                isPositioned.push(element.noid);
+            }
+
+            if (element.next) {
+                targetShape = shapes[lookup[element.next]];
+                if (element.orient.next === 'b') {
+                    element.nextOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
+
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
+
+                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                        if (targetShape.inNode === 't') {
+                            te = element.svgnextid;
+                            targetShape.inNodePos = [te.cx(), te.y()];
+                        }
+                        if (targetShape.inNode === 'l') {
+                            te = element.svgnoid;
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
+                    }
+                }
+                if (element.orient.next === 'r') {
+                    element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
+                    targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
+                    te = element.svgnextid;
+
+                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
+                        if (targetShape.inNode === 't') {
+                            targetShape.inNodePos = [te.cx(), te.y()];
+                        }
+                        if (targetShape.inNode === 'l') {
+                            targetShape.inNodePos = [te.x(), te.cy()];
+                        }
+                    }
+                }
+                isPositioned.push(element.nextid);
+            }
+            element.conngroup = group;
+        }
 
         function nodePoints(element) {
             var ce = element.svgshape, te, targetShape;
@@ -858,6 +958,46 @@ var SVGFlow = (function () {
                 }
             }
         }
+        
+        function staticAddLabels(element) {
+            var group = element.conngroup, label;
+            if (interactive === true) {
+                group.attr({'cursor': 'pointer'});
+            }
+
+            if (element.yes && element.yesid !== undefined) {
+                label = lineLabel('Yes', group);
+
+                if (interactive === true) {
+                    label.on('click', function () {toggleNext(element, 'yes'); });
+                }
+
+                if (element.orient.yes === 'b') {
+                    label.move(element.yesOutPos[0], element.yesOutPos[1]);
+                }
+
+                if (element.orient.yes === 'r') {
+                    label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
+                }
+            }
+
+            if (element.no && element.noid !== undefined) {
+                label = lineLabel('No', group);
+
+                if (interactive === true) {
+                    label.on('click', function () {toggleNext(element, 'no'); });
+                }
+
+                if (element.orient.no === 'b') {
+                    label.move(element.noOutPos[0], element.noOutPos[1]);
+                }
+
+                if (element.orient.no === 'r') {
+                    label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
+                }
+            }
+        }
+        
 
         function addArrows(element) {
             var group = element.svgid, arrowhead, nxt, rightX, rightY, bottomX, bottomY;
@@ -866,6 +1006,108 @@ var SVGFlow = (function () {
                 rightY =  element.svgshape.cy() - (config.arrowHeadHeight / 2);
                 bottomX = element.svgshape.cx()  - (config.arrowHeadHeight / 2);
                 bottomY = element.svgshape.y() + element.svgshape.bbox().height + config.connectorLength - config.arrowHeadHeight;
+
+                if (element.svgyesid !== undefined) {
+                    if (element.orient.yes === 'r') {
+                        arrowhead = arrowHead(group);
+                        arrowhead.move(rightX, rightY);
+                        arrowhead.rotate(270);
+                    }
+
+                    if (element.orient.yes === 'b') {
+                        arrowhead = arrowHead(group);
+                        arrowhead.move(bottomX, bottomY);
+                    }
+                }
+
+                if (element.svgnoid !== undefined) {
+                    if (element.orient.no === 'r') {
+                        arrowhead = arrowHead(group);
+                        arrowhead.move(rightX, rightY);
+                        arrowhead.rotate(270);
+                    }
+
+                    if (element.orient.no === 'b') {
+                        arrowhead = arrowHead(group);
+                        arrowhead.move(bottomX, bottomY);
+                    }
+                }
+
+                if (element.svgnextid !== undefined) {
+                    if (element.orient.next === 'r') {
+                        arrowhead = arrowHead(group);
+                        arrowhead.move(rightX, rightY);
+                        arrowhead.rotate(270);
+                    }
+
+                    if (element.orient.next === 'b') {
+                        arrowhead = arrowHead(group);
+                        arrowhead.move(bottomX, bottomY);
+                    }
+                }
+            }
+
+            if (interactive === false) {
+                if (element.yes && element.yesid !== undefined) {
+                    arrowhead = arrowHead(group);
+                    nxt = shapes[lookup[element.yes]];
+
+                    if (element.orient.yes === 'b') {
+                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                        if (nxt.inNode === 'l') {
+                            arrowhead.rotate(270);
+                        }
+                    }
+
+                    if (element.orient.yes === 'r') {
+                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                        if (nxt.inNode === 'l') {
+                            arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                            arrowhead.rotate(270);
+                        }
+                    }
+                }
+
+                if (element.no && element.noid !== undefined) {
+                    arrowhead = arrowHead(group);
+                    nxt = shapes[lookup[element.no]];
+
+                    if (element.orient.no === 'b') {
+                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                    }
+
+                    if (element.orient.no === 'r') {
+                        arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                        arrowhead.rotate(270);
+                    }
+                }
+
+                if (element.next && element.nextid !== undefined) {
+                    arrowhead = arrowHead(group);
+                    nxt = shapes[lookup[element.next]];
+
+                    if (element.orient.next === 'b') {
+                        arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                        if (nxt.inNode === 'l') {
+                            arrowhead.rotate(270);
+                        }
+                    }
+
+                    if (element.orient.next === 'r') {
+                        arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
+                        arrowhead.rotate(270);
+                    }
+                }
+            }
+        }
+        
+        function staticAddArrows(element) {
+            var group = element.conngroup, arrowhead, nxt, rightX, rightY, bottomX, bottomY;
+            if (interactive === true) {
+                rightX = element.svgid.x() + element.svgid.bbox().width + config.connectorLength - config.arrowHeadHeight;
+                rightY =  element.svgid.y() + (element.svgid.bbox().height / 2) - (config.arrowHeadHeight / 2);
+                bottomX = element.svgid.x() + element.svgid.bbox().width / 2 - config.arrowHeadHeight / 2;
+                bottomY = element.svgid.y() + element.svgid.bbox().height + config.connectorLength - config.arrowHeadHeight;
 
                 if (element.svgyesid !== undefined) {
                     if (element.orient.yes === 'r') {
@@ -1080,6 +1322,45 @@ var SVGFlow = (function () {
                 element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
             }
         }
+        
+        function staticAddConnectors(element) {
+            var startln, endln;
+
+            if (element.yesid) {
+                startln = element.yesOutPos;
+
+                if (interactive === true) {
+                    if (element.orient.yes === 'b') {
+                        endln = [startln[0], startln[1] + config.connectorLength];
+                    }
+
+                    if (element.orient.yes === 'r') {
+                        endln = [startln[0] + config.connectorLength, startln[1]];
+                    }
+                }
+
+                if (interactive === false) {
+                    endln = shapes[lookup[element.yes]].inNodePos;
+                }
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none').back();
+            }
+
+            if (element.noid) {
+                startln = element.noOutPos;
+                endln = shapes[lookup[element.no]].inNodePos;
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+            }
+
+            if (element.nextid) {
+                startln = element.nextOutPos;
+                endln = shapes[lookup[element.next]].inNodePos;
+
+                if (endln === undefined) {
+                    endln = shapes[lookup[element.next]].yesOutPos;
+                }
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+            }
+        }
 
         layoutShapes = function (s) {
             shapes = s;
@@ -1101,10 +1382,36 @@ var SVGFlow = (function () {
             generateLookups(shapes);
             shapes.forEach(referringIds);
             shapes.forEach(positionShapes);
-            shapes.forEach(nodePoints);
-            shapes.forEach(addConnectors);
-            shapes.forEach(addLabels);
-            shapes.forEach(addArrows);
+            if (interactive === true) {
+                 shapes.forEach(nodePoints);
+            }
+            
+            if (interactive === false) {
+                 shapes.forEach(staticNodePoints);
+            }
+           
+            if (interactive === true) {
+                shapes.forEach(addConnectors); 
+            }
+            if (interactive === false) {
+                 shapes.forEach(staticAddConnectors); 
+            }
+            
+            if (interactive === true) {
+                 shapes.forEach(addLabels);
+            }
+            if (interactive === false) {
+                   shapes.forEach(staticAddLabels);
+            }
+            
+            if (interactive === true) {
+                shapes.forEach(addArrows);
+            }
+            if (interactive === false) {
+                  shapes.forEach(staticAddArrows);
+            }
+            
+           
 
             //hide all the connectors
             if (interactive === true) {
