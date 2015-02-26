@@ -17,6 +17,7 @@ var SVGFlow = (function () {
                 shapeStrokeColour = 'rgb(66, 66, 66)',
                 lightText = '#fff',
                 darkText = 'rgb(51, 51, 51)',
+                defaultFontSize = userOpts.defaultFontSize || 12,
                 defaults = {
                     minOpacity: userOpts.minOpacity || 0,
                     maxOpacity: userOpts.maxOpacity || 1,
@@ -37,18 +38,19 @@ var SVGFlow = (function () {
                     startStrokeColour: userOpts.startStrokeColour || 'rgb(66, 66, 66)',
                     startTextColour: userOpts.startTextColour || lightText,
                     startText: userOpts.startText || 'Start',
-                    startFontSize: userOpts.startFontSize || 12,
+                    startFontSize: userOpts.startFontSize || userOpts.defaultFontSize || defaultFontSize,
                     decisionWidth: userOpts.decisionWidth || userOpts.w || w,
                     decisionHeight: userOpts.decisionHeight || userOpts.h || h,
                     decisionFill: userOpts.decisionFill || '#8b3572',
                     decisionTextColour: userOpts.decisionTextColour || '#fff',
-                    decisionFontSize: userOpts.decisionFontSize || 12,
+                    decisionFontSize: userOpts.decisionFontSize || userOpts.defaultFontSize || defaultFontSize,
                     finishTextColour: userOpts.finishTextColour || '#fff',
                     finishWidth: userOpts.finishWidth || userOpts.w || w,
                     finishHeight: userOpts.finishHeight || userOpts.h || h,
                     finishLeftMargin: userOpts.finishLeftMargin || 20,
                     finishFill: userOpts.finishFill || '#0F6C7E',
-                    finishFontSize: userOpts.finishFontSize || 12,
+                    finishFontSize: userOpts.finishFontSize || userOpts.defaultFontSize || defaultFontSize,
+                    finishLinkColour: userOpts.finishLinkColour || 'yellow',
                     processWidth: userOpts.processWidth || userOpts.w || w,
                     processHeight: userOpts.processHeight || userOpts.h || h,
                     processLeftMargin: userOpts.processLeftMargin || 20,
@@ -56,7 +58,8 @@ var SVGFlow = (function () {
                     processStrokeColour: userOpts.processStrokeColour || shapeStrokeColour,
                     processStrokeWidth: userOpts.processStrokeWidth || 0.1,
                     processTextColour: userOpts.processTextColour || darkText,
-                    processFontSize: userOpts.processFontSize || 12,
+                    processFontSize: userOpts.processFontSize || userOpts.defaultFontSize || defaultFontSize,
+                    processLinkColour: userOpts.processLinkColour || 'darkblue',
                     labelWidth: userOpts.labelWidth || 30,
                     labelHeight: userOpts.labelHeight || 20,
                     labelRadius: userOpts.labelRadius || 5,
@@ -64,15 +67,14 @@ var SVGFlow = (function () {
                     labelFill: userOpts.labelFill || arrowColour,
                     labelClickedFill: userOpts.labelClickedFill || 'black',
                     labelOpacity: userOpts.labelOpacity || 1.0,
-                    labelFontSize: userOpts.labelFontSize || 12,
+                    labelFontSize: userOpts.labelFontSize || userOpts.defaultFontSize || defaultFontSize,
                     arrowHeadHeight: userOpts.arrowHeadHeight || 20,
                     arrowStroke: userOpts.arrowStroke ||  1.0,
                     arrowLineColour: userOpts.arrowLineColour || arrowColour,
                     arrowHeadColor: userOpts.arrowHeadColor || arrowColour,
                     arrowTextColour: userOpts.arrowTextColour || '#fff',
-                    arrowFontSize: userOpts.arrowFontSize || 12,
+                    arrowFontSize: userOpts.arrowFontSize || userOpts.defaultFontSize || defaultFontSize,
                     arrowHeadOpacity: userOpts.arrowHeadOpacity || 1.0
-                    //extendLeft: userOpts.extendLeft || 0
                 };
             return defaults;
         }
@@ -96,6 +98,7 @@ var SVGFlow = (function () {
                     .polygon(coords).fill({color: config.arrowHeadColor, opacity: config.arrowHeadOpacity})
                     .cx(config.arrowHeadHeight / 2)
                     .cy(config.arrowHeadHeight / 2);
+
             return ag;
         }
 
@@ -113,6 +116,7 @@ var SVGFlow = (function () {
                         'stroke': config.arrowLineColour
                     });
             group.add(line).add(ah);
+
             return group;
         }
 
@@ -180,28 +184,26 @@ var SVGFlow = (function () {
         }
 
         function finish(options) {
-            var text,
-                group = chartGroup.group(),
-                content = chartGroup.group();
+            var group = chartGroup.group()
+                    .attr({
+                        "class": "finish-group"
+                    }),
+                rect = group
+                    .rect(config.finishWidth, config.finishHeight)
+                    .attr({
+                        fill: config.finishFill,
+                        "class": "fc-finish"
+                    }).radius(20),
 
-            group.attr({
-                "class": "finish-group"
-            });
-            group
-                .rect(config.finishWidth, config.finishHeight)
-                .attr({
-                    fill: config.finishFill,
-                    "class": "fc-finish"
-                }).radius(20);
+                content = group.group();
 
-            text = content.text(function (add) {
+            content.text(function (add) {
                 options.text.forEach(function (l) {
                     add.tspan(l).newLine();
                 });
-            });
-            text.fill(config.finishTextColour).font({size: config.finishFontSize});
-
-            group.add(content);
+            })
+                    .fill(config.finishTextColour)
+                    .font({size: config.finishFontSize});
 
             // Dealing with links
             if (options.links) {
@@ -210,22 +212,24 @@ var SVGFlow = (function () {
                         txt = draw.text(l.text),
                         tbox;
                     url.add(txt);
-                    txt.fill('yellow').font({size: config.finishFontSize});
+                    if (l.target) {
+                        url.target(l.target);
+                    }
+                    txt.fill(config.finishLinkColour).font({size: config.finishFontSize});
                     tbox = content.bbox();
                     txt.dmove(0, tbox.height + 5);
                     content.add(url);
                 });
             }
 
-            content.cy(config.finishHeight / 2);
-            content.x(config.finishLeftMargin);
+            // Not sure about the -5 fudge factor
+            content.move(config.finishLeftMargin, ((rect.height() -  content.bbox().height) / 2) - 5);
             return group;
         }
 
         // The process shape that has an outlet, but no choice
         function process(options) {
-            var text,
-                group = chartGroup.group()
+            var group = chartGroup.group()
                     .attr({
                         "class": "process-group"
                     }),
@@ -235,18 +239,34 @@ var SVGFlow = (function () {
                         fill: config.processFill,
                         stroke: config.processStrokeColour,
                         "class": "fc-process"
-                    });
+                    }),
+                content = group.group();
 
-            text = group.text(function (add) {
+            content.text(function (add) {
                 options.text.forEach(function (l) {
                     add.tspan(l).newLine();
                 });
-            });
+            })
+                    .font({size: config.processFontSize});
 
-            // This is buggy but best that can be done for now
-            text.cy(rect.bbox().cy);
-            text.move(config.finishLeftMargin);
-            text.font({size: config.processFontSize});
+            // Dealing with links
+            if (options.links) {
+                options.links.forEach(function (l) {
+                    var url = draw.link(l.url),
+                        txt = draw.text(l.text),
+                        tbox;
+                    url.add(txt);
+                    if (l.target) {
+                        url.target(l.target);
+                    }
+                    txt.fill(config.processLinkColour).font({size: config.processFontSize});
+                    tbox = content.bbox();
+                    txt.dmove(0, tbox.height + 5);
+                    content.add(url);
+                });
+            }
+
+            content.move(config.finishLeftMargin, ((rect.height() - content.bbox().height) / 2) - 5);
             return group;
         }
 
@@ -1081,9 +1101,6 @@ var SVGFlow = (function () {
 
                 // See if it's at the bottom
             if (start[1] === e.y() + e.height()) {
-                console.log(start[1]);
-                console.log(e.y());
-                console.log(e.height());
 
                 p1 = start;
                 p2 = [start[0], start[1] + spacer ];
