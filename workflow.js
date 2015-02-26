@@ -152,6 +152,13 @@ var SVGFlow = (function () {
             return labelGroup;
         }
 
+        function showTip(x, y) {
+            var tg = draw.group();
+            tg.rect(300, 200);
+            tg.text('Hello world');
+            tg.move(x, y);
+        }
+
         function decision(options) {
             var shape, text,
                 group = chartGroup.group(),
@@ -184,16 +191,16 @@ var SVGFlow = (function () {
         }
 
         function finish(options) {
-            var group = chartGroup.group()
-                    .attr({
-                        "class": "finish-group"
-                    }),
+            var tip, group = chartGroup.group()
+                .attr({
+                    "class": "finish-group"
+                }),
                 rect = group
-                    .rect(config.finishWidth, config.finishHeight)
-                    .attr({
-                        fill: config.finishFill,
-                        "class": "fc-finish"
-                    }).radius(20),
+                .rect(config.finishWidth, config.finishHeight)
+                .attr({
+                    fill: config.finishFill,
+                    "class": "fc-finish"
+                }).radius(20),
 
                 content = group.group();
 
@@ -219,6 +226,21 @@ var SVGFlow = (function () {
                     tbox = content.bbox();
                     txt.dmove(0, tbox.height + 5);
                     content.add(url);
+                });
+            }
+            // Dealing with tips
+            if (options.tip) {
+                console.log(options.tip);
+                tip = group.text(options.tip.title)
+                    .fill(config.finishLinkColour)
+                    .font({size: config.finishFontSize})
+                    .attr('cursor', 'pointer');
+
+                tip.move(config.finishLeftMargin, rect.height() - 25);
+
+                tip.on('click', function () {
+                    console.log(group.y());
+                    showTip(group.x(), group.y());
                 });
             }
 
