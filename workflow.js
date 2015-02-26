@@ -153,8 +153,8 @@ var SVGFlow = (function () {
         }
 
         function showTip(x, y) {
-            var tg = draw.group();
-            tg.rect(300, 200);
+            var tg = chartGroup.group();
+            tg.rect(config.shapeWidth, 100).fill('white').opacity(0.5).stroke({width: 1});
             tg.text('Hello world');
             tg.move(x, y);
         }
@@ -231,16 +231,30 @@ var SVGFlow = (function () {
             // Dealing with tips
             if (options.tip) {
                 console.log(options.tip);
+                
                 tip = group.text(options.tip.title)
                     .fill(config.finishLinkColour)
                     .font({size: config.finishFontSize})
                     .attr('cursor', 'pointer');
 
                 tip.move(config.finishLeftMargin, rect.height() - 25);
+                
+                var tg = group.group();
+                tg.rect(config.shapeWidth, 50).fill('white').opacity(0.5).stroke({width: 1});
+                tg.text('Hello world');
+                tg.hide();
 
-                tip.on('click', function () {
-                    console.log(group.y());
-                    showTip(group.x(), group.y());
+                tip.on('mouseover', function (event) {
+                  console.log(event);
+                  console.log(this.attributes[6].value);
+                  tg.dy(-30);
+                  //tg.move(group.x(), group.y() - this.attributes[6].value);
+                  //tg.move(group.x(), 100);
+                  tg.show();
+                })
+                .on('mouseout', function(){
+                  tg.dy(30);
+                  tg.hide();
                 });
             }
 
