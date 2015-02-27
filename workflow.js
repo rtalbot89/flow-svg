@@ -23,6 +23,7 @@ var SVGFlow = (function () {
                     maxOpacity: userOpts.maxOpacity || 1,
                     btnBarHeight: userOpts.btnBarHeight || 40,
                     btnBarWidth: userOpts.btnBarWidth || 87,
+                    btnBarSelectedColour: userOpts.btnBarSelectedColour || 'black',
                     shapeWidth: userOpts.shapeWidth || userOpts.w || w,
                     shapeHeight: userOpts.shapeHeight || userOpts.h || h,
                     baseUnit: userOpts.baseUnit || 80,
@@ -401,82 +402,76 @@ var SVGFlow = (function () {
         }
 
         function buttonBar() {
-            var staticBtn,
-                btnGroup = draw.group(),
+            var staticBtn, lastActiveColor, lastStaticColor,
+                btnGroup = draw.group()
+                .attr({
+                    "cursor": "pointer"
+                }),
                 activeBtn = btnGroup
-                    .rect(config.btnBarWidth, config.btnBarHeight)
-                    .fill(config.startFill)
-                    .radius(10)
-                    .attr({
-                        "cursor": "pointer"
-                    });
+                .rect(config.btnBarWidth, config.btnBarHeight)
+                .fill(config.startFill)
+                .radius(10);
+
             btnGroup.text('Interactive').attr(
                 {'fill' : config.startTextColour,
-                        'font-size': '12'
-                        }
+                    'font-size': '12',
+                    'pointer-events': 'none'
+                    }
             )
                 .cy(config.btnBarHeight / 2)
                 .cx(config.btnBarWidth / 2);
 
             staticBtn = btnGroup
-                    .rect(config.btnBarWidth, config.btnBarHeight)
-                    .fill(config.startFill)
-                    .radius(10).move(config.btnBarWidth + 5, 0)
-                    .attr({
-                    "cursor": "pointer"
-                });
+                .rect(config.btnBarWidth, config.btnBarHeight)
+                .fill(config.startFill)
+                .radius(10).move(config.btnBarWidth + 5, 0);
 
             btnGroup.text('Static').attr(
                 {
                     'fill' : config.startTextColour,
-                    'font-size': '12'
+                    'font-size': '12',
+                    'pointer-events': 'none'
                 }
             )
-                    .cy(config.btnBarHeight / 2)
+                .cy(config.btnBarHeight / 2)
                 .cx((config.btnBarWidth * 1.5) + 5);
 
-            activeBtn.on('mouseover', function () {
-                //lastActiveColor = activeBtn.attr('fill');
-                activeBtn.fill({color: 'LightGray'});
-            });
-            staticBtn.on('mouseover', function () {
-               // lastStaticColor = staticBtn.attr('fill');
-                staticBtn.fill({color: 'LightGray'});
-            });
-
-            activeBtn.on('mouseout', function () {
-                if (interactive === true) {
-                    activeBtn.fill('black');
-                }
-            });
-            staticBtn.on('mouseout', function () {
-                if (interactive === false) {
-                    staticBtn.fill(config.startFill);
-                }
-            });
-
             if (interactive === true) {
-                activeBtn.fill('black');
-                staticBtn.fill(config.startFill);
+                activeBtn.fill(config.btnBarSelectedColour);
             }
+
             if (interactive === false) {
-                staticBtn.fill('black');
-                activeBtn.fill(config.startFill);
+                staticBtn.fill(config.btnBarSelectedColour);
             }
 
-            activeBtn.on('click', function () {
-                interactive = true;
-                activeBtn.fill('black');
-                staticBtn.fill(config.startFill);
-                hide();
-            });
+            lastActiveColor = activeBtn.attr('fill');
+            lastStaticColor = staticBtn.attr('fill');
 
-            staticBtn.on('click', function () {
-                interactive = false;
-                staticBtn.fill('black');
-                activeBtn.fill(config.startFill);
-                unhide();
-            });
+            activeBtn.on('mouseover', function () {
+                activeBtn.fill({color: 'LightGray'});
+            })
+                .on('mouseout', function () {
+                    activeBtn.fill({color: lastActiveColor});
+                })
+                .on('click', function () {
+                    interactive = true;
+                    activeBtn.fill(config.btnBarSelectedColour);
+                    staticBtn.fill(config.startFill);
+                    hide();
+                });
+
+            staticBtn.on('mouseover', function () {
+                staticBtn.fill({color: 'LightGray'});
+            })
+                .on('mouseout', function () {
+                    staticBtn.fill({color: lastStaticColor});
+                })
+                .on('click', function () {
+                    interactive = false;
+                    staticBtn.fill(config.btnBarSelectedColour);
+                    activeBtn.fill(config.startFill);
+                    unhide();
+                });
 
             return btnGroup;
         }
