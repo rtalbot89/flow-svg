@@ -246,7 +246,7 @@ var SVGFlow = (function () {
                     })
                         .font({size: config.tipFontSize}).move(config.tipMarginLeft, config.tipMarginTop);
 
-                    tg.rect(config.shapeWidth - (config.finishLeftMargin), tiptxt.bbox().height + (config.tipMarginTop * 2))
+                    var rct = tg.rect(config.shapeWidth - (config.finishLeftMargin), tiptxt.bbox().height + (config.tipMarginTop * 2))
                         .attr({
                             fill: config.tipFill,
                             stroke: config.tipStrokeColour,
@@ -255,6 +255,7 @@ var SVGFlow = (function () {
 
                     tg.add(tiptxt);
                     tg.x(config.finishLeftMargin / 2);
+                    tg.y(this.getAttribute('y') - rct.height());
                 })
                     .on('mouseout', function () {
                         tg.remove();
