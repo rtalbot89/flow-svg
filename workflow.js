@@ -74,7 +74,13 @@ var SVGFlow = (function () {
                     arrowHeadColor: userOpts.arrowHeadColor || arrowColour,
                     arrowTextColour: userOpts.arrowTextColour || '#fff',
                     arrowFontSize: userOpts.arrowFontSize || userOpts.defaultFontSize || defaultFontSize,
-                    arrowHeadOpacity: userOpts.arrowHeadOpacity || 1.0
+                    arrowHeadOpacity: userOpts.arrowHeadOpacity || 1.0,
+                    tipStrokeColour: userOpts.tipStrokeColour || shapeStrokeColour,
+                    tipStrokeWidth: userOpts.tipStrokeWidth || 0.1,
+                    tipFill: userOpts.tipFill || '#fff',
+                    tipFontSize: userOpts.tipFontSize || defaultFontSize,
+                    tipMarginTop: userOpts.tipMarginTop || 10,
+                    tipMarginLeft: userOpts.tipMarginLeft || 10,
                 };
             return defaults;
         }
@@ -152,13 +158,6 @@ var SVGFlow = (function () {
             return labelGroup;
         }
 
-        function showTip(x, y) {
-            var tg = chartGroup.group();
-            tg.rect(config.shapeWidth, 100).fill('white').opacity(0.5).stroke({width: 1});
-            tg.text('Hello world');
-            tg.move(x, y);
-        }
-
         function decision(options) {
             var shape, text,
                 group = chartGroup.group(),
@@ -191,7 +190,7 @@ var SVGFlow = (function () {
         }
 
         function finish(options) {
-            var tip, group = chartGroup.group()
+            var tip, tg, tiptxt, group = chartGroup.group()
                 .attr({
                     "class": "finish-group"
                 }),
@@ -230,34 +229,37 @@ var SVGFlow = (function () {
             }
             // Dealing with tips
             if (options.tip) {
-                console.log(options.tip);
-                
+
                 tip = group.text(options.tip.title)
                     .fill(config.finishLinkColour)
                     .font({size: config.finishFontSize})
                     .attr('cursor', 'pointer');
 
                 tip.move(config.finishLeftMargin, rect.height() - 25);
-                
-                var tg = group.group();
-                tg.rect(config.shapeWidth, 50).fill('white').opacity(0.5).stroke({width: 1});
-                tg.text('Hello world');
-                tg.hide();
 
-                tip.on('mouseover', function (event) {
-                  console.log(event);
-                  console.log(this.attributes[6].value);
-                  tg.dy(-30);
-                  //tg.move(group.x(), group.y() - this.attributes[6].value);
-                  //tg.move(group.x(), 100);
-                  tg.show();
+                tip.on('mouseover', function () {
+                    tg = group.group();
+                    tiptxt = group.text(function (add) {
+                        options.tip.text.forEach(function (l) {
+                            add.tspan(l).newLine();
+                        });
+                    })
+                        .font({size: config.tipFontSize}).move(config.tipMarginLeft, config.tipMarginTop);
+
+                    tg.rect(config.shapeWidth - (config.finishLeftMargin), tiptxt.bbox().height + (config.tipMarginTop * 2))
+                        .attr({
+                            fill: config.tipFill,
+                            stroke: config.tipStrokeColour,
+                            "class": "fc-tip"
+                        });
+
+                    tg.add(tiptxt);
+                    tg.x(config.finishLeftMargin / 2);
                 })
-                .on('mouseout', function(){
-                  tg.dy(30);
-                  tg.hide();
-                });
+                    .on('mouseout', function () {
+                        tg.remove();
+                    });
             }
-
             // Not sure about the -5 fudge factor
             content.move(config.finishLeftMargin, ((rect.height() -  content.bbox().height) / 2) - 5);
             return group;
@@ -865,6 +867,7 @@ var SVGFlow = (function () {
                 }
                 isPositioned.push(element.nextid);
             }
+            group.back();
             element.conngroup = group;
         }
 
@@ -1192,7 +1195,7 @@ var SVGFlow = (function () {
                     endln = [startln[0] + config.connectorLength, startln[1]];
                 }
 
-                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none').back();
+                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
             }
 
             if (element.noid) {
@@ -1233,7 +1236,7 @@ var SVGFlow = (function () {
             if (element.yesid) {
                 startln = element.yesOutPos;
                 endln = shapes[lookup[element.yes]].inNodePos;
-                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none').back();
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
             }
 
             if (element.noid) {
