@@ -6,7 +6,8 @@ var SVGFlow = (function () {
         function setParams(u) {
             userOpts = u;
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
-            return userOpts;
+            //console.log(userOpts);
+            //return userOpts;
         }
 
         function init() {
@@ -19,6 +20,7 @@ var SVGFlow = (function () {
                 darkText = 'rgb(51, 51, 51)',
                 defaultFontSize = userOpts.defaultFontSize || 12,
                 defaults = {
+                    showButtons: userOpts.showButtons || true,
                     minOpacity: userOpts.minOpacity || 0,
                     maxOpacity: userOpts.maxOpacity || 1,
                     btnBarHeight: userOpts.btnBarHeight || 40,
@@ -1267,7 +1269,8 @@ var SVGFlow = (function () {
             console.log(shapes);
             var btnBar;
             config = init();
-            config.showButtons = true;
+            //config.showButtons = false;
+            console.log(config.showButtons);
             if (config.showButtons === true) {
                 btnBar = buttonBar();
             }
