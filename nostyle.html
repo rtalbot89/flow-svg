@@ -27,11 +27,12 @@ a:hover {
 
 <script>
 ///////////////////// start flow chart ////////////////////////////////////////////////////////////
-    SVGFlow.draw(SVG('drawing').size(896, 1600));
+    SVGFlow.draw(SVG('drawing').size(900, 1600));
     SVGFlow.config({
         interactive: false,
         minOpacity: 0,
-        maxOpacity: 1.0
+        maxOpacity: 1.0,
+        connectorLength: 60,
     });
     SVGFlow.shapes(
         [
@@ -58,8 +59,13 @@ a:hover {
                 'Access paid option or is it an',
                 ' Open Access journal?'
 			],
+            //moveRight: 400,
 			yes: 'd1-y-y',
-			no: 'd1-y-n'
+			no: 'd1-y-n',
+			orient: {
+				yes: 'b',
+				no: 'r'
+			}
 		}, 
 		{
 			label: 'd1-y-y',
@@ -107,7 +113,7 @@ a:hover {
                 'WRAP and/or Subject',
                 'repository?'
             ],
-            //moveRight: 200,
+            //moveRight: 280,
             yes: 'd1-y-y-n-p',
 			no: 'd1-y-n-n',
 			orient: {
