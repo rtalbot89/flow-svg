@@ -1164,7 +1164,7 @@ var SVGFlow = (function () {
                 return [p1, p2, p3, p4, end];
             }
 
-            // see if it starts on the right and finishes on the left below
+            // see if it finishes on the left and below
             if ((start[0] > end[0]) && (start[1] < end[1])) {
                 p1 = start;
                 p2 = [start[0] + spacer, start[1]];
@@ -1173,6 +1173,16 @@ var SVGFlow = (function () {
                 p5 = [end[0] - spacer, end[1]];
 
                 return [p1, p2, p3, p4, p5, end];
+            }
+
+            // see if it finishes on the right and below
+            if ((start[0] < end[0]) && (start[1] < end[1])) {
+                p1 = start;
+                p2 = [start[0], start[1] + spacer];
+                p3 = [end[0], start[1] + spacer];
+
+                return [p1, p2, p3, end];
+
             }
             return [start, end];
         }
