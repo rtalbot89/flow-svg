@@ -758,28 +758,26 @@ var flowSVG = (function () {
                 te = element.svgyesid;
                 targetShape = shapes[lookup[element.yes]];
 
-                if (targetShape.inNodePos === undefined && targetShape.inNode === 't') {
+                if ( targetShape.inNode === 't') {
                     targetShape.inNodePos = [te.cx(), te.y()];
                 }
 
                 if (element.orient.yes === 'b') {
                     element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                    if (targetShape.inNodePos === undefined) {
+                  
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
                         }
-                    }
                 }
 
                 if (element.orient.yes === 'r') {
                     element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                    if (targetShape.inNodePos === undefined) {
+                 
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 isPositioned.push(element.yesid);
             }
@@ -791,24 +789,19 @@ var flowSVG = (function () {
                 if (element.orient.no === 'b') {
                     element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-
-                    if (targetShape.inNodePos === undefined) {
                         targetShape.inNodePos = [te.cx(), te.y()];
-                    }
                 }
 
                 if (element.orient.no === 'r') {
                     element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
-                    if (targetShape.inNodePos === undefined) {
                         if (targetShape.inNode === 't') {
                             targetShape.inNodePos = [te.cx(), te.y()];
                         }
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 isPositioned.push(element.noid);
             }
@@ -820,7 +813,6 @@ var flowSVG = (function () {
 
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                         if (targetShape.inNode === 't') {
                             te = element.svgnextid;
                             targetShape.inNodePos = [te.cx(), te.y()];
@@ -829,21 +821,18 @@ var flowSVG = (function () {
                             te = element.svgnoid;
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 if (element.orient.next === 'r') {
                     element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
                     te = element.svgnextid;
 
-                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                         if (targetShape.inNode === 't') {
                             targetShape.inNodePos = [te.cx(), te.y()];
                         }
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 isPositioned.push(element.nextid);
             }
@@ -858,28 +847,26 @@ var flowSVG = (function () {
                 te = shapes[lookup[element.yes]].svgshape;
                 targetShape = shapes[lookup[element.yes]];
 
-                if (targetShape.inNodePos === undefined && targetShape.inNode === 't') {
+                if (targetShape.inNode === 't') {
                     targetShape.inNodePos = [te.cx(), te.y()];
                 }
 
                 if (element.orient.yes === 'b') {
                     element.yesOutPos = [ce.cx(), ce.y() + ce.bbox().height];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                    if (targetShape.inNodePos === undefined) {
+                  
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
                         }
-                    }
                 }
 
                 if (element.orient.yes === 'r') {
                     element.yesOutPos = [ce.x() + ce.width(), ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                    if (targetShape.inNodePos === undefined) {
+               
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 isPositioned.push(element.yesid);
             }
@@ -891,24 +878,19 @@ var flowSVG = (function () {
                 if (element.orient.no === 'b') {
                     element.noOutPos = [ce.cx(), ce.y() + ce.bbox().height];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-
-                    if (targetShape.inNodePos === undefined) {
                         targetShape.inNodePos = [te.cx(), te.y()];
-                    }
                 }
 
                 if (element.orient.no === 'r') {
                     element.noOutPos = [ce.x() + ce.bbox().width, ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
-                    if (targetShape.inNodePos === undefined) {
                         if (targetShape.inNode === 't') {
                             targetShape.inNodePos = [te.cx(), te.y()];
                         }
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 isPositioned.push(element.noid);
             }
@@ -920,7 +902,6 @@ var flowSVG = (function () {
 
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                         if (targetShape.inNode === 't') {
                             te = shapes[lookup[element.next]].svgshape;
                             targetShape.inNodePos = [te.cx(), te.y()];
@@ -929,21 +910,18 @@ var flowSVG = (function () {
                             te = element.svgnoid;
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 if (element.orient.next === 'r') {
                     element.nextOutPos = [ce.x() + ce.bbox().width, ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
                     te = shapes[lookup[element.next]].svgshape;
 
-                    if (targetShape.inNodePos === undefined && targetShape.yesOutPos === undefined) {
                         if (targetShape.inNode === 't') {
                             targetShape.inNodePos = [te.cx(), te.y()];
                         }
                         if (targetShape.inNode === 'l') {
                             targetShape.inNodePos = [te.x(), te.cy()];
                         }
-                    }
                 }
                 isPositioned.push(element.nextid);
             }
@@ -1277,7 +1255,8 @@ var flowSVG = (function () {
             shapes.forEach(referringIds);
             shapes.forEach(positionShapes);
             if (interactive === true) {
-                shapes.forEach(nodePoints);
+             shapes.forEach(staticNodePoints);
+              //  shapes.forEach(nodePoints);
                 shapes.forEach(addConnectors);
                 shapes.forEach(addLabels);
                 shapes.forEach(addArrows);
