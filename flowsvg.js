@@ -13,7 +13,7 @@ var flowSVG = (function () {
         function init() {
           // Set defaults
             var w = userOpts.w || 180,
-                h = userOpts.w || 140,
+                h = userOpts.h || 140,
                 arrowColour = userOpts.arrowColour || 'grey',
                 shapeStrokeColour = 'rgb(66, 66, 66)',
                 lightText = '#fff',
@@ -24,16 +24,14 @@ var flowSVG = (function () {
                     minOpacity: userOpts.minOpacity || 0,
                     maxOpacity: userOpts.maxOpacity || 1,
                     btnBarHeight: userOpts.btnBarHeight || 40,
-                    btnBarWidth: userOpts.btnBarWidth || 87,
                     btnBarSelectedColour: userOpts.btnBarSelectedColour || 'black',
-                    shapeWidth: userOpts.shapeWidth || userOpts.w || w,
-                    shapeHeight: userOpts.shapeHeight || userOpts.h || h,
-                    baseUnit: userOpts.baseUnit || 80,
-                    gridCol: userOpts.gridCol || 80,
-                    rowHeight: userOpts.rowHeight || 20,
-                    leftMargin: userOpts.leftMargin || 0,
+                    btnBarHoverColour: userOpts.btnBarHoverColour || 'dimgrey',
+                    btnBarFontSize: userOpts.btnBarFontSize || defaultFontSize,
+                    btnBarRadius: userOpts.btnBarRadius || 10,
+                    shapeWidth: userOpts.shapeWidth  || w,
+                    shapeHeight: userOpts.shapeHeight  || h,
                     connectorLength: userOpts.connectorLength || 80,
-                    startWidth: userOpts.startWidth || userOpts.w || w,
+                    startWidth: userOpts.startWidth  || w,
                     startHeight: userOpts.startHeight || 40,
                     startCornerRadius: userOpts.startCornerRadius || 20,
                     startFill:  userOpts.startFill || arrowColour,
@@ -41,43 +39,41 @@ var flowSVG = (function () {
                     startStrokeColour: userOpts.startStrokeColour || 'rgb(66, 66, 66)',
                     startTextColour: userOpts.startTextColour || lightText,
                     startText: userOpts.startText || 'Start',
-                    startFontSize: userOpts.startFontSize || userOpts.defaultFontSize || defaultFontSize,
+                    startFontSize: userOpts.startFontSize || defaultFontSize,
                     decisionWidth: userOpts.decisionWidth || userOpts.w || w,
                     decisionHeight: userOpts.decisionHeight || userOpts.h || h,
                     decisionFill: userOpts.decisionFill || '#8b3572',
-                    decisionTextColour: userOpts.decisionTextColour || '#fff',
-                    decisionFontSize: userOpts.decisionFontSize || userOpts.defaultFontSize || defaultFontSize,
-                    finishTextColour: userOpts.finishTextColour || '#fff',
-                    finishWidth: userOpts.finishWidth || userOpts.w || w,
-                    finishHeight: userOpts.finishHeight || userOpts.h || h,
+                    decisionTextColour: userOpts.decisionTextColour || lightText,
+                    decisionFontSize: userOpts.decisionFontSize || defaultFontSize,
+                    finishTextColour: userOpts.finishTextColour ||  lightText,
+                    finishWidth: userOpts.finishWidth  || w,
+                    finishHeight: userOpts.finishHeight  || h,
                     finishLeftMargin: userOpts.finishLeftMargin || 20,
                     finishFill: userOpts.finishFill || '#0F6C7E',
-                    finishFontSize: userOpts.finishFontSize || userOpts.defaultFontSize || defaultFontSize,
+                    finishFontSize: userOpts.finishFontSize  || defaultFontSize,
                     finishLinkColour: userOpts.finishLinkColour || 'yellow',
-                    processWidth: userOpts.processWidth || userOpts.w || w,
-                    processHeight: userOpts.processHeight || userOpts.h || h,
+                    processWidth: userOpts.processWidth  || w,
+                    processHeight: userOpts.processHeight  || h,
                     processLeftMargin: userOpts.processLeftMargin || 20,
                     processFill: userOpts.processFill || '#fff',
                     processStrokeColour: userOpts.processStrokeColour || shapeStrokeColour,
                     processStrokeWidth: userOpts.processStrokeWidth || 0.1,
                     processTextColour: userOpts.processTextColour || darkText,
-                    processFontSize: userOpts.processFontSize || userOpts.defaultFontSize || defaultFontSize,
+                    processFontSize: userOpts.processFontSize  || defaultFontSize,
                     processLinkColour: userOpts.processLinkColour || 'darkblue',
                     labelWidth: userOpts.labelWidth || 30,
                     labelHeight: userOpts.labelHeight || 20,
                     labelRadius: userOpts.labelRadius || 5,
                     labelStroke: userOpts.labelStroke || 0.1,
                     labelFill: userOpts.labelFill || arrowColour,
-                    labelClickedFill: userOpts.labelClickedFill || 'black',
                     labelOpacity: userOpts.labelOpacity || 1.0,
-                    labelFontSize: userOpts.labelFontSize || userOpts.defaultFontSize || defaultFontSize,
+                    labelFontSize: userOpts.labelFontSize ||  defaultFontSize,
+                    labelTextColour: userOpts.labelTextColour ||  lightText,
                     arrowHeadHeight: userOpts.arrowHeadHeight || 20,
-                    arrowStroke: userOpts.arrowStroke ||  1.0,
-                    arrowLineColour: userOpts.arrowLineColour || arrowColour,
                     arrowHeadColor: userOpts.arrowHeadColor || arrowColour,
-                    arrowTextColour: userOpts.arrowTextColour || '#fff',
-                    arrowFontSize: userOpts.arrowFontSize || userOpts.defaultFontSize || defaultFontSize,
                     arrowHeadOpacity: userOpts.arrowHeadOpacity || 1.0,
+                    connectorStrokeWidth: userOpts.connectorStrokeWidth || 1.5,
+                    connectorStrokeColour: userOpts.connectorStrokeColour || arrowColour,
                     tipStrokeColour: userOpts.tipStrokeColour || shapeStrokeColour,
                     tipStrokeWidth: userOpts.tipStrokeWidth || 0.1,
                     tipFill: userOpts.tipFill || '#fff',
@@ -121,8 +117,8 @@ var flowSVG = (function () {
                 line = draw
                     .line(0, 0, 0, config.connectorLength - config.arrowHeadHeight)
                     .attr({
-                        'stroke-width': config.arrowStroke,
-                        'stroke': config.arrowLineColour
+                        'stroke-width':  config.connectorStrokeWidth,
+                        'stroke': config.connectorStrokeColour
                     });
             group.add(line).add(ah);
 
@@ -150,9 +146,9 @@ var flowSVG = (function () {
             );
 
             text = labelGroup.text(t).attr({
-                fill: config.arrowTextColour,
+                fill: config.labelTextColour,
                 'text-anchor': 'middle',
-                'font-size' : config.arrowFontSize
+                'font-size' : config.labelFontSize
             });
             text.cy(label.cy());
             if (interactive === true) {
@@ -409,34 +405,36 @@ var flowSVG = (function () {
                 .attr({
                     "cursor": "pointer"
                 }),
+                
+                btnBarWidth = (config.startWidth - 5) / 2,
                 activeBtn = btnGroup
-                .rect(config.btnBarWidth, config.btnBarHeight)
+                .rect(btnBarWidth, config.btnBarHeight)
                 .fill(config.startFill)
-                .radius(10);
+                .radius(config.btnBarRadius);
 
             btnGroup.text('Interactive').attr(
                 {'fill' : config.startTextColour,
-                    'font-size': '12',
+                    'font-size': config.btnBarFontSize,
                     'pointer-events': 'none'
                     }
             )
                 .cy(config.btnBarHeight / 2)
-                .cx(config.btnBarWidth / 2);
+                .cx(btnBarWidth / 2);
 
             staticBtn = btnGroup
-                .rect(config.btnBarWidth, config.btnBarHeight)
+                .rect(btnBarWidth, config.btnBarHeight)
                 .fill(config.startFill)
-                .radius(10).move(config.btnBarWidth + 5, 0);
+                .radius(config.btnBarRadius).move(btnBarWidth + 5, 0);
 
             btnGroup.text('Static').attr(
                 {
                     'fill' : config.startTextColour,
-                    'font-size': '12',
+                    'font-size':  config.btnBarFontSize,
                     'pointer-events': 'none'
                 }
             )
                 .cy(config.btnBarHeight / 2)
-                .cx((config.btnBarWidth * 1.5) + 5);
+                .cx((btnBarWidth * 1.5) + 5);
 
             if (interactive === true) {
                 activeBtn.fill(config.btnBarSelectedColour);
@@ -450,7 +448,7 @@ var flowSVG = (function () {
             lastStaticColor = staticBtn.attr('fill');
 
             activeBtn.on('mouseover', function () {
-                activeBtn.fill({color: 'LightGray'});
+                activeBtn.fill({color: config.btnBarHoverColour});
             })
                 .on('mouseout', function () {
                     activeBtn.fill({color: lastActiveColor});
@@ -460,10 +458,14 @@ var flowSVG = (function () {
                     activeBtn.fill(config.btnBarSelectedColour);
                     staticBtn.fill(config.startFill);
                     hide();
+                })
+                 .on('mousedown', function () {
+                    activeBtn.fill(config.btnBarSelectedColour);
                 });
+                
 
             staticBtn.on('mouseover', function () {
-                staticBtn.fill({color: 'LightGray'});
+                staticBtn.fill({color: config.btnBarHoverColour});
             })
                 .on('mouseout', function () {
                     staticBtn.fill({color: lastStaticColor});
@@ -473,6 +475,9 @@ var flowSVG = (function () {
                     staticBtn.fill(config.btnBarSelectedColour);
                     activeBtn.fill(config.startFill);
                     unhide();
+                })
+                  .on('mousedown', function () {
+                    staticBtn.fill(config.btnBarSelectedColour);
                 });
 
             return btnGroup;
@@ -1134,7 +1139,7 @@ var flowSVG = (function () {
 
         function angleLine(start, end, element) {
 
-            var e = element.svgshape, p1, p2, p3, p4, p5, spacer = config.arrowHeadHeight * 2;
+            var e = element.svgshape, p1, p2, p3, p4, p5, spacer = config.arrowHeadHeight * 2, endPos;
 
                 // See if it's at the bottom
             if (start[1] === e.y() + e.height()) {
@@ -1154,7 +1159,8 @@ var flowSVG = (function () {
                 if (end[1] <= start[1]) {
                     p3 = [end[0], end[1] + spacer];
                 }
-                return [p1, p2, p3, end];
+                endPos = [end[0],  end[1] - config.arrowHeadHeight];
+                return [p1, p2, p3, endPos ];
             }
 
             // see if out is on the right and in is at the top
@@ -1163,7 +1169,9 @@ var flowSVG = (function () {
                 p2 = [start[0] + spacer, start[1]];
                 p3 = [start[0] + spacer, end[1] - spacer];
                 p4 = [end[0], end[1] - spacer];
-                return [p1, p2, p3, p4, end];
+                
+                 endPos = [end[0],  end[1] - config.arrowHeadHeight];
+                return [p1, p2, p3, p4, endPos];
             }
 
             // see if it finishes on the left and below
@@ -1173,8 +1181,9 @@ var flowSVG = (function () {
                 p3 = [start[0] + spacer, end[1] - (config.shapeHeight / 2) - spacer];
                 p4 = [end[0] - spacer, end[1] - (config.shapeHeight / 2) - spacer];
                 p5 = [end[0] - spacer, end[1]];
-
-                return [p1, p2, p3, p4, p5, end];
+                
+                endPos = [end[0],  end[1] - config.arrowHeadHeight];
+                return [p1, p2, p3, p4, p5, endPos];
             }
 
             // see if it finishes on the right and below
@@ -1182,11 +1191,20 @@ var flowSVG = (function () {
                 p1 = start;
                 p2 = [start[0], start[1] + spacer];
                 p3 = [end[0], start[1] + spacer];
-
-                return [p1, p2, p3, end];
+               
+                endPos = [end[0],  end[1] - config.arrowHeadHeight];
+                return [p1, p2, p3, endPos];
 
             }
-            return [start, end];
+            
+            if (start[1] < end[1]) {
+                  endPos = [end[0],  end[1] - config.arrowHeadHeight];
+            } else if (start[0] < end[0]) {
+                  endPos = [end[0]  - config.arrowHeadHeight ,  end[1]];
+            }
+            
+          
+            return [start, endPos];
         }
 
         function addConnectors(element) {
@@ -1196,45 +1214,45 @@ var flowSVG = (function () {
                 startln = element.yesOutPos;
 
                 if (element.orient.yes === 'b') {
-                    endln = [startln[0], startln[1] + config.connectorLength];
+                    endln = [startln[0], startln[1] + config.connectorLength ];
                 }
 
                 if (element.orient.yes === 'r') {
                     endln = [startln[0] + config.connectorLength, startln[1]];
                 }
 
-                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
 
             if (element.noid) {
                 startln = element.noOutPos;
 
                 if (element.orient.no === 'b') {
-                    endln = [startln[0], startln[1] + config.connectorLength];
+                    endln = [startln[0], startln[1] + config.connectorLength ];
                 }
 
                 if (element.orient.no === 'r') {
-                    endln = [startln[0] + config.connectorLength, startln[1]];
+                    endln = [startln[0] + config.connectorLength, startln[1] ];
                 }
 
-                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width:  config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
 
             if (element.nextid) {
                 startln = element.nextOutPos;
 
                 if (element.orient.next === 'b') {
-                    endln = [startln[0], startln[1] + config.connectorLength];
+                    endln = [startln[0], startln[1] + config.connectorLength ];
                 }
 
                 if (element.orient.next === 'r') {
-                    endln = [startln[0] + config.connectorLength, startln[1]];
+                    endln = [startln[0] + config.connectorLength, startln[1] ];
                 }
 
                 if (endln === undefined) {
                     endln = shapes[lookup[element.next]].yesOutPos;
                 }
-                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+                element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width:  config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
         }
 
@@ -1244,13 +1262,13 @@ var flowSVG = (function () {
             if (element.yesid) {
                 startln = element.yesOutPos;
                 endln = shapes[lookup[element.yes]].inNodePos;
-                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width:  config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
 
             if (element.noid) {
                 startln = element.noOutPos;
                 endln = shapes[lookup[element.no]].inNodePos;
-                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width:  config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
 
             if (element.nextid) {
@@ -1260,17 +1278,15 @@ var flowSVG = (function () {
                 if (endln === undefined) {
                     endln = shapes[lookup[element.next]].yesOutPos;
                 }
-                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width: 1}).fill('none');
+                element.conngroup.polyline(angleLine(startln, endln, element)).stroke({ width:  config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
         }
 
         layoutShapes = function (s) {
             shapes = s;
-            console.log(shapes);
             var btnBar;
             config = init();
-            //config.showButtons = false;
-            console.log(config.showButtons);
+           // console.log(config.showButtons);
             if (config.showButtons === true) {
                 btnBar = buttonBar();
             }
