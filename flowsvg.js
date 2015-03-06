@@ -6,7 +6,6 @@ var flowSVG = (function () {
         function setParams(u) {
             userOpts = u;
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
-            //console.log(userOpts);
             //return userOpts;
         }
 
@@ -79,7 +78,7 @@ var flowSVG = (function () {
                     tipFill: userOpts.tipFill || '#fff',
                     tipFontSize: userOpts.tipFontSize || defaultFontSize,
                     tipMarginTop: userOpts.tipMarginTop || 10,
-                    tipMarginLeft: userOpts.tipMarginLeft || 10,
+                    tipMarginLeft: userOpts.tipMarginLeft || 10
                 };
             return defaults;
         }
@@ -405,7 +404,7 @@ var flowSVG = (function () {
                 .attr({
                     "cursor": "pointer"
                 }),
-                
+
                 btnBarWidth = (config.startWidth - 5) / 2,
                 activeBtn = btnGroup
                 .rect(btnBarWidth, config.btnBarHeight)
@@ -462,7 +461,6 @@ var flowSVG = (function () {
                  .on('mousedown', function () {
                     activeBtn.fill(config.btnBarSelectedColour);
                 });
-                
 
             staticBtn.on('mouseover', function () {
                 staticBtn.fill({color: config.btnBarHoverColour});
@@ -616,48 +614,42 @@ var flowSVG = (function () {
             }
         }
 
+        function hideShapes (index) {
+            for (var j = index; j < clicked.length; j += 1) {
+                        shapes[lookup[clicked[j]]].show = false;
+                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
+                        if (shapes[lookup[clicked[j]]].noBtn) {
+                            shapes[lookup[clicked[j]]].noBtn.hide();
+                        }
+                        if (shapes[lookup[clicked[j]]].yesBtn) {
+                            shapes[lookup[clicked[j]]].yesBtn.hide();
+                        }
+                    }
+              clicked.splice(index, clicked.length );
+        }
+      
         toggleNext = function (e, choice) {
             var nextlabel, clckindex, j;
 
             if (choice === 'yes') {
                 /* This toggles the visiblity if this is the second click
                     on the button, i.e. it was already visible */
-
                 if (shapes[lookup[e.yes]].show === true && shapes[lookup[e.no]].show === false) {
-
+               // if (shapes[lookup[e.yes]].show === true) {
                     clckindex = clicked.indexOf(e.yes);
-
-                    for (j = clckindex; j < clicked.length; j += 1) {
-                        shapes[lookup[clicked[j]]].show = false;
-                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
-                        if (shapes[lookup[clicked[j]]].noBtn) {
-                            shapes[lookup[clicked[j]]].noBtn.hide();
-                        }
-                        if (shapes[lookup[clicked[j]]].yesBtn) {
-                            shapes[lookup[clicked[j]]].yesBtn.hide();
-                        }
-                    }
-                    clicked.splice(clckindex, clicked.length - 1);
+                    hideShapes(clckindex);
                     return;
                 }
-
+                
                 clckindex = clicked.indexOf(e.no);
               // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
-                    for (j = clckindex; j < clicked.length; j += 1) {
-                        shapes[lookup[clicked[j]]].show = false;
-                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
-                        if (shapes[lookup[clicked[j]]].noBtn) {
-                            shapes[lookup[clicked[j]]].noBtn.hide();
-                        }
-                        if (shapes[lookup[clicked[j]]].yesBtn) {
-                            shapes[lookup[clicked[j]]].yesBtn.hide();
-                        }
-                    }
-                    clicked.splice(clckindex, clicked.length - 1);
+                    hideShapes(clckindex);
                 }
-                clicked.push(e.yes);
-
+                if (clicked.indexOf(e.yes) === -1) {
+                      clicked.push(e.yes);
+                }
+              
                 if (e.orient.yes === 'b') {
                     e.svgyesid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height);
 
@@ -699,40 +691,25 @@ var flowSVG = (function () {
             }
 
             if (choice === 'no') {
-                if (shapes[lookup[e.no]].show === true && shapes[lookup[e.yes]].show === false) {
+               // if (shapes[lookup[e.no]].show === true && shapes[lookup[e.yes]].show === false) {
+                   if (shapes[lookup[e.no]].show === true ) {
                     clckindex = clicked.indexOf(e.no);
-
-                    for (j = clckindex; j < clicked.length; j += 1) {
-                        shapes[lookup[clicked[j]]].show = false;
-                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
-                        if (shapes[lookup[clicked[j]]].noBtn) {
-                            shapes[lookup[clicked[j]]].noBtn.hide();
-                        }
-                        if (shapes[lookup[clicked[j]]].yesBtn) {
-                            shapes[lookup[clicked[j]]].yesBtn.hide();
-                        }
-                    }
-                    clicked.splice(clckindex, clicked.length - 1);
+                    //console.log(clckindex);
+                    //console.log(clicked);
+                    hideShapes(clckindex);
+                    //console.log(clicked);
                     return;
                 }
 
                 clckindex = clicked.indexOf(e.yes);
               // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
-                    for (j = clckindex; j < clicked.length; j += 1) {
-                        shapes[lookup[clicked[j]]].show = false;
-                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
-                        if (shapes[lookup[clicked[j]]].noBtn) {
-                            shapes[lookup[clicked[j]]].noBtn.hide();
-                        }
-                        if (shapes[lookup[clicked[j]]].yesBtn) {
-                            shapes[lookup[clicked[j]]].yesBtn.hide();
-                        }
-                    }
-
-                    clicked.splice(clckindex, clicked.length - 1);
+                   hideShapes(clckindex);
                 }
-                clicked.push(e.no);
+                
+                if (clicked.indexOf(e.no) === -1 ) {
+                     clicked.push(e.no);
+                }
 
                 if (e.orient.no === 'b') {
                     e.svgnoid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height);
@@ -1169,8 +1146,8 @@ var flowSVG = (function () {
                 p2 = [start[0] + spacer, start[1]];
                 p3 = [start[0] + spacer, end[1] - spacer];
                 p4 = [end[0], end[1] - spacer];
-                
-                 endPos = [end[0],  end[1] - config.arrowHeadHeight];
+
+                endPos = [end[0],  end[1] - config.arrowHeadHeight];
                 return [p1, p2, p3, p4, endPos];
             }
 
@@ -1181,7 +1158,7 @@ var flowSVG = (function () {
                 p3 = [start[0] + spacer, end[1] - (config.shapeHeight / 2) - spacer];
                 p4 = [end[0] - spacer, end[1] - (config.shapeHeight / 2) - spacer];
                 p5 = [end[0] - spacer, end[1]];
-                
+
                 endPos = [end[0],  end[1] - config.arrowHeadHeight];
                 return [p1, p2, p3, p4, p5, endPos];
             }
@@ -1191,19 +1168,18 @@ var flowSVG = (function () {
                 p1 = start;
                 p2 = [start[0], start[1] + spacer];
                 p3 = [end[0], start[1] + spacer];
-               
+
                 endPos = [end[0],  end[1] - config.arrowHeadHeight];
                 return [p1, p2, p3, endPos];
 
             }
-            
+
             if (start[1] < end[1]) {
-                  endPos = [end[0],  end[1] - config.arrowHeadHeight];
+                endPos = [end[0],  end[1] - config.arrowHeadHeight];
             } else if (start[0] < end[0]) {
-                  endPos = [end[0]  - config.arrowHeadHeight ,  end[1]];
+                endPos = [end[0]  - config.arrowHeadHeight,  end[1]];
             }
-            
-          
+
             return [start, endPos];
         }
 
@@ -1286,7 +1262,6 @@ var flowSVG = (function () {
             shapes = s;
             var btnBar;
             config = init();
-           // console.log(config.showButtons);
             if (config.showButtons === true) {
                 btnBar = buttonBar();
             }

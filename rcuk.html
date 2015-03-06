@@ -31,29 +31,29 @@ a:hover {
     flowSVG.config({
         interactive: false,
         showButtons: false,
-        minOpacity: 0,
+        minOpacity: 0.1,
         maxOpacity: 1.0,
         connectorLength: 60
     });
     flowSVG.shapes(
         [
             {
-			label: 'd1',
+			label: 'knowPolicy',
 			type: 'decision',
 			text: [
 				'Do you know the ',
                 'Open Access policy',
                 'of the journal?'
 			],
-			yes: 'd1-y',
-			no: 'd1-n',
+			yes: 'hasOAPolicy',
+			no: 'checkPolicy',
 			orient: {
 				yes: 'b',
 				no: 'r'
 			}
 		}, 
         {
-			label: 'd1-y',
+			label: 'hasOAPolicy',
 			type: 'decision',
 			text: [
 				'Does it have Open',
@@ -61,29 +61,29 @@ a:hover {
                 ' Open Access journal?'
 			],
             //moveRight: 400,
-			yes: 'd1-y-y',
-			no: 'd1-y-n',
+			yes: 'CCOffered',
+			no: 'canWrap',
 			orient: {
 				yes: 'b',
 				no: 'r'
 			}
 		}, 
 		{
-			label: 'd1-y-y',
+			label: 'CCOffered',
 			type: 'decision',
 			text: [
                 'Creative Commons licence',
                 'CC-BY offered?'
             ],
-            yes: 'd1-y-y-y',
-            no:'d1-y-y-p',
+            yes: 'canComply',
+            no:'checkGreen',
 			orient: {
 				yes: 'b',
 				no: 'r'
 			}
 		},
         {
-            label: 'd1-y-y-y',
+            label: 'canComply',
             type: 'finish',
             text: [
                 'Great - can comply. ',
@@ -107,7 +107,7 @@ a:hover {
           ]}
         },
 		{
-			label: 'd1-y-n',
+			label: 'canWrap',
 			type: 'decision',
 			text: [
                 'Can you archive in ',
@@ -115,15 +115,15 @@ a:hover {
                 'repository?'
             ],
             //moveRight: 280,
-            yes: 'd1-y-y-n-p',
-			no: 'd1-y-n-n',
+            yes: 'checkTimeLimits',
+			no: 'doNotComply',
 			orient: {
 				yes: 'b',
 				no: 'r'
 			}
 		}, 
         {
-            label: 'd1-y-n-n',
+            label: 'doNotComply',
             type: 'finish',
             text: [
                 'You do not comply at all. ',
@@ -143,20 +143,20 @@ a:hover {
             ]}
         },       
         {
-			label: 'd1-y-y-p',
+			label: 'checkGreen',
 			type: 'process',
 			text: [
                 'Check the journal\'s policy',
                 'on the green route'
             ],
-			next: 'd1-y-y-n',
+			next: 'journalAllows',
 		}, 
         {
-            label: 'd1-y-y-n',
+            label: 'journalAllows',
             type: 'decision',
             text: ['Does the journal allow this?'],
-            yes: 'd1-y-y-n-p',
-            no: 'd1-y-y-n-n',
+            yes: 'checkTimeLimits',
+            no: 'cannotComply',
             orient: {
                 yes:'r',
                 no: 'b'
@@ -164,7 +164,7 @@ a:hover {
             
         },
         {
-			label: 'd1-y-y-n-p',
+			label: 'checkTimeLimits',
 			type: 'process',
 			text: [
                 'Make sure the time limits',
@@ -172,11 +172,11 @@ a:hover {
                 '6 month Stem',
                 '12 month AHSS'
             ],
-            next: 'd1-y-y-n-p-y',
+            next: 'depositInWrap',
             orient: {next: 'b'}
         },
         {
-            label: 'd1-y-y-n-n',
+            label: 'cannotComply',
             type: 'finish',
             text: [
                 'You cannot comply with',
@@ -197,7 +197,7 @@ a:hover {
             ]}
         },
         {
-            label: 'd1-y-y-n-p-y',
+            label: 'depositInWrap',
             type: 'finish',
             text: [
                 'Deposit in WRAP here or ',
@@ -219,7 +219,7 @@ a:hover {
             ]}
         },
 		{
-			label: 'd1-n',
+			label: 'checkPolicy',
 			type: 'process',
 			text: [
 				'Check journal website',
@@ -232,7 +232,7 @@ a:hover {
                     target: '_blank'
                 }
             ],
-			next: 'd1-y',
+			next: 'hasOAPolicy',
             orient: {
                 next: 'b'
             }
