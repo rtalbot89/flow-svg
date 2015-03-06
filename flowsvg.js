@@ -1255,8 +1255,7 @@ var flowSVG = (function () {
             shapes.forEach(referringIds);
             shapes.forEach(positionShapes);
             if (interactive === true) {
-             shapes.forEach(staticNodePoints);
-              //  shapes.forEach(nodePoints);
+               shapes.forEach(nodePoints);
                 shapes.forEach(addConnectors);
                 shapes.forEach(addLabels);
                 shapes.forEach(addArrows);
