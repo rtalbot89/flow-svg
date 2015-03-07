@@ -6,7 +6,6 @@ var flowSVG = (function () {
         function setParams(u) {
             userOpts = u;
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
-            //return userOpts;
         }
 
         function init() {
@@ -150,9 +149,7 @@ var flowSVG = (function () {
                 'font-size' : config.labelFontSize
             });
             text.cy(label.cy());
-            if (interactive === true) {
-                labelGroup.hide();
-            }
+
             return labelGroup;
         }
 
@@ -350,27 +347,18 @@ var flowSVG = (function () {
                     if (shapes[0].show === false) {
                         shapes[0].show = true;
                         firstShape.animate().opacity(config.maxOpacity);
+                        firstShape.attr('visibility', 'visible');
 
-                        if (shapes[0].yesBtn) {
-                            shapes[0].yesBtn.show();
-                        }
-
-                        if (shapes[0].noBtn) {
-                            shapes[0].noBtn.show();
-                        }
                     } else {
+
                         firstShape.animate().opacity(config.minOpacity);
+                        firstShape.attr('visibility', 'hidden');
                         shapes[0].show = false;
 
-                        if (shapes[0].yesBtn) {
-                            shapes[0].yesBtn.hide();
-                        }
-                        if (shapes[0].noBtn) {
-                            shapes[0].noBtn.hide();
-                        }
                         for (k = 0; k < clicked.length; k += 1) {
                             shapes[lookup[clicked[k]]].svgid.animate().opacity(config.minOpacity);
                             shapes[lookup[clicked[k]]].show = false;
+                            shapes[lookup[clicked[k]]].attr('visibility', 'hidden');
                         }
                         clicked.splice(0, clicked.length - 1);
                     }
@@ -495,6 +483,7 @@ var flowSVG = (function () {
                     shape.opacity(config.maxOpacity);
                 } else {
                     element.show = false;
+                    shape.attr('visibility', 'hidden');
                     shape.opacity(config.minOpacity);
                 }
             } else {
@@ -531,6 +520,7 @@ var flowSVG = (function () {
                     shapes[next].previd = element.id;
                     shapes[next].prev = element.label;
                     shapes[next].svgprevid = SVG.get(element.id);
+
                     if (element.orient.yes === 'b') {
                         shapes[next].isBelow = element.id;
                         shapes[next].svgisBelow = SVG.get(element.id);
@@ -548,6 +538,7 @@ var flowSVG = (function () {
                     shapes[next].previd = element.id;
                     shapes[next].prev = element.label;
                     shapes[next].svgprevid = SVG.get(element.id);
+
                     if (element.orient.no === 'b') {
                         shapes[next].isBelow = element.id;
                         shapes[next].svgisBelow = SVG.get(element.id);
@@ -565,6 +556,7 @@ var flowSVG = (function () {
                     shapes[next].previd = element.id;
                     shapes[next].prev = element.label;
                     shapes[next].svgprevid = SVG.get(element.id);
+
                     if (element.orient.next === 'b') {
                         shapes[next].isBelow = element.id;
                         shapes[next].svgisBelow = SVG.get(element.id);
@@ -614,24 +606,22 @@ var flowSVG = (function () {
             }
         }
 
-        function hideShapes (index) {
-            for (var j = index; j < clicked.length; j += 1) {
-                        shapes[lookup[clicked[j]]].show = false;
-                        shapes[lookup[clicked[j]]].svgid.animate().opacity(config.minOpacity);
-                        if (shapes[lookup[clicked[j]]].noBtn) {
-                            shapes[lookup[clicked[j]]].noBtn.hide();
-                        }
-                        if (shapes[lookup[clicked[j]]].yesBtn) {
-                            shapes[lookup[clicked[j]]].yesBtn.hide();
-                        }
-                    }
-              clicked.splice(index, clicked.length );
+        function hideShapes(index) {
+            var j, sp;
+            for (j = index; j < clicked.length; j += 1) {
+                sp = shapes[lookup[clicked[j]]];
+                sp.show = false;
+                sp.svgid.animate().opacity(config.minOpacity);
+                sp.svgid.attr('visibility', 'hidden');
+            }
+            clicked.splice(index, clicked.length);
         }
-      
+
         toggleNext = function (e, choice) {
-            var nextlabel, clckindex, j;
+            var nextlabel, clckindex;
 
             if (choice === 'yes') {
+                //console.log(e.yesBtn.parent.opacity());
                 /* This toggles the visiblity if this is the second click
                     on the button, i.e. it was already visible */
                 if (shapes[lookup[e.yes]].show === true && shapes[lookup[e.no]].show === false) {
@@ -640,16 +630,16 @@ var flowSVG = (function () {
                     hideShapes(clckindex);
                     return;
                 }
-                
+
                 clckindex = clicked.indexOf(e.no);
               // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
                     hideShapes(clckindex);
                 }
                 if (clicked.indexOf(e.yes) === -1) {
-                      clicked.push(e.yes);
+                    clicked.push(e.yes);
                 }
-              
+
                 if (e.orient.yes === 'b') {
                     e.svgyesid.move(e.svgid.x(), e.svgid.y() + e.svgid.bbox().height);
 
@@ -664,51 +654,38 @@ var flowSVG = (function () {
                     }
                 }
 
-                if (shapes[lookup[e.yes]].noBtn) {
-                    shapes[lookup[e.yes]].noBtn.show();
-                }
-                if (shapes[lookup[e.yes]].yesBtn) {
-                    shapes[lookup[e.yes]].yesBtn.show();
-                }
-
                 e.svgyesid.animate().opacity(config.maxOpacity);
+                e.svgyesid.attr('visibility', 'visible');
                 shapes[lookup[e.yes]].show = true;
                 shapes[lookup[e.no]].svgid.animate().opacity(config.minOpacity);
+                shapes[lookup[e.no]].svgid.attr('visibility', 'hidden');
                 shapes[lookup[e.no]].show = false;
 
                 if (shapes[lookup[e.yes]].next !== undefined) {
                     nextlabel = shapes[lookup[e.yes]].next;
                     clicked.push(nextlabel);
                     shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
+                    shapes[lookup[nextlabel]].svgid.attr('visibility', 'visible');
                     shapes[lookup[nextlabel]].show = true;
-                    if (shapes[lookup[nextlabel]].noBtn) {
-                        shapes[lookup[nextlabel]].noBtn.show();
-                    }
-                    if (shapes[lookup[nextlabel]].yesBtn) {
-                        shapes[lookup[nextlabel]].yesBtn.show();
-                    }
                 }
             }
 
             if (choice === 'no') {
                // if (shapes[lookup[e.no]].show === true && shapes[lookup[e.yes]].show === false) {
-                   if (shapes[lookup[e.no]].show === true ) {
+                if (shapes[lookup[e.no]].show === true) {
                     clckindex = clicked.indexOf(e.no);
-                    //console.log(clckindex);
-                    //console.log(clicked);
                     hideShapes(clckindex);
-                    //console.log(clicked);
                     return;
                 }
 
                 clckindex = clicked.indexOf(e.yes);
               // if clckindex is more than -1 this element was clicked before
                 if (clckindex > -1) {
-                   hideShapes(clckindex);
+                    hideShapes(clckindex);
                 }
-                
-                if (clicked.indexOf(e.no) === -1 ) {
-                     clicked.push(e.no);
+
+                if (clicked.indexOf(e.no) === -1) {
+                    clicked.push(e.no);
                 }
 
                 if (e.orient.no === 'b') {
@@ -725,27 +702,16 @@ var flowSVG = (function () {
                     }
                 }
 
-                if (shapes[lookup[e.no]].noBtn) {
-                    shapes[lookup[e.no]].noBtn.show();
-                }
-                if (shapes[lookup[e.no]].yesBtn) {
-                    shapes[lookup[e.no]].yesBtn.show();
-                }
-
                 e.svgnoid.animate().opacity(config.maxOpacity);
+                e.svgnoid.attr('visibility', 'visible');
                 shapes[lookup[e.no]].show = true;
 
                 if (shapes[lookup[e.no]].next !== undefined) {
                     nextlabel = shapes[lookup[e.no]].next;
                     clicked.push(nextlabel);
-                    if (shapes[lookup[nextlabel]].noBtn) {
-                        shapes[lookup[nextlabel]].noBtn.show();
-                    }
-                    if (shapes[lookup[nextlabel]].yesBtn) {
-                        shapes[lookup[nextlabel]].yesBtn.show();
-                    }
                     shapes[lookup[nextlabel]].show = true;
                     shapes[lookup[nextlabel]].svgid.animate().opacity(config.maxOpacity);
+                    shapes[lookup[nextlabel]].svgid.attr('visibility', 'visible');
                 }
             }
         };
@@ -758,26 +724,26 @@ var flowSVG = (function () {
                 te = element.svgyesid;
                 targetShape = shapes[lookup[element.yes]];
 
-                if ( targetShape.inNode === 't') {
+                if (targetShape.inNode === 't') {
                     targetShape.inNodePos = [te.cx(), te.y()];
                 }
 
                 if (element.orient.yes === 'b') {
                     element.yesOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                  
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
-                        }
+
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
+                    }
                 }
 
                 if (element.orient.yes === 'r') {
                     element.yesOutPos = [ce.x() + ce.get(0).width(), ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-                 
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 isPositioned.push(element.yesid);
             }
@@ -789,19 +755,19 @@ var flowSVG = (function () {
                 if (element.orient.no === 'b') {
                     element.noOutPos = [ce.cx(), ce.cy() + ce.get(0).cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                        targetShape.inNodePos = [te.cx(), te.y()];
+                    targetShape.inNodePos = [te.cx(), te.y()];
                 }
 
                 if (element.orient.no === 'r') {
                     element.noOutPos = [ce.cx() + ce.get(0).cx(), ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
-                        if (targetShape.inNode === 't') {
-                            targetShape.inNodePos = [te.cx(), te.y()];
-                        }
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+                    if (targetShape.inNode === 't') {
+                        targetShape.inNodePos = [te.cx(), te.y()];
+                    }
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 isPositioned.push(element.noid);
             }
@@ -813,26 +779,26 @@ var flowSVG = (function () {
 
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                        if (targetShape.inNode === 't') {
-                            te = element.svgnextid;
-                            targetShape.inNodePos = [te.cx(), te.y()];
-                        }
-                        if (targetShape.inNode === 'l') {
-                            te = element.svgnoid;
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+                    if (targetShape.inNode === 't') {
+                        te = element.svgnextid;
+                        targetShape.inNodePos = [te.cx(), te.y()];
+                    }
+                    if (targetShape.inNode === 'l') {
+                        te = element.svgnoid;
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 if (element.orient.next === 'r') {
                     element.nextOutPos = [ce.x() + ce.get(0).width(), ce.y() + ce.get(0).cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
                     te = element.svgnextid;
 
-                        if (targetShape.inNode === 't') {
-                            targetShape.inNodePos = [te.cx(), te.y()];
-                        }
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+                    if (targetShape.inNode === 't') {
+                        targetShape.inNodePos = [te.cx(), te.y()];
+                    }
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 isPositioned.push(element.nextid);
             }
@@ -854,19 +820,19 @@ var flowSVG = (function () {
                 if (element.orient.yes === 'b') {
                     element.yesOutPos = [ce.cx(), ce.y() + ce.bbox().height];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                  
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
-                        }
+
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x() - config.arrowHeadHeight, te.cy()];
+                    }
                 }
 
                 if (element.orient.yes === 'r') {
                     element.yesOutPos = [ce.x() + ce.width(), ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
-               
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 isPositioned.push(element.yesid);
             }
@@ -878,19 +844,19 @@ var flowSVG = (function () {
                 if (element.orient.no === 'b') {
                     element.noOutPos = [ce.cx(), ce.y() + ce.bbox().height];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
-                        targetShape.inNodePos = [te.cx(), te.y()];
+                    targetShape.inNodePos = [te.cx(), te.y()];
                 }
 
                 if (element.orient.no === 'r') {
                     element.noOutPos = [ce.x() + ce.bbox().width, ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
 
-                        if (targetShape.inNode === 't') {
-                            targetShape.inNodePos = [te.cx(), te.y()];
-                        }
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+                    if (targetShape.inNode === 't') {
+                        targetShape.inNodePos = [te.cx(), te.y()];
+                    }
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 isPositioned.push(element.noid);
             }
@@ -902,26 +868,26 @@ var flowSVG = (function () {
 
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 't';
 
-                        if (targetShape.inNode === 't') {
-                            te = shapes[lookup[element.next]].svgshape;
-                            targetShape.inNodePos = [te.cx(), te.y()];
-                        }
-                        if (targetShape.inNode === 'l') {
-                            te = element.svgnoid;
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+                    if (targetShape.inNode === 't') {
+                        te = shapes[lookup[element.next]].svgshape;
+                        targetShape.inNodePos = [te.cx(), te.y()];
+                    }
+                    if (targetShape.inNode === 'l') {
+                        te = element.svgnoid;
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 if (element.orient.next === 'r') {
                     element.nextOutPos = [ce.x() + ce.bbox().width, ce.cy()];
                     targetShape.inNode = targetShape.inNode !== undefined ? targetShape.inNode : 'l';
                     te = shapes[lookup[element.next]].svgshape;
 
-                        if (targetShape.inNode === 't') {
-                            targetShape.inNodePos = [te.cx(), te.y()];
-                        }
-                        if (targetShape.inNode === 'l') {
-                            targetShape.inNodePos = [te.x(), te.cy()];
-                        }
+                    if (targetShape.inNode === 't') {
+                        targetShape.inNodePos = [te.cx(), te.y()];
+                    }
+                    if (targetShape.inNode === 'l') {
+                        targetShape.inNodePos = [te.x(), te.cy()];
+                    }
                 }
                 isPositioned.push(element.nextid);
             }
@@ -933,9 +899,11 @@ var flowSVG = (function () {
             if (element.yes && element.yesid !== undefined) {
                 label = lineLabel('Yes', group);
                 element.yesBtn = label;
-                label.attr('cursor', 'pointer');
-                label.on('click', function () {toggleNext(element, 'yes'); });
 
+                label.attr('cursor', 'pointer');
+                label.on('click', function () {
+                    toggleNext(element, 'yes');
+                });
                 if (element.orient.yes === 'b') {
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
                 }
@@ -949,7 +917,9 @@ var flowSVG = (function () {
                 label = lineLabel('No', group);
                 element.noBtn = label;
                 label.attr('cursor', 'pointer');
-                label.on('click', function () {toggleNext(element, 'no'); });
+                label.on('click', function () {
+                    toggleNext(element, 'no');
+                });
 
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
@@ -1124,7 +1094,6 @@ var flowSVG = (function () {
                 p2 = [start[0] + spacer, start[1]];
                 p3 = [start[0] + spacer, end[1] - spacer];
                 p4 = [end[0], end[1] - spacer];
-
                 endPos = [end[0],  end[1] - config.arrowHeadHeight];
                 return [p1, p2, p3, p4, endPos];
             }
@@ -1136,7 +1105,6 @@ var flowSVG = (function () {
                 p3 = [start[0] + spacer, end[1] - (config.shapeHeight / 2) - spacer];
                 p4 = [end[0] - spacer, end[1] - (config.shapeHeight / 2) - spacer];
                 p5 = [end[0] - spacer, end[1]];
-
                 endPos = [end[0],  end[1] - config.arrowHeadHeight];
                 return [p1, p2, p3, p4, p5, endPos];
             }
@@ -1146,7 +1114,6 @@ var flowSVG = (function () {
                 p1 = start;
                 p2 = [start[0], start[1] + spacer];
                 p3 = [end[0], start[1] + spacer];
-
                 endPos = [end[0],  end[1] - config.arrowHeadHeight];
                 return [p1, p2, p3, endPos];
 
@@ -1157,7 +1124,6 @@ var flowSVG = (function () {
             } else if (start[0] < end[0]) {
                 endPos = [end[0]  - config.arrowHeadHeight,  end[1]];
             }
-
             return [start, endPos];
         }
 
@@ -1174,7 +1140,6 @@ var flowSVG = (function () {
                 if (element.orient.yes === 'r') {
                     endln = [startln[0] + config.connectorLength, startln[1]];
                 }
-
                 element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width: config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
 
@@ -1188,7 +1153,6 @@ var flowSVG = (function () {
                 if (element.orient.no === 'r') {
                     endln = [startln[0] + config.connectorLength, startln[1] ];
                 }
-
                 element.svgid.polyline(angleLine(startln, endln, element)).stroke({ width:  config.connectorStrokeWidth, color: config.connectorStrokeColour}).fill('none');
             }
 
@@ -1255,7 +1219,7 @@ var flowSVG = (function () {
             shapes.forEach(referringIds);
             shapes.forEach(positionShapes);
             if (interactive === true) {
-               shapes.forEach(nodePoints);
+                shapes.forEach(nodePoints);
                 shapes.forEach(addConnectors);
                 shapes.forEach(addLabels);
                 shapes.forEach(addArrows);
@@ -1271,8 +1235,6 @@ var flowSVG = (function () {
 
         return {
             config: setParams,
-            unhide: unhide,
-            hide: hide,
             draw: setRoot,
             shapes: layoutShapes
         };
