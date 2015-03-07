@@ -27,12 +27,10 @@ a:hover {
 
 <script>
 ///////////////////// start flow chart ////////////////////////////////////////////////////////////
-    flowSVG.draw(SVG('drawing').size(900, 1600));
+    flowSVG.draw(SVG('drawing').size(900, 1100));
     flowSVG.config({
         interactive: true,
         showButtons: false,
-        minOpacity: 0.1,
-        maxOpacity: 1.0,
         connectorLength: 60
     });
     flowSVG.shapes(
@@ -46,11 +44,7 @@ a:hover {
                 'of the journal?'
 			],
 			yes: 'hasOAPolicy',
-			no: 'checkPolicy',
-			orient: {
-				yes: 'b',
-				no: 'r'
-			}
+			no: 'checkPolicy'
 		}, 
         {
 			label: 'hasOAPolicy',
@@ -60,13 +54,8 @@ a:hover {
                 'Access paid option or is it an',
                 ' Open Access journal?'
 			],
-            //moveRight: 400,
 			yes: 'CCOffered',
-			no: 'canWrap',
-			orient: {
-				yes: 'b',
-				no: 'r'
-			}
+			no: 'canWrap'
 		}, 
 		{
 			label: 'CCOffered',
@@ -76,11 +65,7 @@ a:hover {
                 'CC-BY offered?'
             ],
             yes: 'canComply',
-            no:'checkGreen',
-			orient: {
-				yes: 'b',
-				no: 'r'
-			}
+            no:'checkGreen'
 		},
         {
             label: 'canComply',
@@ -114,13 +99,8 @@ a:hover {
                 'WRAP and/or Subject',
                 'repository?'
             ],
-            //moveRight: 280,
             yes: 'checkTimeLimits',
-			no: 'doNotComply',
-			orient: {
-				yes: 'b',
-				no: 'r'
-			}
+			no: 'doNotComply'
 		}, 
         {
             label: 'doNotComply',
@@ -172,8 +152,7 @@ a:hover {
                 '6 month Stem',
                 '12 month AHSS'
             ],
-            next: 'depositInWrap',
-            orient: {next: 'b'}
+            next: 'depositInWrap'
         },
         {
             label: 'cannotComply',
@@ -232,10 +211,7 @@ a:hover {
                     target: '_blank'
                 }
             ],
-			next: 'hasOAPolicy',
-            orient: {
-                next: 'b'
-            }
+			next: 'hasOAPolicy'
         }
     ]);
 </script>
