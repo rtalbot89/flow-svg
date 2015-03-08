@@ -117,9 +117,31 @@ flowSVG.config({
   processFill: 'navajowhite',
   finishFill: 'seagreen',
   defaultFontSize: '14'
+  // Any other configurations
 });
 ```
 To see all configuration options look at the init() function at the top of the uncompressed source file. Note that some of these are still experimental and may not work as expected, or at all.
+
+### General options
+Other configuration options that can be set are:
+```javascript
+flowSVG.config({
+  /*
+  By default the chart loads in interactive mode.
+  Change to false to load the static view first
+  */
+  interactive: false,
+  /* 
+  Buttons are shown by default. Set to false to
+  hide them
+  */
+  showButtons: false,
+  // Disable scrolling to off screen elements
+  scrollto: true
+});
+```
+
+
 
 
 
