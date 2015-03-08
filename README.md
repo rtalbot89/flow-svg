@@ -5,7 +5,6 @@ Create simple interactive and static flow charts using JavaScript and SVG.
 
 flowSVG depends on [svg.js](http://svgjs.com/). Optionally, for smooth scrolling to off-screen elements it uses jQuery and 
 the [jquery.scrollTo plugin](https://github.com/flesler/jquery.scrollTo)
-
 ## Usage
 ### Setup
 Link to the dependencies in the head of the page.
@@ -134,6 +133,21 @@ links: [
   target: '_blank'
   }
 ],
+```
+
+### Add a tip
+A pop-up tip can be added to a finish shape.
+```javascript
+tip: {
+  title: 'HEFCE Note',
+  text:[
+  'You must put your',
+  'accepted version into',
+  'WRAP and/or subject',
+  'repository within 3 months',
+  'of acceptance.'
+  ]
+}
 ```
 
 ### General options
