@@ -97,7 +97,7 @@ orient: {
   //next: 'r'
 }
 ```
-To move a shape more to the right than the default add a 'moveRight' property to it.
+To move a shape more to the right than the default in the static view add a 'moveRight' property to it.
 ```javascript
 moveRight: 250
 ```
