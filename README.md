@@ -51,7 +51,7 @@ flowSVG.shapes([
   yes: 'CCOffered',
   no: 'canWrap'
   }
-  ...etc.
+  // more shapes...
 ]);
 </script>
 ```
@@ -83,6 +83,18 @@ Each shape object has the following required properties
   // If this was a process...
   // next: ...
   }, 
+```
+## Options
+By default 'yes' choices are placed below the referring shape, 'no' choices to the right, and 'next' below. 
+
+To change any of these add an 'orient' object to the shape. valid choices are 'r' (right) and 'b' (bottom).
+```javascript
+orient: {
+  yes:'r',
+  no: 'b'
+  // If there is a next...
+  //next: 'r'
+}
 ```
 
 
