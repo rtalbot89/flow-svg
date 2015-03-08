@@ -122,6 +122,20 @@ flowSVG.config({
 ```
 To see all configuration options look at the init() function at the top of the uncompressed source file. Note that some of these are still experimental and may not work as expected, or at all.
 
+### Add links
+Links can be added to decision and process shapes. Links will go after the text.
+```javascript
+/* Links is an array of objects */
+links: [
+  {
+  text: 'SHERPA FACT/ROMEO ', 
+  url: 'http://www.sherpa.ac.uk/romeo/index.php',
+  // Optional target
+  target: '_blank'
+  }
+],
+```
+
 ### General options
 Other configuration options that can be set are:
 ```javascript
