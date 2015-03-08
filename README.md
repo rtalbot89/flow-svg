@@ -27,7 +27,7 @@ Start by attaching an SVG element to a div.
 <script>
 flowSVG.draw(SVG('drawing').size(900, 1100));
 
-// Pass an array of shape objects.
+// Then construct an array of shape objects.
 flowSVG.shapes([
   {
   label: 'knowPolicy',
@@ -74,12 +74,15 @@ Each shape object has the following required properties
   ],
   /* 
   Where to go from here. 'yes' and 'no' apply to
-  decisions. 'next' can be used with processes.
+  decisions. 'next' is used with processes.
+  These don't apply to finish shapes for obvious
+  reasons.
   */
   yes: 'hasOAPolicy',
   no: 'checkPolicy'
+  // If this was a process...
+  // next: ...
   }, 
-
 ```
 
 
