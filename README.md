@@ -24,11 +24,10 @@ Start by attaching an SVG element to a div.
 <div id="drawing" style="margin-left:10px"></div>
 ```
 ```javascript
+<script>
 flowSVG.draw(SVG('drawing').size(900, 1100));
-```
-Pass an array of shape objects.
 
-```javascript
+// Pass an array of shape objects.
 flowSVG.shapes([
   {
   label: 'knowPolicy',
@@ -54,6 +53,7 @@ flowSVG.shapes([
   }
   ...etc.
 ]);
+</script>
 ```
 The first shape in the array must be the starting shape of the chart. After that, the order is irrelevant.
 Each shape object has the following required properties
