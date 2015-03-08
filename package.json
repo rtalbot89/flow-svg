@@ -1,0 +1,45 @@
+{
+  "name":  "flowSVG",
+   "description":  "A library for creating  simple interactive and static flow charts",
+   "keywords":  ["svg", "vector", "graphics", "flow", "chart"],
+   "author":  "Rob Talbot <robtalbot89@gmail.com>",
+   "main":  "dist/flowsvg.js",
+   "version": "0.1.0",
+   "jam": {
+     "include": [
+      "dist/flowsvg.js",
+      "README.md",
+      "MIT-LICENSE"
+     ]
+   },
+   "maintainers": [
+   {
+     "name": "Rob Talbot",
+     "email":  "robtalbot89@gmail.com"
+   }
+   ],
+   "licenses": [
+   {
+     "type": "MIT",
+     "url": "http://www.opensource.org/licenses/mit-license.php"
+   }
+   ],
+   "repository": {
+     "type": "git",
+     "url": "https://github.com/rtalbot89/flow-svg.git"
+   },
+   "github":  "https://github.com/rtalbot89/flow-svg",
+   
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-contrib-qunit": "~0.5.2",
+    "grunt-contrib-concat": "~0.4.0",
+    "grunt-contrib-uglify": "~0.5.0",
+    "grunt-contrib-jasmine": "~0.8.2"
+  }
+}
