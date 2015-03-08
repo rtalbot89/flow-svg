@@ -85,6 +85,7 @@ Each shape object has the following required properties
   }, 
 ```
 ## Options
+### Orientating shapes
 By default 'yes' choices are placed below the referring shape, 'no' choices to the right, and 'next' below. 
 
 To change any of these add an 'orient' object to the shape. valid choices are 'r' (right) and 'b' (bottom).
