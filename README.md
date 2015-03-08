@@ -101,6 +101,27 @@ To move a shape more to the right than the default in the static view add a 'mov
 ```javascript
 moveRight: 250
 ```
+### Appearance
+Use the config function to change the default properties e.g.
+```javascript
+flowSVG.config({
+  // Shape width
+  w: 200,
+  // Shape height
+  h: 180,
+  // The following are self-explanatory
+  connectorLength: 100,
+  connectorStrokeWidth: 3,
+  arrowColour: 'lightgrey',
+  decisionFill: 'firebrick',
+  processFill: 'navajowhite',
+  finishFill: 'seagreen',
+  defaultFontSize: '14'
+});
+```
+To see all configuration options look at the init() function at the top of the uncompressed source file. Note that some of these are still experimental and may not work as expected, or at all.
+
+
 
 
 
