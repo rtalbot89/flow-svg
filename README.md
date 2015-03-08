@@ -140,6 +140,13 @@ flowSVG.config({
   scrollto: true
 });
 ```
+## Building charts incrementally
+Flow charts take a lot of thinking about. You can build incrementally, rather than having the whole plan before you start. Referring to a non-existent shape in the 'yes, no' or 'next' properties will cause an error. To work around this, comment out these properties or leave them out until the referenced shapes exist. 
+
+Shapes are moved into position when another shape refers to them. So until a shape is referred to, it will pile up in the default top left position. To be able to see if a shape is hiding another shape, add the 'maxOpacity' property temporarily to the config function something like this.
+```javascript
+maxOpacity: 0.5
+```
 
 
 
