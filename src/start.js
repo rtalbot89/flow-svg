@@ -46,7 +46,7 @@
                         for (k = 0; k < clicked.length; k += 1) {
                             shapes[lookup[clicked[k]]].svgid.animate().opacity(config.minOpacity);
                             shapes[lookup[clicked[k]]].show = false;
-                            shapes[lookup[clicked[k]]].attr('visibility', 'hidden');
+                            shapes[lookup[clicked[k]]].svgid.attr('visibility', 'hidden');
                         }
                         clicked.splice(0, clicked.length - 1);
                     }

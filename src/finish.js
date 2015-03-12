@@ -64,7 +64,10 @@
 
                     tg.add(tiptxt);
                     tg.x(config.finishLeftMargin / 2);
-                    tg.y(this.getAttribute('y') - rct.height());
+                    //tg.y(this.getAttribute('y') - rct.height());
+                    var tgb = tg.bbox();
+                    var tgDY = rect.height()- tg.bbox().height - 30;
+                    tg.y(tgDY);
                 })
                     .on('mouseout', function () {
                         tg.remove();

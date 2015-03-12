@@ -5,7 +5,8 @@
 <script src="jquery.scrollTo.min.js"></script>
 
 <script src="svg.js"></script>
-<script src="../dist/flowsvg.min.js"></script>
+<script src="../dist/flowsvg.js"></script>
+
 
 <style>
 a:hover {
@@ -14,14 +15,18 @@ a:hover {
 </style>
 </head>
 <body>
-	<h1>RCUK Submission</h1>
+	<h1>RCUK flow chart</h1>
+    <p>Check the Journal's Open Access Policy. You can do this using <a href='http://www.sherpa.ac.uk/romeo/index.php'>SHERPA FACT/ROMEO</a></p>
+    <p><a href='mailto:openaccessfunds@warwick.ac.uk'>Contact the Library about funds and policies</a></p>
+    <p><a href='http://www2.warwick.ac.uk/services/library/staff/research/repositories-at-warwick/wrap/submit/'>Submit to WRAP</a></p>
 <div id="drawing" style="margin-left:10px"></div>
 
 <script>
 ///////////////////// start flow chart ////////////////////////////////////////////////////////////
+
     flowSVG.draw(SVG('drawing').size(900, 1100));
     flowSVG.config({
-        interactive: true,
+        interactive: false,
         showButtons: true,
         connectorLength: 60,
         scrollto: true
@@ -54,45 +59,45 @@ a:hover {
 			label: 'CCOffered',
 			type: 'decision',
 			text: [
-                'Creative Commons licence',
-                'CC-BY offered?'
+                'Creative Commons',
+                'licence CC-BY offered?'
             ],
             yes: 'canComply',
-            no:'checkGreen'
+            no: 'canWrap'
+            
 		},
         {
             label: 'canComply',
             type: 'finish',
             text: [
-                'Great - can comply. ',
-                'Please complete'
+                'Great. '
             ],
           links: [
               {
-                  text: 'application form', 
-                  url: 'http://www2.warwick.ac.uk/services/library/staff/research/repositories-at-warwick/wrap/submit/', 
+                  text: 'Apply for funding', 
+                  url: 'http://www2.warwick.ac.uk/services/library/staff/research/open-access/apply-for-open-access-funding/', 
                   target: '_blank'
               }
           ],
-          tip: {title: 'HEFCE Note',
+          tip: {title: 'REF 2020 Note',
           text:
           [
               'You must put your',
-              'accepted version into',
-              'WRAP and/or subject',
-              'repository within 3 months',
-              'of acceptance.'
+              'accepted version in WRAP',
+              'within 3 months of',
+              ' acceptance.'
           ]}
         },
 		{
 			label: 'canWrap',
 			type: 'decision',
 			text: [
-                'Can you archive in ',
-                'WRAP and/or Subject',
-                'repository?'
+                'Can you go "green"',
+                'and archive in WRAP?'
+               
             ],
-            yes: 'checkTimeLimits',
+            inNode: 't',
+            yes: 'depositInWrap',
 			no: 'doNotComply'
 		}, 
         {
@@ -100,22 +105,24 @@ a:hover {
             type: 'finish',
             text: [
                 'You do not comply at all. ',
-                'Is this really the only journal',
-                ' you want to use? ',
-                'Choose another or make ',
-                'representations to journal'
+                'Is this the only journal you',
+                'want to use? Could you',
+                'choose another journal?'
             ],
-            tip: {title: 'HEFCE Note',
+            tip: {title: 'REF 2020 Note',
             text:
             [
-                'If you really have to go',
-                'this route you must log',
-                'the exception in WRAP on',
-                'acceptance in order',
+                'If you have to go this route',
+                'you must log details and',
+                'exception in WRAP within',
+                '3 months of acceptance',
                 'to comply.'
             ]}
-        },       
+        }, 
+         // remove
+        /*      
         {
+           
 			label: 'checkGreen',
 			type: 'process',
 			text: [
@@ -124,7 +131,10 @@ a:hover {
             ],
 			next: 'journalAllows',
 		}, 
+        */
+        /*
         {
+            // remove
             label: 'journalAllows',
             type: 'decision',
             text: ['Does the journal allow this?'],
@@ -136,18 +146,25 @@ a:hover {
             }
             
         },
+        */
+        /*
         {
+            // Remove
 			label: 'checkTimeLimits',
 			type: 'process',
 			text: [
                 'Make sure the time limits',
                 'acceptable',
-                '6 month Stem',
+                '6 months STEMM',
                 '12 month AHSS'
             ],
             next: 'depositInWrap'
         },
+        */
+        /*
         {
+            
+            // remove
             label: 'cannotComply',
             type: 'finish',
             text: [
@@ -156,7 +173,7 @@ a:hover {
                 'journal to discuss or',
                 'choose another'
             ],
-            tip: {title: 'HEFCE Note',
+            tip: {title: 'REF 2020 Note',
             text:
             [
                 'Deposit in WRAP if',
@@ -168,36 +185,39 @@ a:hover {
                 'most appropriate journal.'
             ]}
         },
+        */
         {
             label: 'depositInWrap',
             type: 'finish',
             text: [
-                'Deposit in WRAP here or ',
-                'contact team'
+                'Make sure the time limits',
+                'acceptable:',
+                '6 months STEM',
+                '12 month AHSS',
+                'Submit to WRAP.'
             ],
-            tip: {title: 'HEFCE Note',
+            tip: {title: 'REF 2020 Note',
             text:
             [
                 'You must put your',
-                'accepted version into',
-                'WRAP and/or subject',
-                'repository within 3 months',
-                'of acceptance.',
-                'Note also time limits:',
-                'HEFCE 12 months',
-                'STEM ? months',
-                'AHSS ? months',
-                'So you comply here too.'
+                'accepted version in WRAP',
+                'within 3 months of',
+                'acceptance. If time limits',
+                'comply with RCUK they',
+                'comply for the REF too.'
             ]}
         },
 		{
 			label: 'checkPolicy',
 			type: 'process',
 			text: [
-				'Check journal website',
-                'or go to '
+				'Check journal website/'
 			],
             links: [
+                {
+                    text: 'Contact the Library/', 
+                    url: 'mailto:openaccessfunds@warwick.ac.uk'
+                },
                 {
                     text: 'SHERPA FACT/ROMEO ', 
                     url: 'http://www.sherpa.ac.uk/romeo/index.php', 

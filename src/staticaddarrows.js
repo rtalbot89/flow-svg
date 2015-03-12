@@ -27,11 +27,18 @@
 
                 if (element.orient.no === 'b') {
                     arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2), nxt.inNodePos[1] - config.arrowHeadHeight);
+                   
                 }
 
                 if (element.orient.no === 'r') {
                     arrowhead.move(nxt.inNodePos[0] - config.arrowHeadHeight, nxt.inNodePos[1] - (config.arrowHeadHeight / 2));
-                    arrowhead.rotate(270);
+                    if(nxt.inNode === 'l') {
+                        arrowhead.rotate(270);
+                    }
+                    
+                    if(nxt.inNode === 't') {
+                         arrowhead.move(nxt.inNodePos[0] - (config.arrowHeadHeight / 2) , nxt.inNodePos[1] - config.arrowHeadHeight);
+                    }
                 }
             }
 
