@@ -3,6 +3,7 @@
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
             showButtons = userOpts.showButtons !== undefined ? userOpts.showButtons : true;
             scrollto = userOpts.scrollto !== undefined ? userOpts.scrollto : true;
+            scrollOffset = userOpts.scrollOffset !== undefined ? userOpts.scrollOffset : 0;
         }
 
         function init() {

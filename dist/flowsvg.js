@@ -1,14 +1,15 @@
-/* flowSVG - v0.1.0 - 2015-03-12*/
+/* flowSVG - v0.1.0 - 2015-03-13*/
 /*global SVG, console, window, document, jQuery*/
 var flowSVG = (function () {
         "use strict";
-        var draw, lowerConnector, shapeFuncs, i, config, userOpts = {}, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId, lookup = {}, isPositioned = [], toggleNext, clicked = [], showButtons = true, scrollto = true;
+        var draw, lowerConnector, shapeFuncs, i, config, userOpts = {}, shapes, interactive = true, chartGroup, layoutShapes, itemIds = {}, indexFromId = {}, startEl, startId, lookup = {}, isPositioned = [], toggleNext, clicked = [], showButtons = true, scrollto = true, scrollOffset;
 
         function setParams(u) {
             userOpts = u;
             interactive = userOpts.interactive !== undefined ? userOpts.interactive : true;
             showButtons = userOpts.showButtons !== undefined ? userOpts.showButtons : true;
             scrollto = userOpts.scrollto !== undefined ? userOpts.scrollto : true;
+            scrollOffset = userOpts.scrollOffset !== undefined ? userOpts.scrollOffset : 0;
         }
 
         function init() {
@@ -715,7 +716,7 @@ var flowSVG = (function () {
                 recBox = SVG.get(scrollid).bbox();
                 point = root.createSVGPoint();
                 ctm = rec.getCTM();
-                elementY = point.matrixTransform(ctm).y + recBox.height + root.parentNode.offsetTop + 20;
+                elementY = point.matrixTransform(ctm).y + recBox.height + root.parentNode.offsetTop + 20 + scrollOffset;
 
                 if (elementY > h) {
                     if (window.jQuery && window.jQuery.scrollTo) {

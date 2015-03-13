@@ -16,20 +16,18 @@ a:hover {
 </head>
 <body>
 	<h1>RCUK flow chart</h1>
-    <p>Check the Journal's Open Access Policy. You can do this using <a href='http://www.sherpa.ac.uk/romeo/index.php'>SHERPA FACT/ROMEO</a></p>
-    <p><a href='mailto:openaccessfunds@warwick.ac.uk'>Contact the Library about funds and policies</a></p>
-    <p><a href='http://www2.warwick.ac.uk/services/library/staff/research/repositories-at-warwick/wrap/submit/'>Submit to WRAP</a></p>
 <div id="drawing" style="margin-left:10px"></div>
 
-<script>
+<script type="text/javascript">
 ///////////////////// start flow chart ////////////////////////////////////////////////////////////
 
-    flowSVG.draw(SVG('drawing').size(900, 1100));
+    flowSVG.draw(SVG('drawing').size(900, 900));
     flowSVG.config({
-        interactive: false,
-        showButtons: true,
+        //interactive: true,
+        //showButtons: true,
         connectorLength: 60,
-        scrollto: true
+        //scrollto: true,
+		//scrollOffset: 300
     });
     flowSVG.shapes(
         [
@@ -85,7 +83,7 @@ a:hover {
               'You must put your',
               'accepted version in WRAP',
               'within 3 months of',
-              ' acceptance.'
+              'acceptance.'
           ]}
         },
 		{
@@ -193,9 +191,14 @@ a:hover {
                 'Make sure the time limits',
                 'acceptable:',
                 '6 months STEM',
-                '12 month AHSS',
-                'Submit to WRAP.'
+                '12 month AHSS'
             ],
+			links: [
+              {
+                  text: 'Submit to WRAP', 
+                  url: 'http://www2.warwick.ac.uk/services/library/staff/research/repositories-at-warwick/wrap/submit/'
+              }
+          ],
             tip: {title: 'REF 2020 Note',
             text:
             [

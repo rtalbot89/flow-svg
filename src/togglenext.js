@@ -108,7 +108,7 @@
                 recBox = SVG.get(scrollid).bbox();
                 point = root.createSVGPoint();
                 ctm = rec.getCTM();
-                elementY = point.matrixTransform(ctm).y + recBox.height + root.parentNode.offsetTop + 20;
+                elementY = point.matrixTransform(ctm).y + recBox.height + root.parentNode.offsetTop + 20 + scrollOffset;
 
                 if (elementY > h) {
                     if (window.jQuery && window.jQuery.scrollTo) {
