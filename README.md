@@ -54,7 +54,7 @@ flowSVG.shapes([
 ]);
 </script>
 ```
-The first shape in the array must be the starting shape of the chart. After that, the order is irrelevant.
+The first shape in the array must be the starting shape of the chart. It must be a decision shape. After that, the order is irrelevant.
 Each shape object has the following required properties
 ```javascript
  {
