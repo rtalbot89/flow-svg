@@ -104,22 +104,44 @@ moveRight: 250
 Use the config function to change the default properties e.g.
 ```javascript
 flowSVG.config({
-  // Shape width
-  w: 200,
-  // Shape height
-  h: 180,
-  // The following are self-explanatory
-  connectorLength: 100,
-  connectorStrokeWidth: 3,
-  arrowColour: 'lightgrey',
-  decisionFill: 'firebrick',
-  processFill: 'navajowhite',
-  finishFill: 'seagreen',
-  defaultFontSize: '14'
-  // Any other configurations
+    // Shape width
+    w: 200,
+    // Shape height
+    h: 180,
+    // The following are self-explanatory
+    connectorLength: 100,
+    connectorStrokeWidth: 3,
+    arrowColour: 'lightgrey',
+    decisionFill: 'firebrick',
+    processFill: 'navajowhite',
+    finishFill: 'seagreen',
+    defaultFontSize: '14'
+    // Any other configurations
 });
 ```
 To see all configuration options look at the init() function at the top of the uncompressed source file. Note that some of these are still experimental and may not work as expected, or at all.
+
+### Change Yes and No labels
+These can be changed, but only globally. For example
+```javascript
+flowSVG.config({
+    yesLabel: 'True',
+    noLabel: 'false'
+});
+```
+Having done this you may need to increase the size of the line labels, and maybe nudge them to the right or bottom. 
+Don't forget that you also have connectorLength to play with.
+```javascript
+flowSVG.config({
+    yesLabel: 'True'
+    noLabel: 'false',
+    labelWidth: 40,
+    labelNudgeRight: 10,
+    labelNudgeBottom: 10
+});
+```
+Note that on the static view, if there are any angle lines coming out of the right of shapes, larger labels may
+overlap the elbow.
 
 ### Add links
 Links can be added to decision and process shapes. Links will go after the text.

@@ -1,4 +1,4 @@
-/* flowSVG - v0.1.0 - 2015-03-13*/
+/* flowSVG - v0.2.0 - 2016-03-19*/
 /*global SVG, console, window, document, jQuery*/
 var flowSVG = (function () {
         "use strict";
@@ -71,6 +71,10 @@ var flowSVG = (function () {
                     labelOpacity: userOpts.labelOpacity || 1.0,
                     labelFontSize: userOpts.labelFontSize ||  defaultFontSize,
                     labelTextColour: userOpts.labelTextColour ||  lightText,
+                    labelYes: userOpts.labelYes ||  'Yes',
+                    labelNo: userOpts.labelNo ||  'No',
+                    labelNudgeRight: userOpts.labelNudgeRight || 0,
+                    labelNudgeBottom: userOpts.labelNudgeBottom || 0,
                     arrowHeadHeight: userOpts.arrowHeadHeight || 20,
                     arrowHeadColor: userOpts.arrowHeadColor || arrowColour,
                     arrowHeadOpacity: userOpts.arrowHeadOpacity || 1.0,
@@ -907,7 +911,7 @@ var flowSVG = (function () {
             var group = element.svgid, label;
 
             if (element.yes && element.yesid !== undefined) {
-                label = lineLabel('Yes', group);
+                label = lineLabel(config.labelYes, group);
                 element.yesBtn = label;
 
                 label.attr('cursor', 'pointer');
@@ -915,16 +919,16 @@ var flowSVG = (function () {
                     toggleNext(element, 'yes');
                 });
                 if (element.orient.yes === 'b') {
-                    label.move(element.yesOutPos[0], element.yesOutPos[1]);
+                    label.move(element.yesOutPos[0], element.yesOutPos[1] + config.labelNudgeBottom);
                 }
 
                 if (element.orient.yes === 'r') {
-                    label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
+                    label.move(element.yesOutPos[0] + 20 + config.labelNudgeRight, element.yesOutPos[1] - 20);
                 }
             }
 
             if (element.no && element.noid !== undefined) {
-                label = lineLabel('No', group);
+                label = lineLabel(config.labelNo, group);
                 element.noBtn = label;
                 label.attr('cursor', 'pointer');
                 label.on('click', function () {
@@ -932,11 +936,11 @@ var flowSVG = (function () {
                 });
 
                 if (element.orient.no === 'b') {
-                    label.move(element.noOutPos[0], element.noOutPos[1]);
+                    label.move(element.noOutPos[0] + config.labelNudgeBottom, element.noOutPos[1]);
                 }
 
                 if (element.orient.no === 'r') {
-                    label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
+                    label.move(element.noOutPos[0] + 20 + config.labelNudgeRight, element.noOutPos[1] - 20);
                 }
             }
         }
@@ -944,26 +948,26 @@ var flowSVG = (function () {
             var group = element.conngroup, label;
 
             if (element.yes && element.yesid !== undefined) {
-                label = lineLabel('Yes', group);
+                label = lineLabel(config.labelYes, group);
 
                 if (element.orient.yes === 'b') {
                     label.move(element.yesOutPos[0], element.yesOutPos[1]);
                 }
 
                 if (element.orient.yes === 'r') {
-                    label.move(element.yesOutPos[0] + 20, element.yesOutPos[1] - 20);
+                    label.move(element.yesOutPos[0] + 20 + config.labelNudgeRight, element.yesOutPos[1] - 20);
                 }
             }
 
             if (element.no && element.noid !== undefined) {
-                label = lineLabel('No', group);
+                label = lineLabel(config.labelNo, group);
 
                 if (element.orient.no === 'b') {
                     label.move(element.noOutPos[0], element.noOutPos[1]);
                 }
 
                 if (element.orient.no === 'r') {
-                    label.move(element.noOutPos[0] + 20, element.noOutPos[1] - 20);
+                    label.move(element.noOutPos[0] + 20 + config.labelNudgeRight, element.noOutPos[1] - 20);
                 }
             }
         }

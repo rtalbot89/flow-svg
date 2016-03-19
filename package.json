@@ -4,7 +4,7 @@
    "keywords":  ["svg", "vector", "graphics", "flow", "chart"],
    "author":  "Rob Talbot <robtalbot89@gmail.com>",
    "main":  "dist/flowsvg.js",
-   "version": "0.1.0",
+   "version": "0.2.0",
    "jam": {
      "include": [
       "dist/flowsvg.js",
