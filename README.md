@@ -125,16 +125,16 @@ To see all configuration options look at the init() function at the top of the u
 These can be changed, but only globally. For example
 ```javascript
 flowSVG.config({
-    yesLabel: 'True',
-    noLabel: 'false'
+    labelYes: 'True',
+    labelNo: 'false'
 });
 ```
 Having done this you may need to increase the size of the line labels, and maybe nudge them to the right or bottom. 
 Don't forget that you also have connectorLength to play with.
 ```javascript
 flowSVG.config({
-    yesLabel: 'True'
-    noLabel: 'false',
+    labelYes: 'True'
+    labelNo: 'false',
     labelWidth: 40,
     labelNudgeRight: 10,
     labelNudgeBottom: 10
