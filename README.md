@@ -133,7 +133,7 @@ Having done this you may need to increase the size of the line labels, and maybe
 Don't forget that you also have connectorLength to play with.
 ```javascript
 flowSVG.config({
-    labelYes: 'True'
+    labelYes: 'True',
     labelNo: 'false',
     labelWidth: 40,
     labelNudgeRight: 10,
